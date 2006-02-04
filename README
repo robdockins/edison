@@ -1,0 +1,80 @@
+Edison: A Library of Efficient Data Structures 
+(Haskell Version 1.1)
+December 20, 1999
+
+This release updates Edison from Haskell 1.4 to Haskell 98,
+and removes most of the GHC specific code.  Edison should now
+run under both GHC and Hugs (at least).  Note that Edison is
+still not fully Haskell 98 compliant because of the use of
+multi-parameter type classes and the occasional use of
+GHC/Hugs libraries such as Bits.
+
+See docs/users.{dvi,ps} for more extensive documentation.  Basic
+instructions for using Edison with GHC or Hugs are included below.
+See the User's Guide for more discussion about portability.
+
+In its current state, Edison is still mostly a framework.  That is, I
+provide signatures, but not yet very many implementations.  I intend
+to populate this framework over time, adding a new module every few
+weeks.  Thus, the library is extremely unstable in the sense that I
+will continually be modifying existing data structures and adding new
+ones.  However, I hope that the signatures will remain fairly stable
+over time, making these changes to the implementations mostly
+transparent to users of the library.
+
+If you wish to request a particular data structure or volunteer to
+provide an implementation, or if you have any other comments or
+suggestions, send me email at cdo@cs.columbia.edu.
+
+Chris Okasaki
+
+
+USING EDISON WITH GHC
+---------------------
+
+To begin using Edison with GHC, first run
+    make depend
+    make all
+I recommend using GHC 4.04 or higher (I used GHC 4.04 for testing).
+
+To compile a file Foo.hs that uses Edison, type something like
+    ghc -c -fglasgow-exts -iEDHOME/Import Foo.hs
+where EDHOME should be replaced with the correct path
+to the Edison home directory.  To compile and link, type something
+like
+    ghc -fglasgow-exts -iEDHOME/Import -LEDHOME/Lib -ledison Foo.hs
+
+
+USING EDISON WITH HUGS
+----------------------
+
+To use Edison under Hugs, simply add the Edison directories
+to the Hugs search path, as in
+    hugs -98 -PEDHOME:EDHOME/Seq:EDHOME/Coll:EDHOME/Assoc: Foo.hs
+where EDHOME should be replaced with the correct path
+to the Edison home directory.  I do this by aliasing "ehugs"
+to "hugs -98 -PEDHOME:EDHOME/Seq:EDHOME/Coll:EDHOME/Assoc:"
+and then typing
+    ehugs Foo.hs
+
+There is a problem with this approach in that the built-in
+Hugs libraries already contain a Sequence module, which is
+now being shadowed by Edison's Sequence module.  It is unlikely
+that any of your code depends on this built-in module directly,
+but it may depend on it indirectly through the HugsLibs module.
+Here is the easiest way to fix the problem.
+
+  1. Go the the .../share/hugs/lib/hugs directory.
+  2. Rename Sequence.hs to HugsSequence.hs.
+  3. Edit HugsSequence.hs, replacing the line
+         module Sequence(
+     with
+         module HugsSequence(
+  4. Edit HugsLibs.hs, replacing the line
+         import Sequence
+     with
+         import HugsSequence
+
+These directions were tested under the November 1999 release
+of Hugs.  It is likely that the next release of Hugs will
+rename or eliminate the built-in Sequence module.

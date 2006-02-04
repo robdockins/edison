@@ -1,0 +1,1984 @@
+\documentclass{report}
+\setlength{\oddsidemargin}{0in}
+\setlength{\topmargin}{-50pt}
+\setlength{\textheight}{8.5in}
+\setlength{\textwidth}{6.5in}
+
+\newcommand{\CopyrightNotice}
+{Copyright \copyright{} 1998--1999 Chris Okasaki
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED ``AS IS'', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+}
+
+\title{Edison User's Guide\thanks{\CopyrightNotice} \\ (Haskell version)}
+\author{Chris Okasaki}
+
+\usepackage{xspace}
+
+\newcommand{\ignore}[1]{}
+\newcommand{\cd}{\texttt}
+\newcommand{\arrow}{\ensuremath{\rightarrow}\xspace}
+\newcommand{\Arrow}{\ensuremath{\Rightarrow}\xspace}
+\newcommand{\Equiv}{\ensuremath{\equiv}\xspace}
+\newcommand{\Implies}{\ensuremath{\Longrightarrow}\xspace}
+\newcommand{\is}{:$\!$:$$\xspace}
+\newcommand{\Section}[1]{Section~\ref{#1}}
+\newcommand{\Chapter}[1]{Chapter~\ref{#1}}
+\newcommand{\Figure}[1]{Figure~\ref{#1}}
+\newcommand{\nl}{\hspace*{0pt}\\}
+\newcommand{\spec}[1]{\item[\cd{\begin{tabular}{@{}l} #1 \end{tabular}}] \nl}
+\newcommand{\impl}[1]{\item \texttt{#1}:}
+\newcommand{\axioms}[1]{
+  \par \noindent \textbf{Axioms:} \\
+  \hspace*{20pt}{\ttfamily \begin{tabular}{l} #1 \end{tabular}}}
+\newcommand{\eff}[1]{
+  \par \noindent \textbf{Default running time:} $#1$}
+\newcommand{\efftext}[1]{
+  \par \noindent \textbf{Default running time:} #1}
+\newcommand{\List}[1]{{[}#1{]}}
+\newcommand{\AC}{\textsc{ac}\xspace}
+\newcommand{\ACs}{\textsc{ac}s\xspace}
+\newcommand{\hsp}{\hspace*{15pt}}
+
+\begin{document}
+\maketitle
+\tableofcontents
+\listoffigures
+
+\chapter{Introduction}
+
+Edison is a library of efficient data structures suitable for
+implementation and use in functional programming languages.  
+It is named after Thomas Alva Edison and for the mnemonic value of 
+{\bf ED}i{\bf S}on ({\bf E}fficient {\bf D}ata {\bf S}trucutres).  
+The current version of the library supports Haskell.  Future versions
+of the library will also support Standard ML and possibly Scheme.
+
+Edison provides several families of abstractions, each with multiple
+implementations, along with guidance on how to choose the best
+implementation for your particular application.  The main abstractions
+currently supported by Edison are 
+\begin{itemize} 
+\item \emph{sequences} (e.g., stacks, queues, deques), 
+\item \emph{collections} (e.g., sets, bags, priority queues where 
+  the priority is the element), and 
+\item \emph{associative collections} (e.g., finite maps, priority queues 
+  where the priority and element are distinct).
+\end{itemize}
+
+Note that, in its current state, the library is mostly a framework.
+That is, I provide signatures, but not yet very many implementations.
+I intend to populate this framework over time, adding a new module
+every few weeks.  Thus, the library is extremely unstable in the sense
+that I will continually be modifying existing data structures and
+adding new ones.  However, I hope that the signatures will remain
+fairly stable over time, making these changes to the implementations
+mostly transparent to users of the library.
+
+If you wish to request a particular data structure or volunteer to
+provide an implementation, send me email at \texttt{cdo@cs.columbia.edu}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\chapter{Installation and Use}
+
+Download the compressed tar file and uncompress/untar it in the
+location of your choice.  It will create a directory called
+\texttt{edison} with several subdirectories containing the actual
+source code.
+
+Now, \cd{cd} to the \cd{edison} directory and type
+\begin{verbatim}
+    make all
+\end{verbatim}
+I recommend using GHC 4.00 or higher (I used GHC 4.00 for testing).
+See \Section{portability} for a discussion of portability issues.
+
+To compile a file \cd{Foo.hs} that uses Edison, type something like
+\begin{verbatim}
+    ghc -c -i/usr/local/edison/Import Foo.hs
+\end{verbatim}
+where \cd{/usr/local} should be replaced with the correct path
+to the \cd{edison} directory.  To compile and link, type something
+like
+\begin{verbatim}
+    ghc -i/usr/local/edison/Import -L/usr/local/edison/Lib -ledison Foo.hs
+\end{verbatim}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\chapter{Conventions}
+
+In this section, I describe the general conventions I have followed
+in designing Edison.  I include only those conventions that affect
+users of the library.  Conventions that affect developers are described
+in the separate \emph{Edison Developer's Guide}.
+
+\section{Use of modules} \label{use-of-modules}
+
+Each data structure is implemented as a Haskell module.  These
+modules should always be imported \cd{qualified} to prevent a flood of
+name clashes (see \Section{name-clashes}).  
+I recommend renaming each imported module (using the
+\cd{as} keyword) both to reduce the overhead of qualified names and to
+make substituting one module for another as painless as possible.
+The one Edison module that is typically imported unqualified is the
+\cd{EdisonPrelude}.
+
+\bigskip \noindent
+Example use of an Edison data structure:
+\begin{verbatim}
+  module Foo where
+
+  import EdisonPrelude
+  import qualified SimpleQueue as Q
+
+  data Tree a = Empty | Node a (Tree a) (Tree a)
+
+  breadthFirst :: Tree a -> [a]
+  breadthFirst t = bfs (Q.single t)
+    where bfs q = 
+            case Q.lview q of
+              Just2 (Node x l r) q' -> x : bfs (Q.snoc (Q.snoc q' l) r)
+              Just2 Empty q' -> bfs q'
+              Nothing2 -> []
+\end{verbatim}
+
+\section{Reuse of names} \label{name-clashes}
+
+I have attempted to choose names that are as standard as possible.
+This means that operations for different abstractions frequently share
+the same name (\cd{empty}, \cd{null}, \cd{size}, etc.).  It also means
+that in many cases I have reused names from the Prelude.  However,
+these name clashes should not be a problem because I expect Edison
+modules to be imported \cd{qualified} (see \Section{use-of-modules}).
+If, for some reason, you choose to import Edison modules unqualified,
+you will usually need to import the Prelude \cd{hiding} the relevant
+names.
+
+Edison modules also frequently share type names.  For example, every
+sequence type constructor is named \cd{Seq} unless there is a good reason
+otherwise.  This makes substituting one module for another fairly
+painless, especially when imported modules are renamed as in the previous
+section.
+
+An example of ``a good reason otherwise'' for not using the standard
+type name is when the type constructor has the wrong kind.  This usually
+happens when one data structure is parameterized by another.  For example,
+an implementation of sequences that is parameterized on
+another implementation of sequences might be given as
+\begin{verbatim}
+  data HigherOrderSeq seq a = ...
+  instance Sequence seq => Sequence (HigherOrderSeq seq) where ...
+\end{verbatim}
+However, even modules such as these will typically define \cd{Seq}
+as a type synonym for some good default choice, e.g.,
+\begin{verbatim}
+  type Seq = HigherOrderSeq BankersQueue.Seq
+\end{verbatim}
+
+\section{Use and non-use of classes}
+
+Each family of abstractions is defined as a set of classes---a main
+class that every implementation of that abstraction should support and
+several auxiliary subclasses that an implementation may or may not support.
+
+However, not all applications need the power of classes, so each method is 
+also accessible directly from the implementation module.  For example, an 
+implementation of sequences will typically define and export a 
+type \cd{Seq~a} together with all the relevant functions on that type
+(using the same names as the corresponding methods!), and, in addition, 
+declare \cd{Seq} to be an instance of the \cd{Sequence} class.
+
+Thus, you can choose to use overloading or not, as appropriate for your
+particular application.  For example, in the following module,
+\begin{verbatim}
+  module Foo where
+  import qualified Sequence as S
+  import qualified HoodMelvilleQueue as Q
+  ...
+\end{verbatim}
+I could refer to the empty queue of type \cd{Q.Seq~a} as either
+\cd{S.empty} or \cd{Q.empty}.  The former refers to the empty method
+of the \cd{Sequence} class (which might be resolved using a type
+signature to be of type \cd{Q.Seq~a}) and the latter refers
+directly to the empty value from \cd{Q}, without going through the
+class mechanism.
+
+Note that this example is somewhat unrealistic.
+In practice, you would very rarely need to import both modules
+in their entirety.  Usually, you would either import only the implementation
+module
+\begin{verbatim}
+  import qualified HoodMelvilleQueue as Q
+\end{verbatim}
+or import the class module together with the type from the implementation
+module
+\begin{verbatim}
+  import qualified Sequence as S
+  import HoodMelvilleQueue (Seq)
+\end{verbatim}
+Note that in the last line, I imported \cd{HoodMelvilleQueue}
+unqualified.  Normally, this would produce a flood of name clashes,
+but it is acceptable when you are selectively importing only a type
+name or two.
+
+\section{Bonus Operations}
+
+Some implementations export a few extra operations beyond those included
+in the relevant classes.  These are typically operations that are
+particularly efficient for that implementation, but which are not general
+enough to warrant inclusion in a class.  An example of this is the
+function \cd{unsafeMapMonotonic} that is supported by many priority
+queues.
+
+\section{Fixity}
+
+Since qualified infix symbols are fairly ugly, I avoid infix symbols
+as much as possible.  For example, I call the sequence catenation function
+\cd{append} instead of \cd{++}.
+
+\section{Error handling}
+
+Since Haskell has no good way to recover from errors, I avoid
+signalling errors if there is any reasonable alternative.  For many
+functions, it is easy to avoid this by returning the \cd{Maybe} type (or
+something similar), but sometimes, as with the \cd{head} function on lists
+and the corresponding \cd{lhead} function on sequences, this approach is
+just too painful.  For \cd{lhead} of an empty sequence, there really is no
+choice but to signal an error, but other times there is a reasonable
+alternative.  For example, I define both \cd{ltail} of the empty sequence
+and \cd{take} of a negative argument to return the empty sequence even
+though the corresponding Prelude functions would signal errors in both
+of these cases.
+
+\section{(Lack of) Portability} \label{portability}
+
+Edison does not conform to either Haskell 1.4 or Haskell98.
+It will hopefully conform to Haskell 2.  For now, it is guaranteed to
+run only under GHC.
+
+There are three non-standard language features that I use.  Of these,
+only the first is critical.  The other two affect some fraction of the
+individual modules, and could be eliminated fairly easily.
+\begin{itemize}
+\item \emph{Multi-parameter type classes.} Fortunately, this is also
+  the least controversial.  Some form of multi-parameter type classes
+  seems certain to make it into Haskell 2, and I expect it to be easy
+  to adapt Edison's signatures accordingly.
+\item \emph{Unboxed integers.} I frequently use unboxed integers when,
+  for example, every node in a tree needs to maintain some sort of size
+  field.  I could simply declare these fields to be strict, but
+  using unboxed integers in these situations is significantly faster.
+\item \emph{Pattern guards.} I occasionally use pattern guards.
+  Getting by without them would not be difficult, but, since pattern guards 
+  also seem likely to make it into Haskell 2, I have not bothered.
+\end{itemize}
+If your compiler does not support unboxed integers or pattern guards, you 
+will still be able to use most of Edison---just not those 
+individual data structures that use these features.
+If your compiler does not support multi-parameter type classes, then
+you are in much bigger trouble---you will only be able to use the
+sequence data structures, not collections or associative collections.
+
+\section{Unsafe operations}
+
+Consider converting a list of elements into a binary search tree.
+This can be implemented particularly efficiently if we know that the list is 
+already sorted.  And in fact, it often is already sorted in practice.
+This special case, and a handful of similar cases, are common enough and
+important enough to deserve their own functions.  These are functions
+with non-trivial preconditions that are too expensive to check at runtime,
+so we simply make their behavior undefined if the preconditions are not
+satisfied.  Violating the preconditions may break the implementations in
+horrible ways, so we adopt a special naming convention to emphasize that
+these operations are unsafe---almost all such functions are given names 
+beginning with the word \cd{unsafe} (\cd{unsafeFromOrdList},
+\cd{unsafeInsertMin}, etc.).
+
+The one place where I have violated this convention is in the \cd{Set}
+class, where there is a whole family of operations with names like
+\cd{insertWith} and \cd{unionWith}.  These functions take a combining
+function that is used to resolve collisions.  For example, when
+inserting an element into a set that already contains that element,
+the combining function is called on the new and old elements to
+determine which element will remain in the new set.\footnote{
+  Such a combining function is useful only when nominally
+  equal elements are distinguishable in other ways---that is, when
+  the ``equality'' relation is really an equivalence relation.
+  However, this is extremely common.
+}  
+The combining functions typically return one element or the other, but
+they can also combine the elements in non-trivial ways.  These
+combining functions are required to satisfy the precondition that,
+given two equal elements, they return a third element that is equal to
+the other two.
+
+\section{Currying}
+
+All types in Edison are fully curried.
+
+\section{Order of arguments}
+
+Whenever a function takes multiple arguments, there is a choice as to
+the order of the arguments.  I have tried to make these choices according
+to the following rules, in decreasing order of importance:
+\begin{itemize}
+\item \emph{Favor an order that is more useful for partial applications.}
+For example, the \cd{member} function
+\begin{verbatim}
+  member :: CollX c a => c a -> a -> Bool
+\end{verbatim}
+takes the collection first and the element second, rather than the other
+way around, because it is much more commonly partially applied to a
+collection than to an element.
+
+\item \emph{Favor an order with significant mnemonic value.}
+For example, the \cd{cons} and \cd{snoc} functions
+\begin{verbatim}
+  cons :: Sequence s => a -> s a -> s a
+  snoc :: Sequence s => s a -> a -> s a
+\end{verbatim}
+take their arguments in opposite orders because \cd{cons} adds an
+element to the left of a sequence and \cd{snoc} adds an element to the
+right of a sequence.
+
+\item \emph{Functions that modify a collection should take the collection last.}
+For example, the \cd{insert} function has type
+\begin{verbatim}
+  insert :: CollX c a => a -> c a -> c a
+\end{verbatim}
+Taking the collection last supports a convenient style of stringing several
+update operations in a row using the \cd{\$} combinator, as in
+\begin{verbatim}
+  insert 1 $ insert 2 $ insert 3 ns
+\end{verbatim}
+rather than
+\begin{verbatim}
+  insert (insert (insert ns 3) 2) 1
+\end{verbatim}
+
+\item \emph{Consistency with similar operations.}
+\item \emph{Personal taste.}
+\end{itemize}
+
+\section{Completeness}
+
+In designing a library, there is always a delicate question of how much
+to put in, and how much to leave out.  Including too much can lead to code
+bloat, and make the library somewhat harder to learn.  Including too little
+can make the library significantly less useful.  I have tried to err on the
+side of including too much, rather than too little.
+
+Note that this can have an affect on efficiency.  Because the classes
+in Edison have many methods, the dictionaries for the classes will be
+large, and so building these dictionaries dynamically will be
+expensive.  Fortunately, most dictionaries can be built statically.
+The exceptions often involve things like non-regular datatypes and
+polymorphic recursion.  This is not to say don't use these features;
+just don't mix them with overloading and expect the result to be
+efficient.
+
+\section{(In)Efficiency}
+
+In text books on data structures and algorithms, data structures are
+often organized into hierarchies according to efficiency.  For
+example, a hierarchy of sequences might include such entries as
+\begin{itemize}
+\item \emph{queues} support efficicent insertions at the rear and 
+  deletions from the front
+\item \emph{steques} (stack-ended queues, also known as
+  output-restricted deques) are queues that additionally support
+  efficient insertions at the front
+\item \emph{deques} (double-ended queues) are steques that
+  additionally support efficient deletions from the back
+\end{itemize}
+Unfortunately, a class hierarchy structured along these lines
+is so fine-grained that it is nearly impossible to use.
+
+In Edison, the class hierarchies are determined by functionality, not
+by efficiency.  For example, the hierarchy for sequences contains only
+a single class \cd{Sequence}, because all the sequence operations are
+possible on all the sequence implementations, even if some of the
+operations are inefficient for some of the implementations.
+Similarly, the root class for collections--which include sets, bags,
+and priority queues--contains a \cd{member} method, even though this
+function is rather inefficient for most priority queues.
+
+At some later date, we may support a special mode that prints out a
+warning whenever one of the particularly inefficient operations is called.
+This would be implemented by replacing the relevant default definitions
+(the inefficient operations almost always just use one of the defaults)
+with calls to a warning function, such as
+\begin{verbatim}
+  foo = warn moduleName "foo" fooDefault
+\end{verbatim}
+instead of
+\begin{verbatim}
+  foo = fooDefault
+\end{verbatim}
+The \cd{warn} function would either print out a message and then return
+its third argument, or simply return the third argument without printing
+a message, depending perhaps on a compiler flag, or on which library you
+linked in.  \emph{Let me emphasize that we do nothing like this yet.}
+
+\section{Strictness}
+
+Most of the operations on most of the data structures are strict.  This is
+inevitable for data structures with non-trivial invariants.  Even given that,
+however, many of the operations are stricter than necessary.  In fact, I never
+\emph{deliberately} make any computations lazy, unless the laziness is
+required by the algorithm (as often happens with amortized data structures,
+for instance).  In particular, I never use irrefutable patterns to make
+something lazier.
+
+Note, however, that the various sequence implementations are always
+lazy in their elements.  Similarly, associative collections are
+always lazy in their elements (but usually strict in their keys).
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\chapter{The Edison Prelude}
+
+The \cd{EdisonPrelude} module defines a few widely-used
+utility types and classes.  It is imported by every other module 
+in Edison, and by most clients.  (It would be imported by all clients,
+except that many modules re-export the relevant prelude entries.)
+Currently, the \cd{EdisonPrelude} defines two types in the
+\cd{Maybe} family, and three classes related to hashing.
+%
+\begin{verbatim}
+  data Maybe2 a b = Just2 a b | Nothing2
+  data Maybe3 a b c = Just3 a b c | Nothing3
+
+  class Eq a => Hash a where
+    hash :: a -> Int
+    -- forall x,y :: a. (x == y) implies (hash x == hash y)
+
+  class Hash a => UniqueHash a
+    -- no new methods, just a stronger invariant
+    -- forall x,y :: a. (x == y) iff (hash x == hash y)
+
+  class UniqueHash a => ReversibleHash a where
+    unhash :: Int -> a
+    -- forall x :: a. unhash (hash x) == x
+\end{verbatim}
+%
+The \cd{Maybe2} and \cd{Maybe3} types are used as the return types of 
+functions that destructure a container, returning the element (or a key and 
+element) together with the remaining container.
+The \cd{Hash} classes are used to build functional analogs to
+traditional imperative hash tables.
+
+This module will gradually be expanded to include utility functions
+on the \cd{Maybe2} and \cd{Maybe3} types, and perhaps a few other 
+widely-used types or functions (such as \cd{warn}).
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\chapter{Sequences}
+
+The \emph{sequence} abstraction is usually viewed as a hierarchy of
+ADTs including lists, queues, deques, catenable lists, etc.  However,
+such a hierarchy is based on efficiency rather than functionality.
+For example, a list supports all the operations that a deque supports,
+even though some of the operations may be inefficient.  Hence, in
+Edison, all sequence data structures are defined as instances of
+the single \cd{Sequence} class:
+\begin{verbatim}
+  class (Functor s, MonadPlus s) => Sequence s
+\end{verbatim}
+All sequences are also instances of \cd{Functor}, \cd{Monad},
+and \cd{MonadPlus}.  In addition, all sequences
+are expected to be instances of \cd{Eq} and \cd{Show},
+although this is not enforced (in fact, is not enforceable in any
+reasonable way).
+
+We follow the naming convention that every module implementing sequences
+defines a type constructor named \cd{Seq}.
+
+\Figure{seq-methods} summarizes all the methods on sequences.  We next
+describe each of these methods in more detail.
+
+\begin{figure}
+\begin{center}
+\large\bfseries Sequence Methods
+\end{center}
+\hrule
+\begin{description}
+\item[Constructors:] \nl
+    \cd{empty}, \cd{single}, \cd{cons}, \cd{snoc}, \cd{append}, \cd{fromList}, \cd{copy}, \cd{tabulate}
+
+\item[Destructors:] \nl
+    \cd{lview}, \cd{lhead}, \cd{ltail}, \cd{rview}, \cd{rhead}, \cd{rtail}
+
+\item[Observers:] \nl
+    \cd{null}, \cd{size}, \cd{toList}
+
+\item[Concat and reverse:] \nl
+    \cd{concat}, \cd{reverse}, \cd{reverseOnto}
+
+\item[Maps and folds:] \nl
+    \cd{map}, \cd{concatMap}, \cd{foldr}, \cd{foldl}, \cd{foldr1}, \cd{foldl1}, \cd{reducer}, \cd{reducel}, \cd{reduce1}
+
+\item[Subsequences:] \nl
+    \cd{take}, \cd{drop}, \cd{splitAt}, \cd{subseq}
+
+\item[Predicate-based operations:] \nl
+    \cd{filter}, \cd{partition}, \cd{takeWhile}, \cd{dropWhile}, \cd{splitWhile}
+
+\item[Index-based operations:] \nl
+    \cd{inBounds}, \cd{lookup}, \cd{lookupM}, \cd{lookupWithDefault}, \cd{update}, \cd{adjust}, \\
+    \cd{mapWithIndex}, \cd{foldrWithIndex}, \cd{foldlWithIndex}
+
+\item[Zips and unzips:] \nl
+    \cd{zip}, \cd{zip3}, \cd{zipWith}, \cd{zipWith3}, \cd{unzip}, \cd{unzip3}, \cd{unzipWith}, \cd{unzipWith3}
+\end{description}
+\hrule
+\caption{Summary of methods for the \cd{Sequence} class.}
+\label{seq-methods}
+\end{figure}
+
+\section{Constructors}
+\begin{description}
+\spec{empty \is seq a}
+  The empty sequence.
+\spec{single \is a \arrow seq a}
+  Create a singleton sequence.
+  \axioms{single x \Equiv cons x empty \Equiv snoc empty x}
+  \eff{O(1)}
+\spec{cons \is a \arrow seq a \arrow seq a}
+  Add a new element to the front/left of a sequence.
+  \axioms{cons x xs \Equiv append (single x) xs}
+  \eff{O(1)}
+\spec{snoc \is seq a \arrow a \arrow seq a}
+  Add a new element to the rear/right of a sequence.
+  \axioms{snoc xs x \Equiv append xs (single x)} 
+  \eff{O(n)}
+\spec{append \is seq a \arrow seq a \arrow seq a}
+  Append two sequences, with the first argument on the left and
+  the second argument on the right.
+  \axioms{append xs ys \Equiv foldr cons ys xs}
+  \eff{O(n_1)}
+\spec{fromList \is \List{a} \arrow seq a}
+  Convert a list to a sequence.
+  \axioms{fromList xs \Equiv foldr cons empty xs}
+  \eff{O(n)}
+\spec{copy \is Int \arrow a \arrow seq a}
+  Create a sequence containing $n$ copies of the given element.
+  Return \cd{empty} if $n<0$.
+  \axioms{
+    n > 0 \Implies copy n x \Equiv cons x (copy (n-1) x) \\
+    n <= 0 \Implies copy n x \Equiv empty}
+  \eff{O(n)}
+\spec{tabulate \is Int \arrow (Int \arrow a) \arrow seq a}
+  Create a sequence containing the results of applying the given
+  function to the integers $0\ldots n-1$.
+  Return \cd{empty} if $n<0$.
+  \axioms{
+    n > 0 \Implies tabulate n f \Equiv map f (fromList [0..n-1]) \\
+    n <= 0 \Implies tabulate n f \Equiv empty}
+  \efftext{$O(nt)$, where $t$ is the running time of \cd{f}}
+\end{description}
+
+\section{Destructors}
+\begin{description}
+\spec{lview \is seq a \arrow Maybe2 a (seq a)}
+  Separate a sequence into its first element and the remaining sequence.
+  Return \cd{Nothing2} if the sequence is empty.
+  \axioms{lview empty \Equiv Nothing2 \\
+          lview (cons x xs) \Equiv Just2 x xs}
+  \eff{O(1)}
+\spec{lhead \is seq a \arrow a}
+  Return the first element of the sequence.  Signal an error if the
+  sequence is empty.
+  \axioms{lhead empty \Equiv \emph{error} \\
+          lhead (cons x xs) \Equiv x}
+  \eff{O(1)}
+\spec{ltail \is seq a \arrow seq a}
+  Delete the first element of the sequence.  Return \cd{empty} if
+  the sequence is already empty.
+  \axioms{ltail empty \Equiv empty \\
+          ltail (cons x xs) \Equiv xs}
+  \eff{O(1)}
+\spec{rview \is seq a \arrow Maybe2 (seq a) a}
+  Separate a sequence into its last element and the remaining sequence.
+  Return \cd{Nothing2} if the sequence is empty.
+  \axioms{rview empty \Equiv Nothing2 \\
+          rview (snoc xs x) \Equiv Just2 xs x}
+  \eff{O(n)}
+\spec{rhead \is seq a \arrow a}
+  Return the first element of the sequence.  Signal an error if the
+  sequence is empty.
+  \axioms{rhead empty \Equiv \emph{error} \\
+          rhead (snoc xs x) \Equiv x}
+  \eff{O(n)}
+\spec{rtail \is seq a \arrow seq a}
+  Delete the first element of the sequence.  Return \cd{empty} if
+  the sequence is already empty.
+  \axioms{rtail empty \Equiv empty \\
+          rtail (snoc xs x) \Equiv xs}
+  \eff{O(n)}
+\end{description}
+
+\section{Observers}
+\begin{description}
+\spec{null \is seq a \arrow Bool}
+  Return \cd{True} if the sequence is empty and \cd{False} otherwise.
+  \axioms{null xs \Equiv (size xs == 0)}
+  \eff{O(1)}
+\spec{size \is seq a \arrow Int}
+  Return the length of the sequence.
+  \axioms{size empty \Equiv 0 \\
+          size (cons x xs) \Equiv 1 + size xs}
+  \eff{O(n)}
+\spec{toList \is seq a \arrow \List{a}}
+  Convert a sequence to a list.
+  \axioms{toList empty \Equiv [] \\
+          toList (cons x xs) \Equiv x : toList xs}
+  \eff{O(n)}
+\end{description}
+
+\section{Concat and reverse}
+\begin{description}
+\spec{concat \is seq (seq a) \arrow seq a}
+  Flatten a sequence of sequences into a simple sequence.
+  \axioms{concat xss \Equiv foldr append empty xss}
+  \efftext{$O(n + m)$, where $n$ is the length of the input sequence
+    and $m$ is the length of the output sequence (usually $n < m$, but
+    if the input sequence contains many empties, then $n$ may be larger)}
+\spec{reverse \is seq a \arrow seq a}
+  Reverse the order of a sequence.
+  \axioms{reverse empty \Equiv empty \\
+          reverse (cons x xs) \Equiv snoc (reverse xs) x}
+  \eff{O(n)}
+\spec{reverseOnto \is seq a \arrow seq a \arrow seq a}
+  Reverse a sequence onto the front of another sequence.
+  \axioms{reverseOnto xs ys \Equiv append (reverse xs) ys}
+  \eff{O(n_1)}
+\end{description}
+
+\section{Maps and folds}
+\begin{description}
+\spec{map \is (a \arrow b) \arrow seq a \arrow seq b}
+  Return the result of applying a function to every element of a sequence.
+  \axioms{map f empty \Equiv empty \\
+          map f (cons x xs) \Equiv cons (f x) (map f xs)}
+  \efftext{$O(nt)$, where $t$ is the running time of \cd{f}}
+\spec{concatMap \is (a \arrow seq b) \arrow seq a \arrow seq b}
+  Apply a sequence-producing function to every element of a sequence
+  and flatten the result.  Note that \cd{concatMap} is
+  the ``bind'' operation of the sequence monad (but with the arguments
+  in the opposite order).
+  \axioms{concatMap f xs \Equiv concat (map f xs)}
+  \efftext{$O(nt + m)$, where $n$ is the length of the input sequence,
+    $m$ is the length of the output sequence, and $t$ is the running
+    time of \cd{f}}
+\spec{foldr \is (a \arrow b \arrow b) \arrow b \arrow seq a \arrow b}
+  Combine all the elements of a sequence into a single value, given
+  a right-associative combining function and an initial value.
+  Note that 
+\[\cd{foldr}\; (\oplus)\; \epsilon\; [x_0,x_1,\ldots,x_{n-1}] \;\equiv\;
+  x_0 \oplus (x_1 \oplus \cdots \oplus (x_{n-1} \oplus \epsilon))
+\]
+  \axioms{foldr f c empty \Equiv c \\
+          foldr f c (cons x xs) = f x (foldr f c xs)}
+  \efftext{$O(nt)$, where $t$ is the running time of \cd{f}}
+\spec{foldl \is (b \arrow a \arrow b) \arrow b \arrow seq a \arrow b}
+  Combine all the elements of a sequence into a single value, given
+  a left-associative combining function and an initial value.
+  Note that 
+\[\cd{foldl}\; (\oplus)\; \epsilon\; [x_0,x_1,\ldots,x_{n-1}] \;\equiv\;
+    ((\epsilon \oplus x_0) \oplus x_1) \oplus \cdots \oplus x_{n-1}
+\]
+  \axioms{foldl f c empty \Equiv c \\
+          foldl f c (cons x xs) = foldl f (f c x) xs}
+  \efftext{$O(nt)$, where $t$ is the running time of \cd{f}}
+\spec{foldr1 \is (a \arrow a \arrow a) \arrow seq a \arrow seq a}
+  Combine all the elements of a non-empty sequence into a single value,
+  given a right-associative combining function.  Signal an error if the
+  sequence is empty.
+  \axioms{foldr1 f empty \Equiv \emph{error} \\
+          foldr1 f (snoc xs x) \Equiv foldr f x xs}
+  \efftext{$O(nt)$, where $t$ is the running time of \cd{f}}
+\spec{foldl1 \is (a \arrow a \arrow a) \arrow seq a \arrow seq a}
+  Combine all the elements of a non-empty sequence into a single value,
+  given a left-associative combining function.  Signal an error if the
+  sequence is empty.
+  \axioms{foldl1 f empty \Equiv \emph{error} \\
+          foldl1 f (cons x xs) \Equiv foldl f x xs}
+  \efftext{$O(nt)$, where $t$ is the running time of \cd{f}}
+
+\spec{reducer \is (a \arrow a \arrow a) \arrow a \arrow seq a \arrow seq a \\
+      reducel \is (a \arrow a \arrow a) \arrow a \arrow seq a \arrow seq a \\
+      reduce1 \is (a \arrow a \arrow a) \arrow seq a \arrow seq a}
+  Like the various folds, but combine the elements in a balanced fashion
+  rather than linearly from right-to-left or left-to-right.  Usually,
+  the combining function is associative, in which case the various
+  reduces yield the same answers as the corresponding folds (albeit perhaps
+  more efficiently).  \cd{reduce1} signals an error if the
+  sequence is empty.
+
+  What do I mean by ``in a balanced fashion''?  I mean that
+  $\cd{reduce1}\; (\oplus)\; [x_0,\ldots,x_{n-1}]$ equals some
+  complete parenthesization of $x_0 \oplus \cdots \oplus x_{n-1}$,
+  such that the nesting depth of parentheses is $O(\log n)$.  The
+  precise shape of this parenthesization is unspecified.  For example,
+  the following are all typical answers for
+  $\cd{reduce1}\; (\oplus)\; [a,b,c,d,e,f]$:
+\[\begin{array}{l}
+  (a \oplus b) \oplus ((c \oplus d) \oplus (e \oplus f)) \\
+  ((a \oplus b) \oplus (c \oplus d)) \oplus (e \oplus f) \\
+  (a \oplus (b \oplus c)) \oplus (d \oplus (e \oplus f)) \\
+  ((a \oplus b) \oplus c) \oplus ((d \oplus e) \oplus f)
+  \end{array}\]
+  \emph{Note that these are the only sequence operations
+  for which different implementations are permitted to yield different 
+  answers.}\footnote{
+    For all the other sequence operations, implementations
+    may differ only in efficiency and strictness/order of evaluation.}
+  Also note that a single implementation may choose different parenthesizations
+  for different sequences, even if they are the same length.  This will 
+  typically happen when the lists were constructed differently (e.g.,
+  one using \cd{cons} and the other using \cd{snoc}).
+
+  The canonical applications of the \cd{reduce} functions are algorithms
+  like \cd{mergesort}, where
+\begin{verbatim}
+    mergesort :: (Ord a,Sequence s) => s a -> s a
+    mergesort xs = reducer merge empty (map single xs)
+\end{verbatim}
+
+  \axioms{
+    reduce1 ($\oplus$) empty \Equiv \emph{error} \\
+    $\forall x,y,z.\; x \oplus (y \oplus z) \Equiv (x \oplus y) \oplus z$ \ \Implies \\
+    \hspace*{20pt} reduce1 ($\oplus$) xs \Equiv foldr1 ($\oplus$) xs 
+                                         \Equiv foldl1 ($\oplus$) xs \\
+    \hspace*{20pt} reducer ($\oplus$) c xs \Equiv foldr ($\oplus$) c xs \\
+    \hspace*{20pt} reducel ($\oplus$) c xs \Equiv foldl ($\oplus$) c xs}
+  \efftext{$O(nt)$, where $t$ is the running time of \cd{f}}
+\end{description}
+
+\section{Subsequences}
+\begin{description}
+\spec{take \is Int \arrow seq a \arrow seq a}
+  Extract a prefix of length $i$ from a sequence.
+  Return \cd{empty} if $i$ is negative, or the entire sequence if $i$
+  is too large.
+  \axioms{i < 0 \Implies take i xs \Equiv empty \\
+          i > size xs \Implies take i xs \Equiv xs \\
+          size xs == i \Implies take i (append xs ys) \Equiv xs}
+  \eff{O(i)}
+\spec{drop \is Int \arrow seq a \arrow seq a}
+  Delete a prefix of length $i$ from a sequence.
+  Return the entire sequence if $i$ is negative, or \cd{empty} if
+  $i$ is too large.
+  \axioms{i < 0 \Implies drop i xs \Equiv xs \\
+          i > size xs \Implies drop i xs \Equiv empty \\
+          size xs == i \Implies drop i (append xs ys) \Equiv ys}
+  \eff{O(i)}
+\spec{splitAt \is Int \arrow seq a \arrow (seq a, seq a)}
+  Split a sequence into a prefix of length $i$ and the remaining
+  sequence.  Behaves the same as the corresponding calls to \cd{take}
+  and \cd{drop} is $i$ is negative or too large.
+  \axioms{splitAt i xs \Equiv (take i xs, drop i xs)}
+  \eff{O(i)}
+\spec{subseq \is Int \arrow Int \arrow seq a \arrow seq a}
+  Extract a subsequence from a sequence.  The integer arguments are 
+  ``start index'' and ``length'' rather than ``start index'' and ``end index''.
+  Behaves the same as the corresponding calls to \cd{take} and \cd{drop}
+  if the start index or length are negative or too large.
+  \axioms{subseq i len xs \Equiv take len (drop i xs)}
+  \eff{O(i + len)}
+\end{description}
+
+\section{Predicate-based operations}
+\begin{description}
+\spec{filter \is (a \arrow Bool) \arrow seq a \arrow seq a}
+  Extract the elements of a sequence that satisfy the given predicate, retaining
+  the relative ordering of elements from the original sequence.
+  \axioms{filter p empty \Equiv empty \\
+          filter p (cons x xs) \Equiv if p x then cons x (filter p xs) else filter p xs}
+  \efftext{$O(nt)$, where $t$ is the running time of \cd{p}}
+\spec{partition \is (a \arrow Bool) \arrow seq a \arrow (seq a, seq a)}
+  Separate the elements of a sequence into those that satisfy the given
+  predicate and those that do not, retaining the relative ordering of elements
+  from the original sequence.
+  \axioms{partition p xs \Equiv (filter p xs, filter (not .\ p) xs)}
+  \efftext{$O(nt)$, where $t$ is the running time of \cd{p}}
+\spec{takeWhile \is (a \arrow Bool) \arrow seq a \arrow seq a}
+  Extract the maximal prefix of elements satisfying the given predicate.
+  \axioms{takeWhile p empty \Equiv empty \\
+          takeWhile p (cons x xs) \Equiv if p x then cons x (takeWhile p xs) else empty}
+  \efftext{$O(nt)$, where $t$ is the running time of \cd{p}}
+\spec{dropWhile \is (a \arrow Bool) \arrow seq a \arrow seq a}
+  Delete the maximal prefix of elements satisfying the given predicate.
+  \axioms{dropWhile p empty \Equiv empty \\
+          dropWhile p (cons x xs) \Equiv if p x then dropWhile p xs else cons x xs}
+  \efftext{$O(nt)$, where $t$ is the running time of \cd{p}}
+\spec{splitWhile \is (a \arrow Bool) \arrow seq a \arrow seq a}
+  Split a sequence into the maximal prefix of elements satisfying the
+  given predicate, and the remaining sequence.
+  \axioms{splitWhile p xs \Equiv (takeWhile p xs, dropWhile p xs)}
+  \efftext{$O(nt)$, where $t$ is the running time of \cd{p}}
+\end{description}
+
+\section{Index-based operations}
+
+The following operations all assume zero-based indexing.
+
+\begin{description}
+\spec{inBounds \is seq a \arrow Int \arrow Bool}
+  Test whether an index is valid for the given sequence.
+  \axioms{inBounds xs i \Equiv (0 <= i \&\& i < size xs)}
+  \eff{O(i)}
+\spec{lookup \is seq a \arrow Int \arrow a}
+  Return the element at the given index.  Signal an error if the
+  index is out of bounds.
+  \axioms{not (inBounds xs i) \Implies lookup xs i \Equiv \emph{error} \\
+          size xs == i \Implies lookup (append xs (cons x ys)) i \Equiv x}
+  \eff{O(i)}
+\spec{lookupM \is seq a \arrow Int \arrow Maybe a}
+  Return \cd{Just} of the element at the given index, or \cd{Nothing}
+  if the index is out of bounds.
+  \axioms{not (inBounds xs i) \Implies lookupM xs i \Equiv Nothing \\
+          size xs == i \Implies lookupM (append xs (cons x ys)) i \Equiv Just x}
+  \eff{O(i)}
+\spec{lookupWithDefault \is a \arrow seq a \arrow Int \arrow a}
+  Return the element at the given index, or the default argument
+  if the index is out of bounds.
+  \axioms{not (inBounds xs i) \Implies lookupWithDefault d xs i \Equiv d \\
+          size xs == i \Implies lookupWithDefault d (append xs (cons x ys)) i \Equiv x}
+  \eff{O(i)}
+\spec{update \is Int \arrow a \arrow seq a \arrow seq a}
+  Replace the element at the given index, or return the original sequence
+  if the index is out of bounds.
+  \axioms{not (inBounds xs i) \Implies update i y xs \Equiv xs \\
+          size xs == i \Implies update i y (append xs (cons x ys)) \Equiv append xs (cons y ys)}
+  \eff{O(i)}
+\spec{adjust \is (a \arrow a) \arrow Int \arrow seq a \arrow seq a}
+  Apply a function to the element at the given index, or return the original
+  sequence if the index is out of bounds.
+  \axioms{not (inBounds xs i) \Implies adjust f i xs \Equiv xs \\
+          size xs == i \Implies adjust f i (append xs (cons x ys)) \Equiv append xs (cons (f x) ys)}
+  \efftext{$O(i + t)$, where $t$ is the running time of \cd{f}}
+\spec{mapWithIndex \is (Int \arrow a \arrow b) \arrow seq a \arrow seq b}
+  Like \cd{map}, but include the index with each element.
+  \axioms{mapWithIndex f empty \Equiv empty \\
+          mapWithIndex f (snoc xs x) \Equiv snoc (mapWithIndex f xs) (f (size xs) x)}
+  \efftext{$O(nt)$, where $t$ is the running time of \cd{f}}
+\spec{foldrWithIndex \is (Int \arrow a \arrow b \arrow b) \arrow b \arrow seq a \arrow b}
+  Like \cd{foldr}, but include the index with each element.
+  \axioms{foldrWithIndex f c empty \Equiv c \\
+          foldrWithIndex f c (snoc xs x) \Equiv foldrWithIndex f (f (size xs) x c) xs}
+  \efftext{$O(nt)$, where $t$ is the running time of \cd{f}}
+\spec{foldlWithIndex \is (b \arrow Int \arrow a \arrow b) \arrow b \arrow seq a \arrow b}
+  Like \cd{foldl}, but include the index with each element.
+  \axioms{foldlWithIndex f c empty \Equiv c \\
+          foldlWithIndex f c (snoc xs x) \Equiv f (foldlWithIndex f c xs) (size xs) x}
+  \efftext{$O(nt)$, where $t$ is the running time of \cd{f}}
+\end{description}
+
+\section{Zips and unzips}
+\begin{description}
+\spec{zip \is seq a \arrow seq b \arrow seq (a,b) \\
+      zip3 \is seq a \arrow seq b \arrow seq c \arrow seq (a,b,c)}
+  Combine two (or three) sequences into a sequence of pairs (or triples).
+  If the sequences are of different lengths, the excess elements of the
+  longer sequence (or sequences) are discarded.
+  \axioms{zip xs ys \Equiv zipWith ($\lambda$ x y \arrow (x,y)) xs ys \\
+          zip3 xs ys zs \Equiv zipWith3 ($\lambda$ x y z \arrow (x,y,z)) xs ys zs}
+  \eff{O(\min \{n_1,n_2\}), O(\min \{n_1,n_2,n_3\})}
+\spec{zipWith \is (a \arrow b \arrow c) \arrow seq a \arrow seq b \arrow seq c \\
+      zipWith3 \is (a \arrow b \arrow c \arrow d) \arrow seq a \arrow seq b \arrow seq c \arrow seq d}
+  Combine two (or three) sequences into a single sequence by mapping
+  a combining function across corresponding elements.
+  If the sequences are of different lengths, the excess elements of the
+  longer sequence (or sequences) are discarded.
+  \axioms{zipWith f (cons x xs) (cons y ys) \Equiv cons (f x y) (zipWith f xs ys) \\
+          (null xs $\vee$ null ys) \Implies zipWith f xs ys \Equiv empty \\
+          zipWith3 f (cons x xs) (cons y ys) (cons z zs) \Equiv cons (f x y z) (zipWith3 f xs ys zs) \\
+          (null xs $\vee$ null ys $\vee$ null zs) \Implies zipWith3 f xs ys zs \Equiv empty}
+  \efftext{$O(t \cdot \min \{n_1,n_2\}),
+           O(t \cdot \min \{n_1,n_2,n_3\})$, where $t$ is the running time of \cd{f}}
+\spec{unzip \is seq (a,b) \arrow (seq a, seq b) \\
+      unzip3 \is seq (a,b,c) \arrow (seq a, seq b, seq c)}
+  Transpose a sequence of pairs (or triples) into a pair (or triple) of
+  sequences.
+  \axioms{unzip xys \Equiv (map fst xys, map snd xys) \\
+          unzip3 xyzs \Equiv (map fst3 xyzs, map snd3 xyzs, map thd3 xyzs)}
+  \eff{O(n)}
+\spec{unzipWith \is (a \arrow b) \arrow (a \arrow c) \arrow seq a \arrow (seq b, seq c) \\
+      unzipWith3 \is (a \arrow b) \arrow (a \arrow c) \arrow (a \arrow d) \arrow seq a \arrow (seq b, seq c, seq d)}
+  Map two (or three) functions across every element of a sequence, yielding
+  a pair (or triple) of sequences.
+  \axioms{unzipWith f g xs \Equiv (map f xs, map g xs) \\
+          unzipWith3 f g h xs \Equiv (map f xs, map g xs, map h xs)}
+  \efftext{$O(nt)$, where $t$ is the maximum running time of \cd{f}, \cd{g}, and \cd{h}}
+\end{description}
+
+\section{Implementations}
+
+The following implementations are available or planned.
+I list with each implementation the major operations whose running times 
+differ from the default (either better or worse).
+
+\begin{description}
+\item[Available:] \nl \vspace*{-15pt}
+\begin{itemize}
+\impl{ListSeq} Ordinary lists.
+\impl{SimpleQueue} Burton, IPL'82. \\
+     \hsp $O(1)$ \cd{snoc}. \\
+     \hsp $O(1)$ \cd{lview/ltail} if single-threaded, $O(n)$ otherwise.
+\impl{BankersQueue} Okasaki, JFP'95. \\
+     \hsp $O(1)$ \cd{snoc}.
+\impl{MyersStack} Myers, IPL'93. \\
+     \hsp $O(\log n)$ \cd{lookup}.
+\impl{RandList} Okasaki, FPCA'95. \\
+     \hsp $O(\log n)$ \cd{lookup}, \cd{update}.
+\impl{BinaryRandList} Okasaki, PFDS (Chapter 10.1.2). \\
+     \hsp $O(\log n)$ \cd{lookup}, \cd{update}.
+\impl{JoinList} \\
+     \hsp $O(1)$ \cd{snoc/append}. \\
+     \hsp $O(n)$ \cd{lview/ltail/rview/rtail}, but $O(1)$ in practice.
+\end{itemize}
+
+\item[Planned:] \nl \vspace*{-15pt}
+\begin{itemize}
+\impl{StrictList} Strict lists.
+\impl{BootstrappedQueue} Okasaki, PFDS. \\
+     \hsp $O(1)$ \cd{snoc}.
+\impl{SimpleDeque} Hoogerwoord, JFP'92. \\
+     \hsp $O(1)$ \cd{snoc}. \\
+     \hsp $O(1)$ \cd{lview/ltail/rview/rtail} if single-threaded, 
+          $O(n)$ otherwise.
+\impl{CatenableList} Okasaki, FOCS'95. \\
+     \hsp $O(1)$ \cd{snoc}, \cd{append}.
+\impl{CatenableDeque} Okasaki, ICFP'97. \\
+     \hsp $O(1)$ \cd{snoc}, \cd{rview/rhead/rtail}, \cd{append}.
+\impl{BraunSeq} Hoogerwoord, MPC'92. \\
+     \hsp $O(\log n)$ \cd{cons/lview/ltail}. \\
+     \hsp $O(\log^2 n)$ \cd{snoc/rview/rhead/rtail}. \\
+     \hsp $O(\log i)$ \cd{lookup}, \cd{update}.
+\end{itemize}
+\end{description}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\chapter{Collections} \label{sec:coll}
+
+The \emph{collection} abstraction includes sets, bags, and priority
+queues (heaps).  Collections are defined in Edison as a set of eight
+classes, organized in the hierarchy shown in \Figure{collection-hierarchy}.
+These classes make essential use of multi-parameter type classes.
+All collections assume at least an equality relation on elements, and
+many also assume an ordering relation.  The use of multi-parameter type
+classes allows any particular instance to assume further properties
+as necessary (such as hashability).
+
+\begin{figure}
+\small
+\begin{center}
+%BEGIN IMAGE
+\begin{picture}(200,200)(0,0)
+\put(100,200){\makebox(0,0){\cd{Eq $a$}}}
+\put(20,150){\makebox(0,0){\cd{Ord $a$}}}
+\put(100,168){\line(0,1){24}}
+\put(100,160){\makebox(0,0){\cd{CollX $c$ $a$}}}
+\put(20,118){\line(0,1){24}}
+\put(26,118){\line(2,1){68}}
+\put(20,110){\makebox(0,0){\cd{OrdCollX $c$ $a$}}}
+\put(174,118){\line(-2,1){68}}
+\put(180,110){\makebox(0,0){\cd{SetX $c$ $a$}}}
+\put(106,68){\line(2,1){68}}
+\put(94,68){\line(-2,1){68}}
+\put(100,60){\makebox(0,0){\cd{OrdSetX $c$ $a$}}}
+\put(100,108){\line(0,0){44}}
+\put(100,100){\makebox(0,0){\cd{Coll $c$ $a$}}}
+\put(20,58){\line(0,0){44}}
+\put(26,58){\line(2,1){68}}
+\put(20,50){\makebox(0,0){\cd{OrdColl $c$ $a$}}}
+\put(180,58){\line(0,0){44}}
+\put(174,58){\line(-2,1){68}}
+\put(180,50){\makebox(0,0){\cd{Set $c$ $a$}}}
+\put(106,8){\line(2,1){68}}
+\put(94,8){\line(-2,1){68}}
+\put(100,0){\makebox(0,0){\cd{OrdSet $c$ $a$}}}
+\end{picture} \\[40pt]
+%END IMAGE
+%HEVEA\imageflush
+
+\ttfamily
+\begin{tabular}{cccc}
+CollX        & OrdCollX        & SetX       & OrdSetX             \\
+\hline
+empty,insert & deleteMin       & intersect  & \textit{no methods} \\
+union,delete & unsafeInsertMin & difference &                     \\
+null,size    & filterLT        & subset     &                     \\
+member,count & $\cdots$        & subsetEq   &                     \\
+$\cdots$     &                 &            &                     \\[20pt]
+
+Coll         & OrdColl         & Set        & OrdSet              \\
+\hline       
+toSeq        & minElem         & insertWith & \textit{no methods} \\
+lookup       & foldr,foldl     & unionWith  &                     \\
+fold         & toOrdSeq        & intersectWith &                  \\
+filter       & $\cdots$        & $\cdots$   &                     \\
+$\cdots$     &                 &            &                     \\
+\end{tabular}
+\end{center}
+
+\normalsize
+
+\caption{The collection class hierarchy, with typical methods for each class.}
+\label{collection-hierarchy}
+\end{figure}
+
+The hierarchy contains a root class, \cd{CollX}, together with seven
+subclasses satisfying one or more of three common sub-properties:
+%
+\begin{itemize}
+\item \emph{Uniqueness}.  Each element in the collection is unique (i.e.,
+  no two elements in the collection are equal).  These subclasses,
+  indicated by the name \cd{Set}, represent sets rather than bags.
+\item \emph{Ordering}.  The elements have a total ordering and it is possible 
+  to process the elements in non-decreasing order.  These subclasses,
+  indicated by the \cd{Ord} prefix, typically represent either priority 
+  queues (heaps) or sets/bags implemented as binary search trees.
+\item \emph{Observability}.  An observable collection is one in which it is
+  possible to view the elements in a collection.  The \cd{X} suffix
+  indicates lack of observability.  This property is discussed in
+  greater detail below in \Section{observability}.
+\end{itemize}
+
+Because collections encompass a wide range of abstractions, there is
+no single name that is suitable for all collection type constructors.
+However, most modules implementing collections will define a type constructor
+named either \cd{Bag}, \cd{Set}, or \cd{Heap}.
+
+\Figure{coll-methods} summarizes all the methods on collections.
+These methods will be described in more detail in the sections on
+each subclass in the hierarchy.
+
+\begin{figure}
+\begin{center}
+\large\bfseries Collection Methods
+\end{center}
+\hrule
+\begin{description}
+\item[Constructors:] \nl
+  \cd{CollX}: 
+    \cd{empty}, \cd{single}, \cd{insert}, \cd{insertSeq}, \cd{union}, \cd{unionSeq}, \cd{fromSeq} \\
+  \cd{OrdCollX}: \cd{unsafeInsertMin}, \cd{unsafeInsertMax}, \cd{unsafeFromOrdSeq}, \cd{unsafeAppend} \\
+  \cd{Set}: \cd{insertWith}, \cd{insertSeqWith}, \cd{unionl}, \cd{unionr}, \cd{unionWith}, \cd{unionSeqWith}, \cd{fromSeqWith}
+\item[Destructors:] \nl
+  \cd{OrdColl}: \cd{minView}, \cd{minElem}, \cd{maxView}, \cd{maxElem} 
+\item[Deletions:] \nl
+  \cd{CollX}: \cd{delete}, \cd{deleteAll}, \cd{deleteSeq} \\
+  \cd{OrdCollX}: \cd{deleteMin}, \cd{deleteMax}
+\item[Observers:] \nl
+  \cd{CollX}: \cd{null}, \cd{size}, \cd{member}, \cd{count} \\
+  \cd{Coll}: \cd{lookup}, \cd{lookupM}, \cd{lookupAll}, \cd{lookupWithDefault}, \cd{toSeq} \\
+  \cd{OrdColl}: \cd{toOrdSeq}
+\item[Filters and partitions:] \nl
+  \cd{OrdCollX}:
+  \cd{filterLT}, \cd{filterLE}, \cd{filterGT}, \cd{filterGE}, \\
+  \hspace*{20pt}
+  \cd{partitionLT\_GE}, \cd{partitionLE\_GT}, \cd{partitionLT\_GT} \\
+  \cd{Coll}: \cd{filter}, \cd{partition} 
+\item[Set operations:] \nl
+  \cd{SetX}: \cd{intersect}, \cd{difference}, \cd{subset}, \cd{subsetEq} \\
+  \cd{Set}: \cd{intersectWith}
+\item[Folds:] \nl
+  \cd{Coll}: \cd{fold}, \cd{fold1} \\
+  \cd{OrdColl}: \cd{foldr}, \cd{foldl}, \cd{foldr1}, \cd{foldl1}
+\end{description}
+\hrule
+\caption{Summary of methods for the collections classes.}
+\label{coll-methods}
+\end{figure}
+
+\section{Observability} \label{observability}
+
+Note that the equality relation defined by the \cd{Eq} class
+is not necessarily true equality.  Very often it is merely
+an equivalence relation, where equivalent values may be distinguishable
+by other means.  For example, we might consider two binary search trees
+to be equal if they contain the same elements, even if their shapes
+are different.  
+
+Because of this phenomenon, implementations of observable collections 
+(i.e., collections where it is possible to inspect the elements) are
+rather constrained.  Such an implementation must retain the actual
+elements that were inserted.  For example, it is not possible
+in general to represent an observable bag as a finite map from elements
+to counts, because even if we know that a given bag contains, say, three
+elements from some equivalence class, we do not necessarily know \emph{which}
+three.
+
+On the other hand, implementations of \emph{non-observable} collections
+have much greater freedom to choose abstract representations of
+each equivalence class.  For example, representing a bag as a finite
+map from elements to counts works fine if we never need to know
+\emph{which} representatives from an equivalence class are actually
+present.  As another example, consider the \cd{UniqueHash} class
+defined in the Edison Prelude.  If we know that the \cd{hash} function
+yields a unique integer for each equivalence class, then we can
+represent a collection of hashable elements simply as a collection
+of integers.  With such a representation, we can still do many
+useful things like testing for membership---we just can't support functions
+like \cd{fold} or \cd{filter} that require the elements themselves,
+rather than the hashed values.\footnote{In fact, we can even
+support \cd{fold} and \cd{filter} if the hashing function is \emph{reversible},
+but this is relatively uncommon.}
+
+\section{\cd{CollX}}
+\begin{verbatim}
+class Eq a => CollX c a
+\end{verbatim}
+%
+This is the root class of the hierarchy.  However, it is perfectly
+adequate for many applications that use sets or bags.
+
+\subsection{Constructors}
+\begin{description}
+\spec{empty \is coll a}
+  The empty collection.
+%  \axioms{size empty \Equiv 0 \\
+%          count empty x \Equiv 0}
+\spec{single \is a \arrow coll a}
+  Create a singleton collection.
+%  \axioms{size (single x) \Equiv 1 \\
+%          count (single x) y \Equiv if x == y then 1 else 0}
+\spec{insert \is a \arrow coll a \arrow coll a \\
+      insertSeq \is Sequence seq \Arrow seq a \arrow coll a \arrow coll a}
+  Add an element or a sequence of elements to a collection.  For sets,
+  \cd{insert} keeps the new element in the case of duplicates, but
+  \cd{insertSeq} keeps an unspecified element.
+
+  See also \cd{insertWith} and \cd{insertSeqWith} in \cd{Set}.
+\ignore{
+  \axioms{\textrm{For bags:} \\
+          \hspace*{20pt} size (insert x xs) \Equiv 1 + size xs \\
+          \hspace*{20pt} count (insert x xs) y \Equiv if x == y then 1 + count xs y else count xs y \\
+          \textrm{For sets:} \\
+          \hspace*{20pt} size (insert x xs) \Equiv if member xs x then size xs else 1 + size xs \\
+          \hspace*{20pt} count (insert x xs) y \Equiv if x == y then 1 else count xs y \\
+          \textrm{For observable sets:} \\
+          \hspace*{20pt} insert x xs \Equiv insert x (delete x xs)}
+}
+\spec{union \is coll a \arrow coll a \arrow coll a \\
+      unionSeq \is Sequence seq \Arrow seq a \arrow seq (coll a) \arrow coll a}
+  Merge two collections or a sequence of collections.  For sets, it
+  is unspecified which element is kept in the case of duplicates.
+
+  See also \cd{unionl}, \cd{unionr}, \cd{unionWith}, and \cd{unionSeqWith} in
+  \cd{Set}.
+\spec{fromSeq \is Sequence seq \Arrow seq a \arrow coll a}
+  Convert a sequence of elements into a collection.  For sets, it
+  is unspecified which element is kept in the case of duplicates.
+
+  See also \cd{fromSeqWith} in \cd{Set}.
+\end{description}
+
+\subsection{Deletions}
+\begin{description}
+\spec{delete \is a \arrow coll a \arrow coll a \\
+      deleteAll \is a \arrow coll a \arrow coll a}
+  Delete a single occurrence or all occurences of the given element
+  from a collection.  If the element does not appear in the collection,
+  then leave the collection unchanged. For sets, these functions will be the 
+  same, but for bags
+  they may be different.  For \cd{delete} on bags, it is unspecified
+  which of several duplicate elements is deleted.
+\spec{deleteSeq \is Sequence seq \arrow seq a \arrow coll a \arrow coll a}
+  Delete a single occurrence of each of the given elements from
+  a collection, ignoring those elements in the sequence that do not
+  appear in the collection.  For bags, there may be multiple occurrences of a
+  given element in the collection, in which case it is unspecified
+  which is deleted.
+\end{description}
+
+\subsection{Observers}
+\begin{description}
+\spec{null \is coll a \arrow Bool}
+  Test whether the collection is empty.
+  \axioms{null xs \Equiv (size xs == 0)}
+\spec{size \is coll a \arrow Int}
+  Return the number of elements in the collection.
+\spec{member \is coll a \arrow a \arrow Bool}
+  Test whether the given element is in the collection.
+  \axioms{member xs x \Equiv (count xs x > 0)}
+\spec{count \is coll a \arrow a \arrow Int}
+  Count how many copies of the given element are in the collection.
+\end{description}
+
+\section{\cd{OrdCollX}}
+\begin{verbatim}
+class (CollX c a, Ord a) => OrdCollX c a
+\end{verbatim}
+
+\subsection{Constructors}
+\begin{description}
+\spec{unsafeInsertMin \is a \arrow coll a \arrow coll a \\
+      unsafeInsertMax \is coll a \arrow a \arrow coll a}
+  Insert an element into a collection with the precondition that the
+  new element is $\leq$ or $\geq$ any existing elements.  For sets, this 
+  precondition is strengthened to $<$ or $>$.
+\spec{unsafeFromOrdSeq \is Sequence seq \Arrow seq a \arrow coll a}
+  Convert a sequence of elements into a collection with the precondition
+  that the sequence is already sorted into non-decreasing order.  For
+  sets, this precondition is strengthened to increasing order.
+\spec{unsafeAppend \is coll a \arrow coll a \arrow coll a}
+  Merge two collections with the precondition that every element
+  in the first collection is $\leq$ every element in the second collection.
+  For sets, this precondition is strengthened to $<$.
+\end{description}
+
+\subsection{Deletions}
+\begin{description}
+\spec{deleteMin \is coll a \arrow coll a \\
+      deleteMax \is coll a \arrow coll a} 
+  Delete the minimum or maximum element from the collection, or return
+  \cd{empty} if the collection is empty.
+  If there is more than one minimum or maximum, it is unspecified which
+  is deleted.
+
+  See also \cd{minView}, \cd{minElem}, \cd{maxView}, and \cd{maxElem}
+  in \cd{OrdColl}.
+\end{description}
+
+\subsection{Filters and partitions}
+\begin{description}
+\spec{filterLT \is a \arrow coll a \arrow coll a \\
+      filterLE \is a \arrow coll a \arrow coll a \\
+      filterGT \is a \arrow coll a \arrow coll a \\
+      filterGE \is a \arrow coll a \arrow coll a}
+  Extract the subcollection of elements $<$, $\leq$, $>$, or $\geq$
+  the given element.
+  Equivalent to the corresponding calls to \cd{filter} (in \cd{Coll}),
+  but may be much more efficient.
+  \axioms{filterLT x xs \Equiv filter (< x) xs \\
+          filterLE x xs \Equiv filter (<= x) xs \\
+          filterGT x xs \Equiv filter (> x) xs \\
+          filterGE x xs \Equiv filter (>= x) xs}
+\spec{partitionLT\_GE \is a \arrow coll a \arrow (coll a, coll a) \\
+      partitionLE\_GT \is a \arrow coll a \arrow (coll a, coll a) \\
+      partitionLT\_GT \is a \arrow coll a \arrow (coll a, coll a)}
+  Split a collection into those elements $<$, $\leq$, or $<$ the
+  given element, and those elements $\ge$, $>$, or $>$ the given element.
+  \cd{partitionLT\_GE} and \cd{partitionLE\_GT} are equivalent to the 
+  corresponding calls to \cd{partition} (in \cd{Coll}), but may be
+  much more efficient.  \cd{partitionLT\_GT} cannot be expressed
+  as a single call to \cd{partition} because it discards elements
+  equal to the given element.
+  \axioms{partitionLT\_GE x xs \Equiv partition (< x) xs \\
+          partitionLE\_GT x xs \Equiv partition (<= x) xs \\
+          partitionLT\_GT x xs \Equiv (filterLT x xs, filterGT x xs)}
+\end{description}
+
+\section{\cd{SetX}}
+\begin{verbatim}
+class CollX c a => SetX c a
+\end{verbatim}
+
+\subsection{Set operations}
+\begin{description}
+\spec{intersect \is coll a \arrow coll a \arrow coll a}
+  Computes the intersection of two sets.  It is unspecified which of the
+  two elements is kept.
+\spec{difference \is coll a \arrow coll a \arrow coll a}
+  Computes the difference of two sets (i.e., the set of all elements in the
+  first set that are not in the second set).
+\spec{subset \is coll a \arrow coll a \arrow Bool \\
+      subsetEq \is coll a \arrow coll a \arrow Bool}
+  Test whether every element in the first set is also in the second
+  set.  \cd{subset} additionally tests whether the second set contains
+  at least one element that is not in the first set.
+\end{description}
+
+
+\section{\cd{OrdSetX}}
+\begin{verbatim}
+class (OrdCollX c a, SetX c a) => OrdSetX c a
+\end{verbatim}
+%
+This class contains no methods.  It exists only as an abbreviation
+for the context 
+\begin{center}
+\cd{(OrdCollX c a, SetX c a)}
+\end{center}
+
+\section{\cd{Coll}}
+\begin{verbatim}
+class CollX c a => Coll c a
+\end{verbatim}
+
+\subsection{Observers}
+\begin{description}
+\spec{lookup \is coll a \arrow a \arrow a \\
+      lookupM \is coll a \arrow a \arrow Maybe a \\
+      lookupAll \is Sequence seq \Arrow coll a \arrow a \arrow seq a \\
+      lookupWithDefault \is a \arrow coll a \arrow a \arrow a}
+  Search for an element in the set that is equal to the given element.
+  \cd{lookup} signals an error if no such element exists, while
+  \cd{lookupWithDefault} returns a default value (provided as
+  its first argument).  For bags, it is unspecified which of several
+  duplicates is chosen by \cd{lookup}, \cd{lookupM}, or \cd{lookupWithDefault}.
+  \cd{lookupAll} returns all the duplicates, but in an unspecified order.
+
+\spec{toSeq \is Sequence seq \Arrow coll a \arrow seq a}
+  Return a sequence of all the elements in a collection, in an
+  unspecified order.
+\end{description}
+
+\subsection{Filters and partitions}
+\begin{description}
+\spec{filter \is (a \arrow Bool) \arrow coll a \arrow coll a}
+  Extract all the elements satisfying the given predicate.
+\spec{partition \is (a \arrow Bool) \arrow coll a \arrow (coll a, coll a)}
+  Split a collection into those elements satisfying the given predicate,
+  and those elements not satisfying the predicate.
+\end{description}
+
+\subsection{Folds}
+\begin{description}
+\spec{fold \is (a \arrow b \arrow b) \arrow b \arrow coll a \arrow b}
+  Combine all the elements in a collection into a single value, given
+  a combining function and an initial value.  Processes the elements
+  in an unspecified order.
+\spec{fold1 \is (a \arrow a \arrow a) \arrow coll a \arrow a}
+  Combine all the elements in a non-empty collection into a single
+  value using the given combining function.  Signals an error if the
+  collection is empty.  Processes the elements in an unspecified order.
+  An implementation may choose to process the elements linearly or
+  in a balanced fashion (like \cd{reduce1} on sequences).
+\end{description}
+
+
+\section{\cd{OrdColl}}
+\begin{verbatim}
+class (Coll c a, OrdCollX c a) => OrdColl c a
+\end{verbatim}
+
+\subsection{Destructors}
+\begin{description}
+\spec{minView \is coll a \arrow Maybe2 a (coll a) \\
+      maxView \is coll a \arrow Maybe2 (coll a) a}
+  Separate a collection into its minimum/maximum element and
+  the remaining collection.  Return \cd{Nothing2} if the
+  collection is empty.  If there is more than one minimum/maximum,
+  choose an unspecified one.
+\spec{minElem \is coll a \arrow a \\
+      maxElem \is coll a \arrow a}
+  Return the minimum/maximum element in the collection, or
+  signal an error if the collection is empty.  If there is more than
+  one minimum/maximum, choose an unspecified one.
+\end{description}
+
+\subsection{Observers}
+\begin{description}
+\spec{toOrdSeq \is Sequence seq \arrow coll a \arrow seq a}
+  Convert a collection into a non-decreasing sequence of elements.
+  The order in which clusters of equal elements are listed
+  is unspecified.  (For sets, the order will always be increasing.)
+\end{description}
+
+\subsection{Folds}
+\begin{description}
+\spec{foldr \is (a \arrow b \arrow b) \arrow b \arrow coll a \arrow b \\
+      foldl \is (b \arrow a \arrow b) \arrow b \arrow coll a \arrow b}
+  Fold across the elements in non-decreasing order (increasing order
+  in the case of sets).  The order in which clusters of equal elements 
+  are processed is unspecified.
+\spec{foldr1 \is (a \arrow a \arrow a) \arrow coll a \arrow a \\
+      foldl1 \is (a \arrow a \arrow a) \arrow coll a \arrow a}
+  Fold across the elements in non-decreasing order (increasing order
+  in the case of sets), or signal an error if the collection is empty.  
+  The order in which clusters of equal elements 
+  are processed is unspecified.
+\end{description}
+
+
+\section{\cd{Set}}
+\begin{verbatim}
+class (Coll c a, SetX c a) => Set c a
+\end{verbatim}
+%
+\emph{Warning: each of the following ``With'' functions is unsafe.}
+Each takes a combining function that is used to choose which element
+is kept in the case of duplicates.  This combining function must satisfy the
+precondition that, given two equal elements, it returns a third element
+that is equal to both.  Usually, the combining function just returns
+its first or second argument, but it can combine the elements in non-trivial
+ways.
+
+The combining function should usually be associative.  If not,
+the elements will be combined left-to-right, but with an unspecified
+associativity.  For example, it \cd{x~==~y~==~z}, then
+\cd{fromList~($\oplus$)~[x,y,z]} equals either
+\begin{center}
+\cd{single (x $\oplus$ (y $\oplus$ z))}
+\hspace{20pt}or\hspace{20pt}
+\cd{single ((x $\oplus$ y) $\oplus$ z)}.
+\end{center}
+
+\subsection{Constructors}
+\begin{description}
+\spec{insertWith \is (a \arrow a \arrow a) \arrow a \arrow coll a \arrow coll a \\
+      insertSeqWith \is Sequence seq \Arrow (a \arrow a \arrow a) \arrow seq a \arrow coll a \arrow coll a}
+  Same as \cd{insert} and \cd{insertSeq}, but with a combining function
+  to resolve duplicates.  See the comments about associativity for 
+  \cd{insertSeqWith}.
+\spec{unionl \is coll a \arrow coll a \arrow coll a \\
+      unionr \is coll a \arrow coll a \arrow coll a}
+  Same as \cd{union} but keep the element from the left/right collection
+  in the case of duplicates.
+  \axioms{unionl xs ys \Equiv unionWith ($\lambda$ x y \arrow x) xs ys \\
+          unionr xs ys \Equiv unionWith ($\lambda$ x y \arrow y) xs ys}
+\spec{unionWith \is (a \arrow a \arrow a) \arrow coll a \arrow coll a \arrow coll a \\
+      unionSeqWith \is Sequence seq \Arrow (a \arrow a \arrow a) \arrow seq (coll) a \arrow coll a}
+  Same as \cd{union} and \cd{unionSeq}, but with a combining function
+  to resolve duplicates.  See the comments about associativity for
+  \cd{unionSeqWith}.
+\spec{fromSeqWith \is Sequence seq \Arrow (a \arrow a \arrow a) \arrow seq a \arrow coll a}
+  Same as \cd{fromSeq}, but with a combining function to resolve duplicates.
+  See the comments about associativity.
+\end{description}
+
+\subsection{Set operations}
+\begin{description}
+\spec{intersectWith \is (a \arrow a \arrow a) \arrow coll a \arrow coll a}
+  Same as \cd{intersect}, but with a combining function to resolve duplicates.
+\end{description}
+
+\section{\cd{OrdSet}}
+\begin{verbatim}
+class (OrdColl c a, Set c a) => OrdSet c a
+\end{verbatim}
+%
+This class contains no methods.  It exists only as an abbreviation
+for the context 
+\begin{center}
+\cd{(OrdColl c a, Set c a)}
+\end{center}
+
+\section{Specialized operations on lists}
+
+For each of the collection methods that involve sequences (e.g.,
+\cd{insertSeq}, \cd{toOrdSeq}, \cd{lookupAll}), there is a specialized
+version that operates on lists.  The specialized versions are obtained by
+replacing the name \cd{Seq} with \cd{List} (e.g., \cd{insertSeq} becomes
+\cd{insertList}).  The sole exception to this naming scheme is the
+specialized version of \cd{lookupAll}, which is named \cd{lookupList}.
+
+These functions are defined in the \cd{Collections} module and rely
+on overloading (as opposed to being accessible directly from each
+implementation module).  The types of these functions are
+\begin{quote}\ttfamily
+\begin{tabular}{l@{$\;$\is}l}
+fromList          & CollX c a \Arrow [a] \arrow c a \\
+insertList        & CollX c a \Arrow [a] \arrow c a \arrow c a \\
+unionList         & CollX c a \Arrow [c a] \arrow c a \\
+deleteList        & CollX c a \Arrow [a] \arrow c a \arrow c a \\
+unsafeFromOrdList & OrdCollX c a \Arrow [a] \arrow c a \\
+toList            & Coll c a \Arrow c a \arrow [a] \\
+lookupList        & Coll c a \Arrow c a \arrow a \arrow [a] \\
+toOrdList         & OrdColl c a \Arrow c a \arrow [a] \\
+fromListWith      & Set c a \Arrow (a \arrow a \arrow a) \arrow [a] \arrow c a \\
+insertListWith    & Set c a \Arrow (a \arrow a \arrow a) \arrow [a] \arrow c a \arrow c a \\
+unionListWith     & Set c a \Arrow (a \arrow a \arrow a) \arrow [c a] \arrow c a
+\end{tabular}
+\end{quote}
+
+\section{Utility functions}
+
+The module \cd{CollectionUtils} contains several utility functions.
+This module will likely expand in the future.
+
+\begin{description}
+\spec{map \is (Coll cin a, CollX cout b) \Arrow (a \arrow b) \arrow (cin a \arrow cout b)}
+  Map a function across every element in a collection.  Note that both
+  the element type and the collection type may change.
+\spec{mapPartial \is (Coll cin a, CollX cout b) \Arrow (a \arrow Maybe b) \arrow (cin a \arrow cout b)}
+  Map a partial function across every element in a collection, discarding
+  \cd{Nothing} results.  Note that both the element type and the collection
+  type may change.
+\spec{unsafeMapMonotonic \is (OrdColl cin a, OrdCollX cout b) \Arrow (a \arrow b) \arrow (cin a \arrow cout b)}
+  Map a monotonic function across every element in a collection.  Note
+  that both the element type and the collection type may change.
+  The function \cd{f} must satisfy the precondition that
+\begin{center}\ttfamily
+x <= y \Implies f x <= f y
+\end{center}
+  For sets this precondition is strengthened to
+\begin{center}\ttfamily
+x < y \Implies f x < f y
+\end{center}
+
+\spec{unionMap \is (Coll cin a, CollX cout b) \Arrow (a \arrow cout b) \arrow (cin a \arrow cout b)}
+  Apply a collection-producing function to every element in a collection,
+  and merge the results.  Note that both the element type and the collection
+  type may change.  \cd{unionMap} is essentially equivalent to the bind
+  operation on monads, except that collections cannot be monads because of the
+  use of multi-parameter type classes.
+\end{description}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\chapter{Associative Collections}
+
+The \emph{associative-collection} abstraction includes finite maps, finite
+relations, and priority queues where the priority is separate from element.
+Associative collections are defined in Edison as a set of eight classes,
+organized in the hierarchy shown in \Figure{assoc-hierarchy}.  Notice that
+this hierarchy mirrors the hierarchy for collections, but with the
+addition of \cd{Functor} as a superclass of every associative collection.
+Like collections, associative collections depend heavily on multi-parameter
+type classes.
+
+\begin{figure}
+\small
+\begin{center}
+%BEGIN IMAGE
+\begin{picture}(200,200)(0,0)
+\put(70,200){\makebox(0,0){\cd{Eq $k$}}}
+\put(130,200){\makebox(0,0){\cd{Functor ($m \; k$)}}}
+\put(96,168){\line(-1,1){24}}
+\put(104,168){\line(1,1){24}}
+\put(100,160){\makebox(0,0){\cd{AssocX $m$ $k$}}}
+\put(20,118){\line(0,1){24}}
+\put(26,118){\line(2,1){68}}
+\put(20,150){\makebox(0,0){\cd{Ord $k$}}}
+\put(20,110){\makebox(0,0){\cd{OrdAssocX $m$ $k$}}}
+\put(174,118){\line(-2,1){68}}
+\put(180,110){\makebox(0,0){\cd{FiniteMapX $m$ $k$}}}
+\put(106,68){\line(2,1){68}}
+\put(94,68){\line(-2,1){68}}
+\put(100,60){\makebox(0,0){\cd{OrdFiniteMapX $m$ $k$}}}
+\put(100,108){\line(0,0){44}}
+\put(100,100){\makebox(0,0){\cd{Assoc $m$ $k$}}}
+\put(20,58){\line(0,0){44}}
+\put(26,58){\line(2,1){68}}
+\put(20,50){\makebox(0,0){\cd{OrdAssoc $m$ $k$}}}
+\put(180,58){\line(0,0){44}}
+\put(174,58){\line(-2,1){68}}
+\put(180,50){\makebox(0,0){\cd{FiniteMap $m$ $k$}}}
+\put(106,8){\line(2,1){68}}
+\put(94,8){\line(-2,1){68}}
+\put(100,0){\makebox(0,0){\cd{OrdFiniteMap $m$ $k$}}}
+\end{picture} \\[40pt]
+%END IMAGE
+%HEVEA\imageflush
+
+\ttfamily
+\begin{tabular}{cccc}
+AssocX       & OrdAssocX       & FiniteMapX & OrdFiniteMapX    \\
+\hline
+empty,insert & minElem         & insertWith & \textit{no methods} \\
+union,delete & deleteMin       & unionWith  &                     \\
+null,size    & unsafeInsertMin & intersectWith &                  \\
+lookup       & foldr,foldl     & difference &                     \\
+map,fold     & filterLT        & subset     &                     \\
+filter       & $\cdots$        & $\cdots$   &                     \\
+$\cdots$     &                 &            &                     \\[20pt]
+
+Assoc        & OrdAssoc        & FiniteMap  & OrdFiniteMap        \\
+\hline       
+toSeq        & minElemWithKey  & unionWithKey&\textit{no methods} \\
+mapWithKey   & foldrWithKey    & intersectWithKey &               \\
+foldWithKey  & toOrdSeq        & $\cdots$   &                     \\ 
+filterWithKey& $\cdots$        &            &                     \\
+$\cdots$     &                 &            &                     \\
+\end{tabular}
+\end{center}
+
+\normalsize
+
+\caption{The associative-collection class hierarchy, with typical methods for each class.}
+\label{assoc-hierarchy}
+\end{figure}
+
+The operations on associative collections are similar to the operations
+on collections.  The differences arise from having a separate key and
+element, rather than just an element.  One significant implication
+of this separation is that many of the methods move up in the
+hierarchy, because elements are always observable for associative
+collections (even though keys may not be).
+
+\begin{figure}
+\begin{center}
+\large\bfseries Associative-Collection Methods
+\end{center}
+\hrule
+\begin{description}
+\item[Constructors:] \nl
+\cd{AssocX}: \cd{empty}, \cd{single}, \cd{insert}, \cd{insertSeq}, \cd{union}, \cd{unionSeq}, \cd{fromSeq} \\
+\cd{OrdAssocX}: \cd{unsafeInsertMin}, \cd{unsafeInsertMax}, \cd{unsafeFromOrdSeq}, \cd{unsafeAppend} \\
+\cd{FiniteMapX}: \cd{insertWith}, \cd{insertWithKey}, \cd{insertSeqWith}, \cd{insertSeqWithKey}, \\
+  \hspace*{20pt}
+  \cd{unionl}, \cd{unionr}, \cd{unionWith}, \cd{unionSeqWith}, \cd{fromSeqWith}, \cd{fromSeqWithKey} \\
+\cd{FiniteMap}: \cd{unionWithKey}, \cd{unionSeqWithKey}
+\item[Destructors:] \nl
+\cd{OrdAssocX}: \cd{minView}, \cd{minElem}, \cd{maxView}, \cd{maxElem} \\
+\cd{OrdAssoc}: \cd{minViewWithKey}, \cd{minElemWithKey}, \cd{maxViewWithKey}, \cd{maxElemWithKey}
+\item[Deletions:] \nl
+\cd{AssocX}: \cd{delete}, \cd{deleteAll}, \cd{deleteSeq} \\
+\cd{OrdAssocX}: \cd{deleteMin}, \cd{deleteMax}
+\item[Observers:] \nl
+\cd{AssocX}: \cd{null}, \cd{size}, \cd{member}, \cd{count}, \cd{lookup}, \cd{lookupM}, \cd{lookupAll}, \cd{lookupWithDefault}, \cd{elements} \\
+\cd{Assoc}: \cd{toSeq}, \cd{keys} \\
+\cd{OrdAssoc}: \cd{toOrdSeq}
+\item[Modifiers:] \nl
+\cd{AssocX}: \cd{adjust}, \cd{adjustAll}
+\item[Maps and folds:] \nl
+\cd{AssocX}: \cd{map}, \cd{fold}, \cd{fold1} \\
+\cd{OrdAssocX}: \cd{foldr}, \cd{foldl}, \cd{foldr1}, \cd{foldl1} \\
+\cd{Assoc}: \cd{mapWithKey}, \cd{foldWithKey} \\
+\cd{OrdAssoc}: \cd{foldrWithKey}, \cd{foldlWithKey}
+\item[Filters and partitions:] \nl
+\cd{AssocX}: \cd{filter}, \cd{partition} \\
+\cd{OrdAssocX}:
+  \cd{filterLT}, \cd{filterLE}, \cd{filterGT}, \cd{filterGE}, \\
+  \hspace*{20pt}
+  \cd{partitionLT\_GE}, \cd{partitionLE\_GT}, \cd{partitionLT\_GT} \\
+\cd{Assoc}: \cd{filterWithKey}, \cd{partitionWithKey}
+\item[Set-like operations:] \nl
+\cd{FiniteMapX}: \cd{intersectWith}, \cd{difference}, \cd{subset}, \cd{subsetEq} \\
+\cd{FiniteMap}: \cd{intersectWithKey}
+\end{description}
+\hrule
+\caption{Summary of methods for the associative-collection classes.}
+\label{assoc-methods}
+\end{figure}
+
+\Figure{assoc-methods} summarizes all the methods on associative collections.
+These methods will be described in more detail in the sections on each subclass
+in the hierarchy.
+
+I will frequently abbreviate ``associative collection'' as \AC.  I
+will also refer jointly to a key and element as a \emph{binding}.
+
+\section{\cd{AssocX}}
+\begin{verbatim}
+class Eq k => AssocX m k
+\end{verbatim}
+
+\subsection{Constructors}
+\begin{description}
+\spec{empty \is m k a}
+  The empty \AC.
+
+\spec{single \is k \arrow a \arrow m k a}
+  Create an \AC with a single binding.
+
+\spec{insert \is k \arrow a \arrow m k a \arrow m k a \\
+      insertSeq \is Sequence seq \Arrow seq (k,a) \arrow m k a \arrow m k a}
+  Add a binding or a sequence of bindings to a collection.  For finite maps,
+  \cd{insert} keeps the new element in the case of duplicate keys, but
+  \cd{insertSeq} keeps an unspecified element.  Which key is kept is
+  also unspecified for both methods.
+
+  See also \cd{insertWith}, \cd{insertWithKey}, \cd{insertSeqWith},
+  and \cd{insertSeqWithKey} in \cd{FiniteMapX}.
+
+\spec{union \is m k a \arrow m k a \arrow m k a \\
+      unionSeq \is Sequence seq \Arrow seq (m k a) \arrow m k a}
+  Merge two \ACs or a sequence of \ACs.  Which element and which key to
+  keep in the case of duplicate keys is unspecified.
+
+  See also \cd{unionWith} and \cd{unionSeqWith} in \cd{FiniteMapX} and
+  \cd{unionWithKey} and \cd{unionSeqWithKey} in \cd{FiniteMap}.
+
+\spec{fromSeq \is Sequence seq \Arrow seq (k,a) \arrow m k a}
+  Convert a list of bindings to an \AC.  Which element and which key
+  to keep in the case of duplicate keys is unspecified.
+\end{description}
+
+\subsection{Deletions}
+\begin{description}
+\spec{delete \is k \arrow m k a \arrow m k a \\
+      deleteAll \is k \arrow m k a \arrow m k a}
+  Delete one binding or all bindings with the given key, or leave the
+  \AC unchanged if it does not contain the key.  For bag-like
+  \ACs (i.e., those that allow multiple bindings with the same key), it
+  is unspecified which binding will be removed by \cd{delete}.
+\spec{deleteSeq \is Sequence seq \Arrow seq k \arrow m k a \arrow m k a}
+  Delete a single occurrence of each of the given keys from an \AC,
+  ignoring those keys that do not appear in the \AC.  For bag-like
+  \ACs, there may be multiple bindings with a given key, in which case
+  it is unspecified which is deleted.
+\end{description}
+
+\subsection{Observers}
+\begin{description}
+\spec{null \is m k a \arrow Bool}
+  Test whether the \AC is empty.
+  \axioms{null m \Equiv (size m == 0)}
+\spec{size \is m k a \arrow Int}
+  Return the number of bindings in the \AC.
+\spec{member \is m k a \arrow k \arrow Bool}
+  Test whether the given key is bound in the \AC.
+  \axioms{member m k \Equiv (count xs k > 0)}
+\spec{count \is m k a \arrow k \arrow Int}
+  Return the number of bindings with the given key.
+\spec{lookup \is m k a \arrow k \arrow a \\
+      lookupM \is m k a \arrow k \arrow Maybe a \\
+      lookupAll \is Sequence seq \Arrow m k a \arrow k \arrow seq a \\
+      lookupWithDefault \is a \arrow m k a \arrow k \arrow a}
+  Find the element associated with the given given.  \cd{lookup}
+  signals an error if the key is not bound, while \cd{lookupWithDefault}
+  returns a default value (provided as its first argument).
+  If there is more than one binding with the given key, it is unspecified
+  which element is chosen by \cd{lookup}, \cd{lookupM}, or 
+  \cd{lookupWithDefault}.  \cd{lookupAll} returns all elements bound to
+  the given key, but in an unspecified order.
+\spec{elements \is Sequence seq \Arrow m k a \arrow seq a}
+  Return all elements in the given \AC, in an unspecified order.
+\end{description}
+
+\subsection{Modifiers}
+\begin{description}
+\spec{adjust \is (a \arrow a) \arrow k \arrow m k a \arrow m k a \\
+      adjustAll \is (a \arrow a) \arrow k \arrow m k a \arrow m k a}
+  Change a single binding or all bindings for the given key by applying
+  a function to its element(s).  If more than one binding has the
+  same key, it is unspecified which is modified by \cd{adjust}.
+\end{description}
+
+\subsection{Maps and folds}
+\begin{description}
+\spec{map \is (a \arrow b) \arrow m k a \arrow m k b}
+  Apply a function to the elements of every binding in an \AC.
+  This method appears both in \cd{AssocX} and in \cd{Functor}.
+\spec{fold \is (a \arrow b \arrow b) \arrow b \arrow m k a \arrow b}
+  Combine all the elements in an \AC, given a combining function and
+  an initial value.  The elements are processed in an unspecified order.
+  Note that \cd{fold} ignores the keys.
+\spec{fold1 \is (a \arrow a \arrow a) \arrow m k a \arrow a}
+  Combine all the elements in a non-empty \AC using the given combining
+  function.  Signals an error if the \AC is empty.  The elements
+  are processed in an unspecified order.  An implementation may choose to
+  process the elements linearly or in a balanced fashion (like \cd{reduce1}
+  on sequences).  Note that \cd{fold1} ignores the keys.
+\end{description}
+
+\subsection{Filters and partitions}
+\begin{description}
+\spec{filter \is (a \arrow Bool) \arrow m k a \arrow m k a}
+  Extract all the bindings whose elements satisfy the given predicate.
+\spec{partition \is (a \arrow Bool) \arrow m k a \arrow (m k a, m k a)}
+  Split an \AC into those bindings whose elements satisfy the given predicate,
+  and those bindings whose elements do not satisfy the predicate.
+\end{description}
+
+
+\section{\cd{OrdAssocX}}
+\begin{verbatim}
+class (AssocX m k, Ord k) => OrdAssocX m k
+\end{verbatim}
+
+\subsection{Constructors}
+\begin{description}
+\spec{unsafeInsertMin \is k \arrow a \arrow m k a \arrow m k a \\
+      unsafeInsertMax \is m k a \arrow k \arrow a \arrow m k a}
+  Insert a binding into an \AC with the precondition that the given key
+  is $\leq$ or $\geq$ any exisiting keys.  For finite maps, this precondition
+  is strengthened to $<$ or $>$.
+\spec{unsafeFromOrdSeq \is Sequence seq \arrow seq (k,a) \arrow m k a}
+  Convert a sequence of bindings into an \AC with the precondition that
+  the sequence is sorted into non-decreasing order by key.  For finite
+  maps, this precondition is strengthened to increasing order.
+\spec{unsafeAppend \is m k a \arrow m k a \arrow m k a}
+  Merge two \ACs with the precondition that every key in the first
+  \AC is $\leq$ every key in the second \AC.  For finite maps, this precondition
+  is strengthened to $<$.
+\end{description}
+
+\subsection{Destructors}
+\begin{description}
+\spec{minView \is m k a \arrow Maybe2 a (m k a) \\
+      maxView \is m k a \arrow Maybe2 (m k a) a}
+  Remove the binding with the minimum or maximum key, and return its element 
+  together with the remaining \AC.  Return \cd{Nothing2} if the
+  \AC is empty.  Which binding is removed if there is more than one minimum
+  or maximum is unspecified.
+
+  See also \cd{minViewWithKey} and \cd{maxViewWithKey} in \cd{OrdAssoc}.
+  
+\spec{minElem \is m k a \arrow a \\
+      maxElem \is m k a \arrow a}
+  Return the element associated with the minimum or maximum key, or
+  signal an error if the \AC is empty.  Which element is chosen if
+  there is more than one minimum or maximum is unspecified.
+
+  See also \cd{minElemWithKey} and \cd{maxElemWithKey} in \cd{OrdAssoc}.
+\end{description}
+
+\subsection{Deletions}
+\begin{description}
+\spec{deleteMin \is m k a \arrow m k a \\
+      deleteMax \is m k a \arrow m k a}
+  Delete the binding with the minimum or maximum key, or return \cd{empty}
+  if the \AC is already empty.  Which binding is chosen if there is
+  more than one minimum or maximum is unspecified.
+\end{description}
+
+\subsection{Maps and Folds}
+\begin{description}
+\spec{foldr \is (a \arrow b \arrow b) \arrow b \arrow m k a \arrow b \\
+      foldl \is (b \arrow a \arrow b) \arrow b \arrow m k a \arrow b}
+  Fold across the elements in non-decreasing order by key.
+\spec{foldr1 \is (a \arrow a \arrow a) \arrow m k a \arrow a \\
+      foldl1 \is (a \arrow a \arrow a) \arrow m k a \arrow a}
+  Fold across the elements in non-decreasing order by key, or signal
+  an error if the \AC is empty.
+\end{description}
+
+\subsection{Filters and partitions}
+\begin{description}
+\spec{filterLT \\
+      filterLE \\
+      filterGT \\
+      filterGE}
+\spec{partitionLT\_GE \\
+      partitionLE\_GT \\
+      partitionLT\_GT}
+\end{description}
+
+
+\section{\cd{FiniteMapX}}
+\begin{verbatim}
+class AssocX m k => FiniteMapX m k
+\end{verbatim}
+
+\subsection{Constructors}
+\begin{description}
+\spec{insertWith \\
+      insertSeqWith}
+\spec{insertWithKey \\
+      insertSeqWithKey}
+\spec{unionl \\
+      unionr}
+\spec{unionWith \\
+      unionSeqWith}
+\spec{fromSeqWith \\
+      fromSeqWithKey}
+\end{description}
+
+\subsection{Set-like operations}
+\begin{description}
+\spec{intersectWith}
+\spec{difference}
+\spec{subset}
+\spec{subsetEq}
+\end{description}
+
+\section{\cd{OrdFiniteMapX}}
+\begin{verbatim}
+class (OrdAssocX m k, FiniteMapX m k) => OrdFiniteMapX m k
+\end{verbatim}
+%
+This class contains no methods.  It exists only as an abbreviation
+for the context 
+\begin{center}
+\cd{(OrdAssocX m k, FiniteMapX m k)}
+\end{center}
+
+\section{\cd{Assoc}}
+\begin{verbatim}
+class AssocX m k => Assoc m k
+\end{verbatim}
+
+\subsection{Observers}
+\begin{description}
+\spec{toSeq}
+\spec{keys}
+\end{description}
+
+\subsection{Maps and folds}
+\begin{description}
+\spec{mapWithKey}
+\spec{foldWithKey}
+\end{description}
+
+\subsection{Filters and partitions}
+\begin{description}
+\spec{filterWithKey}
+\spec{partitionWithKey}
+\end{description}
+
+\section{\cd{OrdAssoc}}
+\begin{verbatim}
+class (Assoc m k, OrdAssocX m k) => OrdAssoc m k
+\end{verbatim}
+
+\subsection{Destructors}
+\begin{description}
+\spec{minViewWithKey}
+\spec{minElemWithKey}
+\spec{maxViewWithKey}
+\spec{maxElemWithKey}
+\end{description}
+
+\subsection{Observers}
+\begin{description}
+\spec{toOrdSeq}
+\end{description}
+
+\subsection{Maps and folds}
+\begin{description}
+\spec{foldrWithKey \\
+      foldlWithKey}
+\end{description}
+
+\section{\cd{FiniteMap}}
+\begin{verbatim}
+class (Assoc m k, FiniteMapX m k) => FiniteMap m k
+\end{verbatim}
+
+\subsection{Constructors}
+\begin{description}
+\spec{unionWithKey \\
+      unionSeqWithKey}
+\end{description}
+
+\subsection{Set-like operations}
+\begin{description}
+\spec{intersectWithKey}
+\end{description}
+
+\section{\cd{OrdFiniteMap}}
+\begin{verbatim}
+class (OrdAssoc m k, FiniteMap m k) => OrdFiniteMap m k
+\end{verbatim}
+%
+This class contains no methods.  It exists only as an abbreviation
+for the context 
+\begin{center}
+\cd{(OrdAssoc m k, FiniteMap m k)}
+\end{center}
+
+\end{document}
+
+
+
+
+

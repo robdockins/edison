@@ -1,0 +1,5 @@
+\newcommand{\hrule}{\rule{1ex}{1ex}}
+\newcommand{\xspace}{ }
+\newcommand{\is}{:: }
+\newcommand{\spec}[1]{\item[\cd{#1}]\nl}
+\newcommand{\Longrightarrow}{--\>}
