@@ -33,7 +33,7 @@ import Data.Edison.Prelude
 import qualified Data.Edison.Coll as C ( CollX(..), OrdCollX(..), Coll(..), OrdColl(..), 
                                    unionList, toOrdList )
 import qualified Data.Edison.Seq as S
-import Data.Edison.Coll.CollectionDefaults
+import Data.Edison.Coll.Defaults
 import Control.Monad
 import Test.QuickCheck
 

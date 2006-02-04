@@ -32,7 +32,7 @@ import Prelude hiding (null,foldr,foldl,foldr1,foldl1,lookup,filter)
 import Data.Edison.Prelude
 import qualified Data.Edison.Coll as C
 import qualified Data.Edison.Seq as S
-import Data.Edison.Coll.CollectionDefaults
+import Data.Edison.Coll.Defaults
 import Control.Monad
 import Test.QuickCheck
 

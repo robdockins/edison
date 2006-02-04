@@ -25,7 +25,7 @@ import Prelude hiding (concat,reverse,map,concatMap,foldr,foldl,foldr1,foldl1,
 import Data.Edison.Prelude
 import qualified Data.Edison.Seq as S ( Sequence(..) )
 import qualified Data.Edison.Seq.ListSeq as L
-import Data.Edison.Seq.SequenceDefaults -- only used by concatMap
+import Data.Edison.Seq.Defaults -- only used by concatMap
 import Control.Monad
 
 -- This module defines a sequence adaptor Rev s.

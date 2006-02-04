@@ -11,12 +11,12 @@ Hs-Source-Dir:  src
 Exposed-modules:
      Data.Edison.Prelude
      Data.Edison.Assoc
-     Data.Edison.Assoc.AssocDefaults
+     Data.Edison.Assoc.Defaults
      Data.Edison.Assoc.AssocList
      Data.Edison.Assoc.PatriciaLoMap
      Data.Edison.Assoc.TernaryTrie
      Data.Edison.Coll
-     Data.Edison.Coll.CollectionDefaults
+     Data.Edison.Coll.Defaults
      Data.Edison.Coll.CollectionUtils
      Data.Edison.Coll.LazyPairingHeap
      Data.Edison.Coll.LeftistHeap
@@ -26,7 +26,7 @@ Exposed-modules:
      Data.Edison.Coll.UnbalancedSet
      Data.Edison.Facade.Stack
      Data.Edison.Seq
-     Data.Edison.Seq.SequenceDefaults
+     Data.Edison.Seq.Defaults
      Data.Edison.Seq.BankersQueue
      Data.Edison.Seq.BinaryRandList
      Data.Edison.Seq.BraunSeq

@@ -1,7 +1,7 @@
 -- Copyright (c) 1998 Chris Okasaki.  
 -- See COPYRIGHT file for terms and conditions.
 
-module Data.Edison.Seq.SequenceDefaults
+module Data.Edison.Seq.Defaults
 where
 
 import Prelude hiding (concat,reverse,map,concatMap,foldr,foldl,foldr1,foldl1,

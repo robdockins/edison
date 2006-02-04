@@ -43,7 +43,7 @@ import Data.Edison.Prelude
 import qualified Data.Edison.Coll as C
 import qualified Data.Edison.Seq as S
 import qualified Data.Edison.Seq.ListSeq as L
-import Data.Edison.Coll.CollectionDefaults
+import Data.Edison.Coll.Defaults
 import Test.QuickCheck
 
 -- signatures for exported functions

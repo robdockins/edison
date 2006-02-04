@@ -31,7 +31,7 @@ import Control.Monad.Identity
 import Data.Edison.Prelude
 import qualified Data.Edison.Assoc as A ( AssocX(..), Assoc(..), FiniteMapX(..), FiniteMap(..) )
 import qualified Data.Edison.Seq as S
-import Data.Edison.Assoc.AssocDefaults
+import Data.Edison.Assoc.Defaults
 
 -- signatures for exported functions
 moduleName    :: String

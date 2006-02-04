@@ -1,7 +1,7 @@
 -- Copyright (c) 1998 Chris Okasaki.  
 -- See COPYRIGHT file for terms and conditions.
 
-module Data.Edison.Coll.CollectionDefaults
+module Data.Edison.Coll.Defaults
 where
 
 import Prelude hiding (null,foldr,foldl,foldr1,foldl1,lookup,filter)

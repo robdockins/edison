@@ -39,7 +39,7 @@ import qualified Data.Edison.Assoc as A ( AssocX(..), Assoc(..), FiniteMapX(..),
 import qualified Data.Edison.Seq as S
 import qualified Data.List as L
 import Control.Monad.Identity
-import Data.Edison.Assoc.AssocDefaults
+import Data.Edison.Assoc.Defaults
 
 import Debug.Trace
 

@@ -31,7 +31,7 @@ import Control.Monad.Identity (runIdentity)
 import Data.Edison.Prelude
 import qualified Data.Edison.Assoc as A ( AssocX(..), Assoc(..), FiniteMapX(..), FiniteMap(..) )
 import qualified Data.Edison.Seq as S
-import Data.Edison.Assoc.AssocDefaults
+import Data.Edison.Assoc.Defaults
 import Data.Int
 import Data.Bits
 
