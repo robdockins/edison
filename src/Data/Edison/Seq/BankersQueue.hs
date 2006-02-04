@@ -1,7 +1,7 @@
 -- Copyright (c) 1998-1999 Chris Okasaki.  
 -- See COPYRIGHT file for terms and conditions.
 
-module BankersQueue (
+module Data.Edison.Seq.BankersQueue (
     -- type of banker's queues
     Seq, -- instance of Sequence, Functor, Monad, MonadPlus
 
@@ -23,10 +23,10 @@ import Prelude hiding (concat,reverse,map,concatMap,foldr,foldl,foldr1,foldl1,
                        filter,takeWhile,dropWhile,lookup,take,drop,splitAt,
                        zip,zip3,zipWith,zipWith3,unzip,unzip3,null)
 
-import EdisonPrelude
-import qualified Sequence as S ( Sequence(..) ) 
-import SequenceDefaults
-import qualified ListSeq as L
+import Data.Edison.EdisonPrelude
+import qualified Data.Edison.Seq.Sequence as S ( Sequence(..) ) 
+import Data.Edison.Seq.SequenceDefaults
+import qualified Data.Edison.Seq.ListSeq as L
 import Control.Monad
 import Control.Monad.Identity
 import Debug.QuickCheck

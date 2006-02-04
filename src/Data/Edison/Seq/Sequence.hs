@@ -1,7 +1,7 @@
 -- Copyright (c) 1998-1999 Chris Okasaki.  
 -- See COPYRIGHT file for terms and conditions.
 
-module Sequence (
+module Data.Edison.Seq.Sequence (
     -- class definition + method wrappers
     module Sequence
 
@@ -11,9 +11,9 @@ import Prelude hiding (concat,reverse,map,concatMap,foldr,foldl,foldr1,foldl1,
                        filter,takeWhile,dropWhile,lookup,take,drop,splitAt,
                        zip,zip3,zipWith,zipWith3,unzip,unzip3,null)
 
-import Monad
+import Control.Monad
 import qualified Control.Monad.Identity as ID
-import EdisonPrelude
+import Data.Edison.EdisonPrelude
 
 -- naming convention: instances of Sequence are named Seq whenever possible
 

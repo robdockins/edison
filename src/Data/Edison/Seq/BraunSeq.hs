@@ -6,7 +6,7 @@
 -- track of the size, we could get rcons down to O(log n)
 -- as well.
 
-module BraunSeq (
+module Data.Edison.Seq.BraunSeq (
     -- type of one-sided Braun sequences
     Seq, -- instance of Sequence, Functor, Monad, MonadPlus
 
@@ -27,10 +27,10 @@ import Prelude hiding (concat,reverse,map,concatMap,foldr,foldl,foldr1,foldl1,
                        filter,takeWhile,dropWhile,lookup,take,drop,splitAt,
                        zip,zip3,zipWith,zipWith3,unzip,unzip3,null)
 
-import EdisonPrelude
-import qualified Sequence as S ( Sequence(..) )
-import SequenceDefaults
-import qualified ListSeq as L
+import Data.Edison.EdisonPrelude
+import qualified Data.Edison.Seq.Sequence as S ( Sequence(..) )
+import Data.Edison.Seq.SequenceDefaults
+import qualified Data.Edison.Seq.ListSeq as L
 import Control.Monad
 import Control.Monad.Identity
 import Debug.QuickCheck

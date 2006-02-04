@@ -1,7 +1,7 @@
 -- Copyright (c) 1998-1999 Chris Okasaki.  
 -- See COPYRIGHT file for terms and conditions.
 
-module JoinList (
+module Data.Edison.Seq.JoinList (
     -- type of join lists
     Seq, -- instance of Sequence, Functor, Monad, MonadPlus
 
@@ -22,10 +22,10 @@ import Prelude hiding (concat,reverse,map,concatMap,foldr,foldl,foldr1,foldl1,
                        filter,takeWhile,dropWhile,lookup,take,drop,splitAt,
                        zip,zip3,zipWith,zipWith3,unzip,unzip3,null)
 
-import EdisonPrelude
-import qualified Sequence as S ( Sequence(..) )
-import SequenceDefaults
-import Monad
+import Data.Edison.EdisonPrelude
+import qualified Data.Edison.Seq.Sequence as S ( Sequence(..) )
+import Data.Edison.Seq.SequenceDefaults
+import Control.Monad
 import Debug.QuickCheck
 
 -- signatures for exported functions

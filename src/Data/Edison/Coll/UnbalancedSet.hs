@@ -3,7 +3,7 @@
 
 -- defaults can be improved!
 
-module UnbalancedSet (
+module Data.Edison.Coll.UnbalancedSet (
     -- types
     Set, -- instance of Coll/CollX, OrdColl/OrdCollX, Set/SetX, OrdSet/OrdSetX
 
@@ -39,11 +39,11 @@ module UnbalancedSet (
 
 import Prelude hiding (null,foldr,foldl,foldr1,foldl1,lookup,filter)
 import qualified Prelude
-import EdisonPrelude
-import qualified Collection as C
-import qualified Sequence as S
-import qualified ListSeq as L
-import CollectionDefaults
+import Data.Edison.EdisonPrelude
+import qualified Data.Edison.Coll.Collection as C
+import qualified Data.Edison.Seq.Sequence as S
+import qualified Data.Edison.Seq.ListSeq as L
+import Data.Edison.Coll.CollectionDefaults
 import Debug.QuickCheck
 
 -- signatures for exported functions

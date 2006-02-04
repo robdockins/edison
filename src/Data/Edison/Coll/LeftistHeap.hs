@@ -1,7 +1,7 @@
 -- Copyright (c) 1998-1999 Chris Okasaki.  
 -- See COPYRIGHT file for terms and conditions.
 
-module LeftistHeap (
+module Data.Edison.Coll.LeftistHeap (
     -- type of leftist heaps
     Heap, -- instance of Coll/CollX, OrdColl/OrdCollX
 
@@ -29,12 +29,12 @@ module LeftistHeap (
 ) where
 
 import Prelude hiding (null,foldr,foldl,foldr1,foldl1,lookup,filter)
-import EdisonPrelude
-import qualified Collection as C ( CollX(..), OrdCollX(..), Coll(..), OrdColl(..), 
+import Data.Edison.EdisonPrelude
+import qualified Data.Edison.Coll.Collection as C ( CollX(..), OrdCollX(..), Coll(..), OrdColl(..), 
                                    unionList, toOrdList )
-import qualified Sequence as S
-import CollectionDefaults
-import Monad
+import qualified Data.Edison.Seq.Sequence as S
+import Data.Edison.Coll.CollectionDefaults
+import Control.Monad
 import Debug.QuickCheck
 
 moduleName = "LeftistHeap"

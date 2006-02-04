@@ -1,14 +1,14 @@
 -- Copyright (c) 1998 Chris Okasaki.  
 -- See COPYRIGHT file for terms and conditions.
 
-module CollectionDefaults
+module Data.Edison.Coll.CollectionDefaults
 where
 
 import Prelude hiding (null,foldr,foldl,foldr1,foldl1,lookup,filter)
 import Control.Monad.Identity
-import Collection
-import qualified Sequence as S
-import qualified ListSeq as L
+import Data.Edison.Coll.Collection
+import qualified Data.Edison.Seq.Sequence as S
+import qualified Data.Edison.Seq.ListSeq as L
 
 insertSeqUsingUnion :: (CollX c a,S.Sequence seq) => seq a -> c -> c
 insertSeqUsingUnion xs c = union (fromSeq xs) c

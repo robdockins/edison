@@ -1,7 +1,7 @@
 -- Copyright (c) 1998-1999 Chris Okasaki.  
 -- See COPYRIGHT file for terms and conditions.
 
-module SizedSeq (
+module Data.Edison.Seq.SizedSeq (
     -- generic adaptor for sequences to keep track of the current size
     Sized, -- Sized s instance of Sequence, Functor, Monad, MonadPlus
 
@@ -25,11 +25,10 @@ import Prelude hiding (concat,reverse,map,concatMap,foldr,foldl,foldr1,foldl1,
                        filter,takeWhile,dropWhile,lookup,take,drop,splitAt,
                        zip,zip3,zipWith,zipWith3,unzip,unzip3,null)
 
-import EdisonPrelude
-import qualified Sequence as S ( Sequence(..) )
-import qualified Sequence as S
-import SequenceDefaults -- only used by concatMap
-import Monad
+import Data.Edison.EdisonPrelude
+import qualified Data.Edison.Seq.Sequence as S
+import Data.Edison.Seq.SequenceDefaults -- only used by concatMap
+import Control.Monad
 import Debug.QuickCheck
 
 -- This module defines a sequence adaptor Sized s.

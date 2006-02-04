@@ -1,7 +1,7 @@
 -- Copyright (c) 1998-1999 Chris Okasaki.  
 -- See COPYRIGHT file for terms and conditions.
 
-module RevSeq (
+module Data.Edison.Seq.RevSeq (
     -- generic adaptor for sequences to keep them in the opposite order
     Rev, -- Rev s instance of Sequence, Functor, Monad, MonadPlus
 
@@ -22,11 +22,11 @@ import Prelude hiding (concat,reverse,map,concatMap,foldr,foldl,foldr1,foldl1,
                        filter,takeWhile,dropWhile,lookup,take,drop,splitAt,
                        zip,zip3,zipWith,zipWith3,unzip,unzip3,null)
 
-import EdisonPrelude
-import qualified Sequence as S ( Sequence(..) )
-import qualified ListSeq as L
-import SequenceDefaults -- only used by concatMap
-import Monad
+import Data.Edison.EdisonPrelude
+import qualified Data.Edison.Seq.Sequence as S ( Sequence(..) )
+import qualified Data.Edison.Seq.ListSeq as L
+import Data.Edison.Seq.SequenceDefaults -- only used by concatMap
+import Control.Monad
 
 -- This module defines a sequence adaptor Rev s.
 -- If s is a sequence type constructor, then Rev s

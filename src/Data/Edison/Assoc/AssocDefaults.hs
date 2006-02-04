@@ -1,13 +1,13 @@
 -- Copyright (c) 1998 Chris Okasaki.  
 -- See COPYRIGHT file for terms and conditions.
 
-module AssocDefaults 
+module Data.Edison.Assoc.AssocDefaults 
 where
 
 import Prelude hiding (null,map,lookup,foldr,foldl,foldr1,foldl1,filter)
-import Assoc
-import qualified Sequence as S
-import qualified ListSeq as L
+import Data.Edison.Assoc.Assoc
+import qualified Data.Edison.Seq.Sequence as S
+import qualified Data.Edison.Seq.ListSeq as L
 
 singleUsingInsert :: (Assoc m k) => k -> a -> m a
 singleUsingInsert k v = insert k v empty

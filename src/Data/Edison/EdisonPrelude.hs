@@ -1,7 +1,7 @@
 -- Copyright (c) 1998 Chris Okasaki.  
 -- See COPYRIGHT file for terms and conditions.
 
-module EdisonPrelude where
+module Data.Edison.EdisonPrelude where
 
 
 class Eq a => Hash a where
@@ -32,6 +32,3 @@ instance (Eq a, Enum a) => UniqueHash a where
 
 instance (Eq a, Enum a) => ReversibleHash a where
   unhash = toEnum
-
--- vi: set ts=8 sw=4 ai:
--- vim: set ts=8 sw=4 ai:

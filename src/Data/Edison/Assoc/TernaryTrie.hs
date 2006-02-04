@@ -1,7 +1,7 @@
 -- Copyright (c) 2002 Andrew Bromage.  
 -- See COPYRIGHT file for terms and conditions.
 
-module TernaryTrie (
+module Data.Edison.Assoc.TernaryTrie (
     -- type of ternary search tries
     FM(..), -- instance of Assoc(X), FiniteMap(X)
     FMB(..),
@@ -34,12 +34,12 @@ module TernaryTrie (
 ) where
 
 import Prelude hiding (null,map,lookup,foldr,foldl,foldr1,foldl1,filter)
-import EdisonPrelude
-import qualified Assoc as A ( AssocX(..), Assoc(..), FiniteMapX(..), FiniteMap(..) )
-import qualified Sequence as S
-import qualified List as L
+import Data.Edison.EdisonPrelude
+import qualified Data.Edison.Assoc.Assoc as A ( AssocX(..), Assoc(..), FiniteMapX(..), FiniteMap(..) )
+import qualified Data.Edison.Seq.Sequence as S
+import qualified Data.List as L
 import Control.Monad.Identity
-import AssocDefaults
+import Data.Edison.Assoc.AssocDefaults
 
 import Debug.Trace
 

@@ -1,16 +1,16 @@
 -- Copyright (c) 1998 Chris Okasaki.  
 -- See COPYRIGHT file for terms and conditions.
 
-module SequenceDefaults
+module Data.Edison.Seq.SequenceDefaults
 where
 
 import Prelude hiding (concat,reverse,map,concatMap,foldr,foldl,foldr1,foldl1,
                        filter,takeWhile,dropWhile,lookup,take,drop,splitAt,
                        zip,zip3,zipWith,zipWith3,unzip,unzip3,null)
 
-import EdisonPrelude
-import Sequence
-import qualified ListSeq as L
+import Data.Edison.EdisonPrelude
+import Data.Edison.Seq.Sequence
+import qualified Data.Edison.Seq.ListSeq as L
 import Control.Monad.Identity
 
 rconsUsingAppend :: Sequence s => s a -> a -> s a

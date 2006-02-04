@@ -1,10 +1,10 @@
 -- Copyright (c) 1998 Chris Okasaki.  
 -- See COPYRIGHT file for terms and conditions.
 
-module CollectionUtils where
+module Data.Edison.Coll.CollectionUtils where
 
 import Prelude hiding (map,null,foldr,foldl,foldr1,foldl1,lookup,filter)
-import Collection
+import Data.Edison.Coll.Collection
 
 map :: (Coll cin a, CollX cout b) => (a -> b) -> (cin -> cout)
 map f xs = fold (\x ys -> insert (f x) ys) empty xs

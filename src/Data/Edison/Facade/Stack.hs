@@ -1,4 +1,4 @@
-module Stack (
+module Data.Edison.Facade.Stack (
 	Stack,
 	push,
 	topM, top,
@@ -9,8 +9,8 @@ module Stack (
 )
 where
 
-import Sequence
-import qualified ListSeq as LS
+import Data.Edison.Seq.Sequence
+import qualified Data.Edison.Seq.ListSeq as LS
 
 type Stack a = LS.Seq a
 

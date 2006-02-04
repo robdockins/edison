@@ -1,7 +1,7 @@
 -- Copyright (c) 1998 Chris Okasaki.  
 -- See COPYRIGHT file for terms and conditions.
 
-module AssocList (
+module Data.Edison.Assoc.AssocList (
     -- type of simple association lists
     FM, -- instance of Assoc(X), FiniteMap(X)
         -- also instance of Functor
@@ -28,10 +28,10 @@ module AssocList (
 
 import Prelude hiding (null,map,lookup,foldr,foldl,foldr1,foldl1,filter)
 import Control.Monad.Identity
-import EdisonPrelude
-import qualified Assoc as A ( AssocX(..), Assoc(..), FiniteMapX(..), FiniteMap(..) )
-import qualified Sequence as S
-import AssocDefaults
+import Data.Edison.EdisonPrelude
+import qualified Data.Edison.Assoc.Assoc as A ( AssocX(..), Assoc(..), FiniteMapX(..), FiniteMap(..) )
+import qualified Data.Edison.Seq.Sequence as S
+import Data.Edison.Assoc.AssocDefaults
 
 -- signatures for exported functions
 moduleName    :: String

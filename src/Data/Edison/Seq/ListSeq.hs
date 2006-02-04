@@ -1,7 +1,7 @@
 -- Copyright (c) 1998 Chris Okasaki.  
 -- See COPYRIGHT file for terms and conditions.
 
-module ListSeq (
+module Data.Edison.Seq.ListSeq (
     -- type synonym
     Seq,
 
@@ -25,9 +25,9 @@ import Prelude hiding (concat,reverse,map,concatMap,foldr,foldl,foldr1,foldl1,
                        zip,zip3,zipWith,zipWith3,unzip,unzip3,null)
 import qualified Control.Monad.Identity as ID
 import qualified Prelude
-import EdisonPrelude
-import qualified List(partition)
-import qualified Sequence as S ( Sequence(..) ) 
+import Data.Edison.EdisonPrelude
+import qualified Data.List(partition)
+import qualified Data.Edison.Seq.Sequence as S ( Sequence(..) ) 
 
 -- signatures for exported functions
 moduleName     :: String

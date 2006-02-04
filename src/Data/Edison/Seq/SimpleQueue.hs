@@ -1,7 +1,7 @@
 -- Copyright (c) 1998-1999 Chris Okasaki.  
 -- See COPYRIGHT file for terms and conditions.
 
-module SimpleQueue (
+module Data.Edison.Seq.SimpleQueue (
     -- type of simple queues
     Seq, -- instance of Sequence, Functor, Monad, MonadPlus
 
@@ -22,11 +22,11 @@ import Prelude hiding (concat,reverse,map,concatMap,foldr,foldl,foldr1,foldl1,
                        filter,takeWhile,dropWhile,lookup,take,drop,splitAt,
                        zip,zip3,zipWith,zipWith3,unzip,unzip3,null)
 
-import EdisonPrelude
-import qualified Sequence as S ( Sequence(..) )
-import SequenceDefaults
-import qualified ListSeq as L
-import Monad
+import Data.Edison.EdisonPrelude
+import qualified Data.Edison.Seq.Sequence as S ( Sequence(..) )
+import Data.Edison.Seq.SequenceDefaults
+import qualified Data.Edison.Seq.ListSeq as L
+import Control.Monad
 import Debug.QuickCheck
 
 -- signatures for exported functions
