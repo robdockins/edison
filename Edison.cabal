@@ -1,7 +1,7 @@
 Name:           Edison
 Version:        1.2
 License:        BSD3
-License-File:   LICENSE
+License-File:   COPYRIGHT
 Author:         Chris Okasaki
 Maintainer:     robdockins@fastmail.fm
 Synopsis:       A library of efficent, purely-functional data structures
