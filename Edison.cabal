@@ -40,7 +40,7 @@ Exposed-modules:
 Build-Depends:
      base >= 1.0,
      haskell98 >= 1.0,
-     quickCheck >= 1.0
+     QuickCheck >= 1.0
 Extensions:
      MultiParamTypeClasses
      FunctionalDependencies

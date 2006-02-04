@@ -36,7 +36,7 @@ import qualified Data.Edison.Seq.Sequence as S
 import Data.Edison.Coll.CollectionDefaults
 import Data.List(sort)
 import Control.Monad
-import Debug.QuickCheck
+import Test.QuickCheck
 
 moduleName = "LazyPairingHeap"
 

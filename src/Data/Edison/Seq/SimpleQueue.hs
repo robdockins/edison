@@ -27,7 +27,7 @@ import qualified Data.Edison.Seq.Sequence as S ( Sequence(..) )
 import Data.Edison.Seq.SequenceDefaults
 import qualified Data.Edison.Seq.ListSeq as L
 import Control.Monad
-import Debug.QuickCheck
+import Test.QuickCheck
 
 -- signatures for exported functions
 moduleName     :: String

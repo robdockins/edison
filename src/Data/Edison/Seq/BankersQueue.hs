@@ -29,7 +29,7 @@ import Data.Edison.Seq.SequenceDefaults
 import qualified Data.Edison.Seq.ListSeq as L
 import Control.Monad
 import Control.Monad.Identity
-import Debug.QuickCheck
+import Test.QuickCheck
 
 -- signatures for exported functions
 moduleName     :: String

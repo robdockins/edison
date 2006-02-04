@@ -44,7 +44,7 @@ import qualified Data.Edison.Coll.Collection as C
 import qualified Data.Edison.Seq.Sequence as S
 import qualified Data.Edison.Seq.ListSeq as L
 import Data.Edison.Coll.CollectionDefaults
-import Debug.QuickCheck
+import Test.QuickCheck
 
 -- signatures for exported functions
 moduleName :: String

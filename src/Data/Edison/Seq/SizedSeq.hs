@@ -29,7 +29,7 @@ import Data.Edison.EdisonPrelude
 import qualified Data.Edison.Seq.Sequence as S
 import Data.Edison.Seq.SequenceDefaults -- only used by concatMap
 import Control.Monad
-import Debug.QuickCheck
+import Test.QuickCheck
 
 -- This module defines a sequence adaptor Sized s.
 -- If s is a sequence type constructor, then Sized s

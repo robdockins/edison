@@ -34,7 +34,7 @@ import qualified Data.Edison.Coll.Collection as C
 import qualified Data.Edison.Seq.Sequence as S
 import Data.Edison.Coll.CollectionDefaults
 import Control.Monad
-import Debug.QuickCheck
+import Test.QuickCheck
 
 moduleName = "SplayHeap"
 
