@@ -1,0 +1,47 @@
+Name:           Edison
+Version:        1.2
+License:        BSD3
+License-File:   LICENSE
+Author:         Chris Okasaki
+Maintainer:     robdockins@fastmail.fm
+Synopsis:       A library of efficent, purely-functional data structures
+Category:       Data structures
+Stability:      Beta
+Hs-Source-Dir:  src
+Exposed-modules:
+     Data.Edison.Assoc.Assoc
+     Data.Edison.Assoc.AssocDefaults
+     Data.Edison.Assoc.AssocList
+     Data.Edison.Assoc.PatriciaLoMap
+     Data.Edison.Assoc.TernaryTrie
+     Data.Edison.Coll.Collection
+     Data.Edison.Coll.CollectionDefaults
+     Data.Edison.Coll.CollectionUtils
+     Data.Edison.Coll.LazyPairingHeap
+     Data.Edison.Coll.LeftistHeap
+     Data.Edison.Coll.MinHeap
+     Data.Edison.Coll.SkewHeap
+     Data.Edison.Coll.SplayHeap
+     Data.Edison.Coll.UnbalancedSet
+     Data.Edison.EdisonPrelude
+     Data.Edison.Facade.Stack
+     Data.Edison.Seq.BankersQueue
+     Data.Edison.Seq.BinaryRandList
+     Data.Edison.Seq.BraunSeq
+     Data.Edison.Seq.JoinList
+     Data.Edison.Seq.ListSeq
+     Data.Edison.Seq.MyersStack
+     Data.Edison.Seq.RandList
+     Data.Edison.Seq.RevSeq
+     Data.Edison.Seq.Sequence
+     Data.Edison.Seq.SequenceDefaults
+     Data.Edison.Seq.SimpleQueue
+     Data.Edison.Seq.SizedSeq
+Build-Depends:
+     base >= 1.0,
+     haskell98 >= 1.0,
+     quickCheck >= 1.0
+Extensions:
+     MultiParamTypeClasses
+     FunctionalDependencies
+     AllowUndecidableInstances
