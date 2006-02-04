@@ -1,7 +1,7 @@
 -- Copyright (c) 1998 Chris Okasaki.  
 -- See COPYRIGHT file for terms and conditions.
 
-module Data.Edison.Coll.Collection (
+module Data.Edison.Coll (
 {-
     -- non-observable classes
     CollX(..),
@@ -28,12 +28,12 @@ module Data.Edison.Coll.Collection (
     insertListWith,
     unionListWith,
 -}
-    module Data.Edison.Coll.Collection
+    module Data.Edison.Coll
 ) where
 
 import Prelude hiding (null,foldr,foldl,foldr1,foldl1,lookup,filter)
 import Data.Edison.Prelude
-import Data.Edison.Seq.Sequence(Sequence)
+import Data.Edison.Seq(Sequence)
 import Data.Edison.Seq.ListSeq()
 
 class Eq a => CollX c a | c -> a where

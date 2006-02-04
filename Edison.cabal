@@ -10,12 +10,12 @@ Stability:      Beta
 Hs-Source-Dir:  src
 Exposed-modules:
      Data.Edison.Prelude
-     Data.Edison.Assoc.Assoc
+     Data.Edison.Assoc
      Data.Edison.Assoc.AssocDefaults
      Data.Edison.Assoc.AssocList
      Data.Edison.Assoc.PatriciaLoMap
      Data.Edison.Assoc.TernaryTrie
-     Data.Edison.Coll.Collection
+     Data.Edison.Coll
      Data.Edison.Coll.CollectionDefaults
      Data.Edison.Coll.CollectionUtils
      Data.Edison.Coll.LazyPairingHeap
@@ -25,6 +25,8 @@ Exposed-modules:
      Data.Edison.Coll.SplayHeap
      Data.Edison.Coll.UnbalancedSet
      Data.Edison.Facade.Stack
+     Data.Edison.Seq
+     Data.Edison.Seq.SequenceDefaults
      Data.Edison.Seq.BankersQueue
      Data.Edison.Seq.BinaryRandList
      Data.Edison.Seq.BraunSeq
@@ -33,8 +35,6 @@ Exposed-modules:
      Data.Edison.Seq.MyersStack
      Data.Edison.Seq.RandList
      Data.Edison.Seq.RevSeq
-     Data.Edison.Seq.Sequence
-     Data.Edison.Seq.SequenceDefaults
      Data.Edison.Seq.SimpleQueue
      Data.Edison.Seq.SizedSeq
 Build-Depends:

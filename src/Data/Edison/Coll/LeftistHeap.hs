@@ -30,9 +30,9 @@ module Data.Edison.Coll.LeftistHeap (
 
 import Prelude hiding (null,foldr,foldl,foldr1,foldl1,lookup,filter)
 import Data.Edison.Prelude
-import qualified Data.Edison.Coll.Collection as C ( CollX(..), OrdCollX(..), Coll(..), OrdColl(..), 
+import qualified Data.Edison.Coll as C ( CollX(..), OrdCollX(..), Coll(..), OrdColl(..), 
                                    unionList, toOrdList )
-import qualified Data.Edison.Seq.Sequence as S
+import qualified Data.Edison.Seq as S
 import Data.Edison.Coll.CollectionDefaults
 import Control.Monad
 import Test.QuickCheck

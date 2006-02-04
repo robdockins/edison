@@ -5,8 +5,8 @@ module Data.Edison.Assoc.AssocDefaults
 where
 
 import Prelude hiding (null,map,lookup,foldr,foldl,foldr1,foldl1,filter)
-import Data.Edison.Assoc.Assoc
-import qualified Data.Edison.Seq.Sequence as S
+import Data.Edison.Assoc
+import qualified Data.Edison.Seq as S
 import qualified Data.Edison.Seq.ListSeq as L
 
 singleUsingInsert :: (Assoc m k) => k -> a -> m a

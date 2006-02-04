@@ -9,7 +9,7 @@ import Prelude hiding (concat,reverse,map,concatMap,foldr,foldl,foldr1,foldl1,
                        zip,zip3,zipWith,zipWith3,unzip,unzip3,null)
 
 import Data.Edison.Prelude
-import Data.Edison.Seq.Sequence
+import Data.Edison.Seq
 import qualified Data.Edison.Seq.ListSeq as L
 import Control.Monad.Identity
 

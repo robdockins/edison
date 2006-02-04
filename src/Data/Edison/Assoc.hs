@@ -1,7 +1,7 @@
 -- Copyright (c) 1998 Chris Okasaki.  
 -- See COPYRIGHT file for terms and conditions.
 
-module Data.Edison.Assoc.Assoc ( -- associative collections
+module Data.Edison.Assoc ( -- associative collections
 {-
     -- non-observable classes
     AssocX(..),
@@ -33,14 +33,14 @@ module Data.Edison.Assoc.Assoc ( -- associative collections
     toOrdList,
     unionListWithKey,
 -}
-    module Data.Edison.Assoc.Assoc
+    module Data.Edison.Assoc
 ) where
 
 import Prelude hiding (null,map,lookup,foldr,foldl,foldr1,foldl1,filter)
 
 import Data.Edison.Prelude
 
-import Data.Edison.Seq.Sequence(Sequence)
+import Data.Edison.Seq(Sequence)
 import Data.Edison.Seq.ListSeq()
 
 -- class (Eq k, Functor (m k)) => AssocX m k | m -> k

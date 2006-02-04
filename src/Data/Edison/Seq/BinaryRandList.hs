@@ -25,7 +25,7 @@ import Prelude hiding (concat,reverse,map,concatMap,foldr,foldl,foldr1,foldl1,
 import Control.Monad.Identity
 
 import Data.Edison.Prelude
-import qualified Data.Edison.Seq.Sequence as S ( Sequence(..) ) 
+import qualified Data.Edison.Seq as S ( Sequence(..) ) 
 import Data.Edison.Seq.SequenceDefaults
 import Control.Monad
 import Test.QuickCheck

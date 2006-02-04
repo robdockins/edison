@@ -29,8 +29,8 @@ module Data.Edison.Assoc.AssocList (
 import Prelude hiding (null,map,lookup,foldr,foldl,foldr1,foldl1,filter)
 import Control.Monad.Identity
 import Data.Edison.Prelude
-import qualified Data.Edison.Assoc.Assoc as A ( AssocX(..), Assoc(..), FiniteMapX(..), FiniteMap(..) )
-import qualified Data.Edison.Seq.Sequence as S
+import qualified Data.Edison.Assoc as A ( AssocX(..), Assoc(..), FiniteMapX(..), FiniteMap(..) )
+import qualified Data.Edison.Seq as S
 import Data.Edison.Assoc.AssocDefaults
 
 -- signatures for exported functions

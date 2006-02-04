@@ -9,7 +9,7 @@ module Data.Edison.Facade.Stack (
 )
 where
 
-import Data.Edison.Seq.Sequence as Sequence
+import Data.Edison.Seq as Sequence
 import qualified Data.Edison.Seq.ListSeq as LS
 
 type Stack a = LS.Seq a

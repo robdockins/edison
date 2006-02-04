@@ -4,7 +4,7 @@
 module Data.Edison.Coll.CollectionUtils where
 
 import Prelude hiding (map,null,foldr,foldl,foldr1,foldl1,lookup,filter)
-import Data.Edison.Coll.Collection
+import Data.Edison.Coll
 
 map :: (Coll cin a, CollX cout b) => (a -> b) -> (cin -> cout)
 map f xs = fold (\x ys -> insert (f x) ys) empty xs

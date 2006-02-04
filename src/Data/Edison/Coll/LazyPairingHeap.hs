@@ -30,9 +30,9 @@ module Data.Edison.Coll.LazyPairingHeap (
 
 import Prelude hiding (null,foldr,foldl,foldr1,foldl1,lookup,filter)
 import Data.Edison.Prelude
-import qualified Data.Edison.Coll.Collection as C ( CollX(..), OrdCollX(..),
+import qualified Data.Edison.Coll as C ( CollX(..), OrdCollX(..),
 				   Coll(..), OrdColl(..), toOrdList )
-import qualified Data.Edison.Seq.Sequence as S
+import qualified Data.Edison.Seq as S
 import Data.Edison.Coll.CollectionDefaults
 import Data.List(sort)
 import Control.Monad

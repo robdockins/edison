@@ -27,7 +27,7 @@ import qualified Control.Monad.Identity as ID
 import qualified Prelude
 import Data.Edison.Prelude
 import qualified Data.List(partition)
-import qualified Data.Edison.Seq.Sequence as S ( Sequence(..) ) 
+import qualified Data.Edison.Seq as S ( Sequence(..) ) 
 
 -- signatures for exported functions
 moduleName     :: String

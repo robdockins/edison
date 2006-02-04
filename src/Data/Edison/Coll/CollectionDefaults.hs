@@ -6,8 +6,8 @@ where
 
 import Prelude hiding (null,foldr,foldl,foldr1,foldl1,lookup,filter)
 import Control.Monad.Identity
-import Data.Edison.Coll.Collection
-import qualified Data.Edison.Seq.Sequence as S
+import Data.Edison.Coll
+import qualified Data.Edison.Seq as S
 import qualified Data.Edison.Seq.ListSeq as L
 
 insertSeqUsingUnion :: (CollX c a,S.Sequence seq) => seq a -> c -> c

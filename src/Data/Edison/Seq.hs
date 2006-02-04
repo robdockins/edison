@@ -1,9 +1,9 @@
 -- Copyright (c) 1998-1999 Chris Okasaki.  
 -- See COPYRIGHT file for terms and conditions.
 
-module Data.Edison.Seq.Sequence (
+module Data.Edison.Seq (
     -- class definition + method wrappers
-    module Data.Edison.Seq.Sequence
+    module Data.Edison.Seq
 
 ) where
 

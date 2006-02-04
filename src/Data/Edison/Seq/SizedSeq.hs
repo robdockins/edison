@@ -26,7 +26,7 @@ import Prelude hiding (concat,reverse,map,concatMap,foldr,foldl,foldr1,foldl1,
                        zip,zip3,zipWith,zipWith3,unzip,unzip3,null)
 
 import Data.Edison.Prelude
-import qualified Data.Edison.Seq.Sequence as S
+import qualified Data.Edison.Seq as S
 import Data.Edison.Seq.SequenceDefaults -- only used by concatMap
 import Control.Monad
 import Test.QuickCheck

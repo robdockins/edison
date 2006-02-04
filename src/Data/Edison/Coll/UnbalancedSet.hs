@@ -40,8 +40,8 @@ module Data.Edison.Coll.UnbalancedSet (
 import Prelude hiding (null,foldr,foldl,foldr1,foldl1,lookup,filter)
 import qualified Prelude
 import Data.Edison.Prelude
-import qualified Data.Edison.Coll.Collection as C
-import qualified Data.Edison.Seq.Sequence as S
+import qualified Data.Edison.Coll as C
+import qualified Data.Edison.Seq as S
 import qualified Data.Edison.Seq.ListSeq as L
 import Data.Edison.Coll.CollectionDefaults
 import Test.QuickCheck
