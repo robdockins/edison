@@ -1,7 +1,7 @@
 -- Copyright (c) 1998 Chris Okasaki.  
 -- See COPYRIGHT file for terms and conditions.
 
-module Data.Edison.EdisonPrelude where
+module Data.Edison.Prelude where
 
 
 class Eq a => Hash a where

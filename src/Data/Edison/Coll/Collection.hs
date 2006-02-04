@@ -32,7 +32,7 @@ module Data.Edison.Coll.Collection (
 ) where
 
 import Prelude hiding (null,foldr,foldl,foldr1,foldl1,lookup,filter)
-import Data.Edison.EdisonPrelude
+import Data.Edison.Prelude
 import Data.Edison.Seq.Sequence(Sequence)
 import Data.Edison.Seq.ListSeq()
 

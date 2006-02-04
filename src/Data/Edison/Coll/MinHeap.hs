@@ -26,7 +26,7 @@ module Data.Edison.Coll.MinHeap (
 ) where
 
 import Prelude hiding (null,foldr,foldl,foldr1,foldl1,lookup,filter)
-import Data.Edison.EdisonPrelude
+import Data.Edison.Prelude
 import qualified Data.Edison.Coll.Collection as C
 import qualified Data.Edison.Seq.Sequence as S
 import Data.Edison.Coll.CollectionDefaults

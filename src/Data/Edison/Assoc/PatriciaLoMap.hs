@@ -28,7 +28,7 @@ module Data.Edison.Assoc.PatriciaLoMap (
 
 import Prelude hiding (null,map,lookup,foldr,foldl,foldr1,foldl1,filter)
 import Control.Monad.Identity (runIdentity)
-import Data.Edison.EdisonPrelude
+import Data.Edison.Prelude
 import qualified Data.Edison.Assoc.Assoc as A ( AssocX(..), Assoc(..), FiniteMapX(..), FiniteMap(..) )
 import qualified Data.Edison.Seq.Sequence as S
 import Data.Edison.Assoc.AssocDefaults

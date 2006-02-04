@@ -38,7 +38,7 @@ module Data.Edison.Assoc.Assoc ( -- associative collections
 
 import Prelude hiding (null,map,lookup,foldr,foldl,foldr1,foldl1,filter)
 
-import Data.Edison.EdisonPrelude
+import Data.Edison.Prelude
 
 import Data.Edison.Seq.Sequence(Sequence)
 import Data.Edison.Seq.ListSeq()

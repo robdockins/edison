@@ -8,7 +8,7 @@ import Prelude hiding (concat,reverse,map,concatMap,foldr,foldl,foldr1,foldl1,
                        filter,takeWhile,dropWhile,lookup,take,drop,splitAt,
                        zip,zip3,zipWith,zipWith3,unzip,unzip3,null)
 
-import Data.Edison.EdisonPrelude
+import Data.Edison.Prelude
 import Data.Edison.Seq.Sequence
 import qualified Data.Edison.Seq.ListSeq as L
 import Control.Monad.Identity

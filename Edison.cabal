@@ -9,6 +9,7 @@ Category:       Data structures
 Stability:      Beta
 Hs-Source-Dir:  src
 Exposed-modules:
+     Data.Edison.Prelude
      Data.Edison.Assoc.Assoc
      Data.Edison.Assoc.AssocDefaults
      Data.Edison.Assoc.AssocList
@@ -23,7 +24,6 @@ Exposed-modules:
      Data.Edison.Coll.SkewHeap
      Data.Edison.Coll.SplayHeap
      Data.Edison.Coll.UnbalancedSet
-     Data.Edison.EdisonPrelude
      Data.Edison.Facade.Stack
      Data.Edison.Seq.BankersQueue
      Data.Edison.Seq.BinaryRandList

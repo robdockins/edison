@@ -13,7 +13,7 @@ import Prelude hiding (concat,reverse,map,concatMap,foldr,foldl,foldr1,foldl1,
 
 import Control.Monad
 import qualified Control.Monad.Identity as ID
-import Data.Edison.EdisonPrelude
+import Data.Edison.Prelude
 
 -- naming convention: instances of Sequence are named Seq whenever possible
 
