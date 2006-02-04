@@ -33,7 +33,7 @@ module Data.Edison.Assoc.Assoc ( -- associative collections
     toOrdList,
     unionListWithKey,
 -}
-    module Assoc
+    module Data.Edison.Assoc.Assoc
 ) where
 
 import Prelude hiding (null,map,lookup,foldr,foldl,foldr1,foldl1,filter)

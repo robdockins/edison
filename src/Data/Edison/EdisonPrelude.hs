@@ -24,7 +24,7 @@ class UniqueHash a => ReversibleHash a where
 
 -- Enum types
 --
-
+{-
 instance (Eq a, Enum a) => Hash a where
   hash = fromEnum
 
@@ -32,3 +32,4 @@ instance (Eq a, Enum a) => UniqueHash a where
 
 instance (Eq a, Enum a) => ReversibleHash a where
   unhash = toEnum
+-}

@@ -3,7 +3,7 @@
 
 module Data.Edison.Seq.Sequence (
     -- class definition + method wrappers
-    module Sequence
+    module Data.Edison.Seq.Sequence
 
 ) where
 
@@ -270,9 +270,10 @@ class (Functor s, MonadPlus s) => Sequence s where
     where (before, after) = splitAt i s
 -}
 
+{-
 class AsSequence t s | t -> s where
     asSequence :: t -> s
 
 instance (Sequence s) => AsSequence s s where
     asSequence = id
-
+-}

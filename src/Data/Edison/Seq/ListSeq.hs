@@ -236,7 +236,7 @@ splitAt i xs | i <= 0 = ([], xs)
 subseq i len xs = take len (drop i xs)
         
 filter = Prelude.filter
-partition = List.partition
+partition = Data.List.partition
 takeWhile = Prelude.takeWhile
 dropWhile = Prelude.dropWhile
 splitWhile = Prelude.span
