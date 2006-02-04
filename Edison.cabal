@@ -24,7 +24,6 @@ Exposed-modules:
      Data.Edison.Coll.SkewHeap
      Data.Edison.Coll.SplayHeap
      Data.Edison.Coll.UnbalancedSet
-     Data.Edison.Facade.Stack
      Data.Edison.Seq
      Data.Edison.Seq.Defaults
      Data.Edison.Seq.BankersQueue
