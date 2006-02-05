@@ -1,11 +1,30 @@
 -- Copyright (c) 1998-1999 Chris Okasaki.  
 -- See COPYRIGHT file for terms and conditions.
 
+{- | Simple Queues.  All operations have running times as listed in
+     "Data.Edison.Seq" except for the following:
+
+     * rcons  @O( 1 )@
+
+     * lview  @O( 1 )@ if single threaded, @O( n )@ otherwise
+
+     * ltail  @O( 1 )@ if single threaded, @O( n )@ otherwise
+
+     References:
+
+     * Chris Okasaki. Purely Functional Data Structures. 1998.
+       Section 5.2.
+
+     * F. Warren Burton. \"An efficient functional implementation of FIFO queues\".
+       Information Processing Letters, 14(5):205-206, July 1982.
+-}
+
+
 module Data.Edison.Seq.SimpleQueue (
-    -- type of simple queues
+    -- * Sequence Type
     Seq, -- instance of Sequence, Functor, Monad, MonadPlus
 
-    -- sequence operations
+    -- * Sequence Operations
     empty,single,lcons,rcons,append,lview,lhead,ltail,rview,rhead,rtail,
     null,size,concat,reverse,reverseOnto,fromList,toList,
     map,concatMap,foldr,foldl,foldr1,foldl1,reducer,reducel,reduce1,
@@ -14,7 +33,7 @@ module Data.Edison.Seq.SimpleQueue (
     take,drop,splitAt,subseq,filter,partition,takeWhile,dropWhile,splitWhile,
     zip,zip3,zipWith,zipWith3,unzip,unzip3,unzipWith,unzipWith3,
 
-    -- documentation
+    -- * Documentation
     moduleName
 ) where
 
@@ -88,12 +107,6 @@ unzipWith3     :: (a -> b) -> (a -> c) -> (a -> d) -> Seq a -> (Seq b, Seq c, Se
 
 moduleName = "SimpleQueue"
 
--- Adapted from
---   Chris Okasaki. Purely Functional Data Structures. 1998.
---   Section 5.2.
--- and
---   F. Warren Burton. "An efficient functional implementation of FIFO queues".
---   Information Processing Letters, 14(5):205-206, July 1982.
 
 data Seq a = Q [a] [a]
   -- invariant: front empty only if rear also empty

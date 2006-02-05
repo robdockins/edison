@@ -1,11 +1,18 @@
 -- Copyright (c) 1998-1999 Chris Okasaki.  
 -- See COPYRIGHT file for terms and conditions.
 
+{- | This module defines a sequence adaptor Sized s.
+     If s is a sequence type constructor, then Sized s
+     is a sequence type constructor that is identical to s,
+     except that it also keeps track of the current size of
+     each sequence.
+-}
+
 module Data.Edison.Seq.SizedSeq (
-    -- generic adaptor for sequences to keep track of the current size
+    -- * Sized Sequence Type
     Sized, -- Sized s instance of Sequence, Functor, Monad, MonadPlus
 
-    -- sequence operations
+    -- * Sequence Operations
     empty,single,lcons,rcons,append,lview,lhead,ltail,rview,rhead,rtail,
     null,size,concat,reverse,reverseOnto,fromList,toList,
     map,concatMap,foldr,foldl,foldr1,foldl1,reducer,reducel,reduce1,
@@ -14,10 +21,10 @@ module Data.Edison.Seq.SizedSeq (
     take,drop,splitAt,subseq,filter,partition,takeWhile,dropWhile,splitWhile,
     zip,zip3,zipWith,zipWith3,unzip,unzip3,unzipWith,unzipWith3,
 
-    -- documentation
+    -- * Documentation
     moduleName,instanceName,
 
-    -- other supported operations
+    -- * Other supported operations
     fromSeq,toSeq
 ) where
 
@@ -31,11 +38,6 @@ import Data.Edison.Seq.Defaults -- only used by concatMap
 import Control.Monad
 import Test.QuickCheck
 
--- This module defines a sequence adaptor Sized s.
--- If s is a sequence type constructor, then Sized s
--- is a sequence type constructor that is identical to s,
--- except that it also keeps track of the current size of
--- each sequence.
 
 -- signatures for exported functions
 moduleName     :: String

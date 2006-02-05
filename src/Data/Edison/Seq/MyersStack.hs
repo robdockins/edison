@@ -1,11 +1,22 @@
 -- Copyright (c) 1998-1999 Chris Okasaki.  
 -- See COPYRIGHT file for terms and conditions.
 
+{- | Meyers Stacks.  All operations are as listed in "Data.Edison.Seq" except
+     the following:
+    
+     * lookup @O( log n )@
+
+     Reference:
+
+     * Eugene Myers. \"An applicative random-access stack\". Information
+       Processing Letters, 17(5):241-248, December 1983.
+-}
+
 module Data.Edison.Seq.MyersStack (
-    -- type
+    -- * Sequence Type
     Seq, -- instance of Sequence, Functor, Monad, MonadPlus
 
-    -- sequence operations
+    -- * Sequence Operations
     empty,single,lcons,rcons,append,lview,lhead,ltail,rview,rhead,rtail,
     null,size,concat,reverse,reverseOnto,fromList,toList,
     map,concatMap,foldr,foldl,foldr1,foldl1,reducer,reducel,reduce1,
@@ -14,7 +25,7 @@ module Data.Edison.Seq.MyersStack (
     take,drop,splitAt,subseq,filter,partition,takeWhile,dropWhile,splitWhile,
     zip,zip3,zipWith,zipWith3,unzip,unzip3,unzipWith,unzipWith3,
 
-    -- documentation
+    -- * Documentation
     moduleName
 ) where
 
@@ -88,9 +99,6 @@ unzipWith3     :: (a -> b) -> (a -> c) -> (a -> d) -> Seq a -> (Seq b, Seq c, Se
 
 moduleName = "MyersStack"
 
--- Adapted from
---   Eugene Myers. "An applicative random-access stack". Information
---   Processing Letters, 17(5):241-248, December 1983.
 
 data Seq a = E | C !Int a (Seq a) (Seq a)
   -- what about strictness flags on tail and jump-tail?

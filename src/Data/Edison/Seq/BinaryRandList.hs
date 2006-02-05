@@ -1,11 +1,25 @@
 -- Copyright (c) 1998-1999 Chris Okasaki.  
 -- See COPYRIGHT file for terms and conditions.
 
+{- | Binary Random-Access lists.  All functions have the standard running
+     times from "Data.Edison.Seq" except the following:
+
+     * lookup   @O( log n )@
+     
+     * update   @O( log n )@
+
+     References:
+
+     * Chris Okasaki. Purely Functional Data Structures. 1998.
+       Section 10.1.2.
+-}
+
+
 module Data.Edison.Seq.BinaryRandList (
-    -- type
+    -- * Sequence Type
     Seq, -- instance of Sequence, Functor, Monad, MonadPlus
 
-    -- sequence operations
+    -- * Sequence Operations
     empty,single,lcons,rcons,append,lview,lhead,ltail,rview,rhead,rtail,
     null,size,concat,reverse,reverseOnto,fromList,toList,
     map,concatMap,foldr,foldl,foldr1,foldl1,reducer,reducel,reduce1,
@@ -14,7 +28,7 @@ module Data.Edison.Seq.BinaryRandList (
     take,drop,splitAt,subseq,filter,partition,takeWhile,dropWhile,splitWhile,
     zip,zip3,zipWith,zipWith3,unzip,unzip3,unzipWith,unzipWith3,
 
-    -- documentation
+    -- * Documentation
     moduleName
 ) where
 
@@ -89,9 +103,6 @@ unzipWith3     :: (a -> b) -> (a -> c) -> (a -> d) -> Seq a -> (Seq b, Seq c, Se
 
 moduleName = "BinaryRandList"
 
--- Adapted from
---   Chris Okasaki. Purely Functional Data Structures. 1998.
---   Section 10.1.2.
 
 data Seq a = E | Even (Seq (a,a)) | Odd a (Seq (a,a))    deriving (Eq)
 

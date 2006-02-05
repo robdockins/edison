@@ -1,16 +1,31 @@
 -- Copyright (c) 1998-1999 Chris Okasaki.  
 -- See COPYRIGHT file for terms and conditions.
 
--- These Braun sequences support lcons in O(log n)
--- time, but rcons in O(log^2 n) time.  By keeping
--- track of the size, we could get rcons down to O(log n)
--- as well.
+{- | One-sided Braun sequences.  All running times are as listed in 
+     "Data.Edison.Seq" except the following:
+
+     * lcons   @O( log n )@
+     
+     * rcons   @O( log^2 n )@
+
+     * lookup  @O( log i )@
+
+     * update  @O( log i )@
+
+     By keeping track of the size, we could get rcons
+     down to @O(log n)@ as well.
+
+     Reference:
+
+     * R. R. Hoogerwoord. \"A symmetric set of efficient list operations.\"
+       Journal of Functional Programming, 2(4):505--513, 1992.
+-}
 
 module Data.Edison.Seq.BraunSeq (
-    -- type of one-sided Braun sequences
+    -- * Sequence Type
     Seq, -- instance of Sequence, Functor, Monad, MonadPlus
 
-    -- sequence operations
+    -- * Sequence Operations
     empty,single,lcons,rcons,append,lview,lhead,ltail,rview,rhead,rtail,
     null,size,concat,reverse,reverseOnto,fromList,toList,
     map,concatMap,foldr,foldl,foldr1,foldl1,reducer,reducel,reduce1,
@@ -19,7 +34,7 @@ module Data.Edison.Seq.BraunSeq (
     take,drop,splitAt,subseq,filter,partition,takeWhile,dropWhile,splitWhile,
     zip,zip3,zipWith,zipWith3,unzip,unzip3,unzipWith,unzipWith3,
 
-    -- documentation
+    -- * Documentation
     moduleName
 ) where
 

@@ -1,11 +1,25 @@
 -- Copyright (c) 1998-1999 Chris Okasaki.  
 -- See COPYRIGHT file for terms and conditions.
 
+{- | This module defines a sequence adaptor Rev s.
+     If s is a sequence type constructor, then Rev s
+     is a sequence type constructor that is identical to s,
+     except that it is kept in the opposite order.
+     Also keeps explicit track of the size of the sequence,
+     similar to the Sized adaptor in SizedSeq.hs.
+
+     This module is most useful when s is a sequence type
+     that offers fast access to the front but slow access
+     to the rear, and your application needs the opposite
+     (i.e., fast access to the rear but slow access to the
+     front).
+-}
+
 module Data.Edison.Seq.RevSeq (
-    -- generic adaptor for sequences to keep them in the opposite order
+    -- * Rev Sequence Type
     Rev, -- Rev s instance of Sequence, Functor, Monad, MonadPlus
 
-    -- sequence operations
+    -- * Sequence Operations
     empty,single,lcons,rcons,append,lview,lhead,ltail,rview,rhead,rtail,
     null,size,concat,reverse,reverseOnto,fromList,toList,
     map,concatMap,foldr,foldl,foldr1,foldl1,reducer,reducel,reduce1,
@@ -14,7 +28,7 @@ module Data.Edison.Seq.RevSeq (
     take,drop,splitAt,subseq,filter,partition,takeWhile,dropWhile,splitWhile,
     zip,zip3,zipWith,zipWith3,unzip,unzip3,unzipWith,unzipWith3,
 
-    -- documentation
+    -- * Documentation
     moduleName,instanceName
 ) where
 
@@ -28,18 +42,6 @@ import qualified Data.Edison.Seq.ListSeq as L
 import Data.Edison.Seq.Defaults -- only used by concatMap
 import Control.Monad
 
--- This module defines a sequence adaptor Rev s.
--- If s is a sequence type constructor, then Rev s
--- is a sequence type constructor that is identical to s,
--- except that it is kept in the opposite order.
--- Also keeps explicit track of the size of the sequence,
--- similar to the Sized adaptor in SizedSeq.hs.
---
--- This module is most useful when s is a sequence type
--- that offers fast access to the front but slow access
--- to the rear, and your application needs the opposite
--- (i.e., fast access to the rear but slow access to the
--- front).
 
 -- signatures for exported functions
 moduleName     :: String

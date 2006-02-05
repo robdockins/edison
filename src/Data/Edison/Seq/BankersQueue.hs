@@ -1,11 +1,26 @@
 -- Copyright (c) 1998-1999 Chris Okasaki.  
 -- See COPYRIGHT file for terms and conditions.
 
+{- | This module implements Banker's Queues. It has the standard running
+     times from "Data.Edison.Seq" except for the following:
+
+     * rcons   @O( 1 )@
+
+     References:
+
+     * Chris Okasaki, Purely Functional Data Structures,  
+       1998, sections 6.3.2 and 8.4.1.
+
+     * Chris Okasaki, \"Simple and efficient purely functional
+       queues and deques\", JFP 5(4):583-592, October 1995.
+-}
+
+
 module Data.Edison.Seq.BankersQueue (
-    -- type of banker's queues
+    -- * Sequence Type
     Seq, -- instance of Sequence, Functor, Monad, MonadPlus
 
-    -- sequence operations
+    -- * Sequence operations
     empty,single,lcons,rcons,append,lview,lhead,ltail,rview,rhead,rtail,
     null,size,concat,reverse,reverseOnto,fromList,toList,
     map,concatMap,foldr,foldl,foldr1,foldl1,reducer,reducel,reduce1,
@@ -14,7 +29,7 @@ module Data.Edison.Seq.BankersQueue (
     take,drop,splitAt,subseq,filter,partition,takeWhile,dropWhile,splitWhile,
     zip,zip3,zipWith,zipWith3,unzip,unzip3,unzipWith,unzipWith3,
 
-    -- documentation
+    -- * Documentation
     moduleName
 
 ) where
@@ -90,12 +105,6 @@ unzipWith3     :: (a -> b) -> (a -> c) -> (a -> d) -> Seq a -> (Seq b, Seq c, Se
 
 moduleName = "BankersQueue"
 
--- Adapted from
---   Chris Okasaki. Purely Functional Data Structures. 1998.
---   Section 6.3.2.
--- and
---   Chris Okasaki. "Simple and Efficient Purely Functional Queues and Deques".
---   Journal of Functional Programming, 5(4):583-592, October 1995.
 
 data Seq a = Q !Int [a] [a] !Int
   -- invariant: front at least as long as rear

@@ -1,6 +1,11 @@
 -- Copyright (c) 1998 Chris Okasaki.  
 -- See COPYRIGHT file for terms and conditions.
 
+{- | This module provides default implementations of many of
+     the sequence operations.  It is used to fill in implementations
+     and is not intended for end users.
+-}
+
 module Data.Edison.Seq.Defaults
 where
 

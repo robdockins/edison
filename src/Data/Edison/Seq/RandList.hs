@@ -1,11 +1,27 @@
 -- Copyright (c) 1998-1999 Chris Okasaki.  
 -- See COPYRIGHT file for terms and conditions.
 
+{- | Random-Access Lists.  All operations are as listed in "Data.Edison.Seq"
+     except the following:
+
+     * lookup @O( log n )@
+
+     * update @O( log n )@
+
+     References:
+
+     * Chris Okasaki. Purely Functional Data Structures. 1998.
+       Section 9.3.1.
+
+     * Chris Okasaki. \"Purely Functional Random Access Lists\".  FPCA'95,
+       pages 86-95.
+-}
+
 module Data.Edison.Seq.RandList (
-    -- type
+    -- * Sequence Type
     Seq, -- instance of Sequence, Functor, Monad, MonadPlus
 
-    -- sequence operations
+    -- * Sequence Operations
     empty,single,lcons,rcons,append,lview,lhead,ltail,rview,rhead,rtail,
     null,size,concat,reverse,reverseOnto,fromList,toList,
     map,concatMap,foldr,foldl,foldr1,foldl1,reducer,reducel,reduce1,
@@ -14,7 +30,7 @@ module Data.Edison.Seq.RandList (
     take,drop,splitAt,subseq,filter,partition,takeWhile,dropWhile,splitWhile,
     zip,zip3,zipWith,zipWith3,unzip,unzip3,unzipWith,unzipWith3,
 
-    -- documentation
+    -- * Documentation
     moduleName
 ) where
 
@@ -88,12 +104,6 @@ unzipWith3     :: (a -> b) -> (a -> c) -> (a -> d) -> Seq a -> (Seq b, Seq c, Se
 
 moduleName = "RandList"
 
--- Adapted from
---   Chris Okasaki. Purely Functional Data Structures. 1998.
---   Section 9.3.1.
--- and
---   Chris Okasaki. "Purely Functional Random Access Lists".  FPCA'95,
---   pages 86-95.
 
 data Tree a = L a | T a (Tree a) (Tree a)   deriving (Eq)
 data Seq a = E | C !Int (Tree a) (Seq a)    --deriving (Eq)

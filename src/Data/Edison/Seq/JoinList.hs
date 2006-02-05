@@ -1,11 +1,27 @@
 -- Copyright (c) 1998-1999 Chris Okasaki.  
 -- See COPYRIGHT file for terms and conditions.
 
+{- | Join lists. All running times are as listed in "Data.Edison.Seq" except
+     for the following:
+
+     * rcons  @O( 1 )@
+
+     * append @O( 1 )@
+
+     * lview  @O( n )@  (but @O( 1 )@ in practice)
+
+     * ltail  @O( n )@  (but @O( 1 )@ in practice)
+
+     * rview  @O( n )@  (but @O( 1 )@ in practice)
+
+     * rtail  @O( n )@  (but @O( 1 )@ in practice)
+-}
+
 module Data.Edison.Seq.JoinList (
-    -- type of join lists
+    -- * Sequence Type
     Seq, -- instance of Sequence, Functor, Monad, MonadPlus
 
-    -- sequence operations
+    -- * Sequence Operations
     empty,single,lcons,rcons,append,lview,lhead,ltail,rview,rhead,rtail,
     null,size,concat,reverse,reverseOnto,fromList,toList,
     map,concatMap,foldr,foldl,foldr1,foldl1,reducer,reducel,reduce1,
@@ -14,7 +30,7 @@ module Data.Edison.Seq.JoinList (
     take,drop,splitAt,subseq,filter,partition,takeWhile,dropWhile,splitWhile,
     zip,zip3,zipWith,zipWith3,unzip,unzip3,unzipWith,unzipWith3,
 
-    -- documentation
+    -- * Documentation
     moduleName
 ) where
 

@@ -1,11 +1,17 @@
 -- Copyright (c) 1998 Chris Okasaki.  
 -- See COPYRIGHT file for terms and conditions.
 
+{- | This module packages the standard prelude list type as a
+     sequence.  This is the baseline sequence implementation and
+     all methods have the default running times listed in
+     "Data.Edison.Seq".
+-}
+
 module Data.Edison.Seq.ListSeq (
-    -- type synonym
+    -- * Sequence Type
     Seq,
 
-    -- sequence operations
+    -- * Sequence Operations
     empty,single,lcons,rcons,append,lview,lhead,lheadM,ltail,ltailM,
     rview,rhead,rheadM,rtail,rtailM,
     null,size,concat,reverse,reverseOnto,fromList,toList,
@@ -15,9 +21,8 @@ module Data.Edison.Seq.ListSeq (
     take,drop,splitAt,subseq,filter,partition,takeWhile,dropWhile,splitWhile,
     zip,zip3,zipWith,zipWith3,unzip,unzip3,unzipWith,unzipWith3,
 
-    -- documentation
+    -- * Documentation
     moduleName
-
 ) where
 
 import Prelude hiding (concat,reverse,map,concatMap,foldr,foldl,foldr1,foldl1,

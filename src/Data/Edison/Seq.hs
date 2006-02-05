@@ -17,7 +17,13 @@
 
      We follow the naming convention that every module implementing sequences
      defines a type constructor named Seq.
+
+     For each method the \"default\" complexity is listed.  Individual
+     implementations may differ for some methods.  The documentation for
+     each implementation will list those methods for which the running time
+     differs from these.
 -}
+
 module Data.Edison.Seq (
   Sequence (..)
 ) where
@@ -33,8 +39,9 @@ import Data.Edison.Prelude
 -- naming convention: instances of Sequence are named Seq whenever possible
 
 -- | The 'Sequence' class defines an interface for datatypes which
---   implement sequences.  The specification for each function is given
---   as psudeocode below, except for a few obvious cases.
+--   implement sequences.  A discription for each function is
+--   given below.  In most cases psudeocode is also provided.
+--   Obviously, the psudeocode is illustrative only.
 --   
 --   Sequences are represented in psudecode between angle brackets:
 --
@@ -43,9 +50,8 @@ import Data.Edison.Prelude
 --   Such that @x0@ is at the left or front of the sequence and
 --   @xn-1@ is at the right or rear of the sequence.
 
+
 class (Functor s, MonadPlus s) => Sequence s where
-  -- in addition to Functor, Monad, and MonadPlus,
-  -- sequences should also be instances of Eq and Show
 
 ----------------------------------------------------------------------
 -- Constructors
@@ -53,38 +59,52 @@ class (Functor s, MonadPlus s) => Sequence s where
   -- | The empty sequence
   -- 
   -- > empty = <>
+  --
+  --   Default running time: @O( 1 )@
   empty     :: s a
 
   -- | Create a singleton sequence
   --
   -- > single x = <x>
+  --
+  --   Default running time: @O( 1 )@
   single    :: a -> s a
 
   -- | Add a new element to the front\/left of a sequence
   --
   -- > lcons x <x0,...,xn-1> = <x,x0,...,xn-1>
+  --
+  --   Default running time: @O( 1 )@
   lcons     :: a -> s a -> s a
 
   -- | Add a new element to the right\/rear of a sequence
   --
   -- > rcons <x0,...,xn-1> x = <x0,...,xn-1,x>
+  --
+  --   Default running time: @O( n )@
   rcons     :: s a -> a -> s a
 
   -- | Append two sequence, with the first argument on the left
   --   and the second argument on the right.
   -- 
   -- > append <x0,...,xn-1> <y0,...,ym-1> = <x0,...,xn-1,y0,...,ym-1>
+  --
+  --   Default running time: @O( n )@
   append    :: s a -> s a -> s a
 
   -- | Convert a list into a sequence
   -- 
   -- > fromList [x0,...,xn-1] = <x0,...,xn-1>
+  --
+  --   Default running time: @O( n )@
   fromList  :: [a] -> s a
 
   -- | Create a sequence containing @n@ copies of the given element.
   --   Return 'empty' if @n\<0@.
   --
   --   @copy n x = \<x,...,x>@
+  --
+  --   Default running time: @O( n )@
   copy      :: Int -> a -> s a          -- returns empty if size is negative
 
 ----------------------------------------------------------------------
@@ -92,22 +112,32 @@ class (Functor s, MonadPlus s) => Sequence s where
 
   -- | Separate a sequence into its first (leftomst) element and the
   --   remaining sequence.  Calls 'fail' if the sequence is empty.
+  --
+  --   Default running time: @O( 1 )@
   lview     :: (Monad m) => s a -> m (a, s a)
 
   -- | Return the first element of a sequence.
   --   Signals an error if thesequence is empty.
+  --
+  --   Default running time: @O( 1 )@
   lhead     :: s a -> a
 
   -- | Returns the first element of a sequence. 
   --   Calls 'fail' if the sequence is empty.
+  --
+  --   Default running time: @O( 1 )@
   lheadM    :: (Monad m) => s a -> m a 
 
   -- | Delete the first element of the sequence.
   --   Signals error if sequence is empty.
+  --
+  --   Default running time: @O( 1 )@
   ltail     :: s a -> s a
 
   -- | Delete the first element of the sequence.
   --   Calls 'fail' if the sequence is empty.
+  --
+  --   Default running time: @O( 1 )@
   ltailM    :: (Monad m) => s a -> m (s a)
 
   lhead = ID.runIdentity . lheadM
@@ -115,22 +145,32 @@ class (Functor s, MonadPlus s) => Sequence s where
 
   -- | Separate a sequence into its last (rightmost) element and the
   --   remaining sequence.  Calls 'fail' if the sequence is empty.
+  --
+  --   Default running time: @O( n )@
   rview     :: (Monad m) => s a -> m (s a, a)
 
   -- | Return the last (rightmost) element of the sequence.
   --   Signals error if sequence is empty.
+  --
+  --   Default running time: @O( n )@
   rhead     :: s a -> a 
 
   -- | Returns the last element of the sequence.
   --    Calls 'fail' if the sequence is empty.
+  --
+  --   Default running time: @O( n )@
   rheadM    :: (Monad m) => s a -> m a
 
   -- | Delete the last (rightmost) element of the sequence.
   --   Signals an error if the sequence is empty.
+  --
+  --   Default running time: @O( n )@
   rtail     :: s a -> s a
 
   -- | Delete the last (rightmost) element of the sequence.
   --   Calls 'fail' of the sequence is empty
+  --
+  --   Default running time: @O( n )@
   rtailM    :: (Monad m) => s a -> m (s a)
 
   rhead = ID.runIdentity . rheadM
@@ -142,16 +182,22 @@ class (Functor s, MonadPlus s) => Sequence s where
   -- | Returns 'True' if the sequence is empty and 'False' otherwise.
   -- 
   -- > null <x0,...,xn-1> = (n==0)
+  --
+  --   Default running time: @O( 1 )@
   null      :: s a -> Bool
 
   -- | Returns the length of a sequence.
   --
   -- > size <x0,...,xn-1> = n
+  --
+  --   Default running time: @O( n )@
   size      :: s a -> Int
 
   -- | Convert a sequence to a list.
   --
   -- > toList <x0,...,xn-1> = [x0,...,xn-1]
+  --
+  --   Default running time: @O( n )@
   toList    :: s a -> [a]
 
 ----------------------------------------------------------------------
@@ -160,16 +206,24 @@ class (Functor s, MonadPlus s) => Sequence s where
   -- | Flatten a sequence of sequences into a simple sequence.
   --
   -- > concat xss = foldr append empty xss
+  --
+  --   Default running time: @O( n + m )@
+  --    where @n@ is the length of the input sequence and @m@ is
+  --    length of the output sequence.
   concat    :: s (s a) -> s a
 
-  -- | Referse the order of a sequence
+  -- | Reverse the order of a sequence
   --
   -- > reverse <x0,...,xn-1> = <xn-1,...,x0>
+  --
+  --   Default running time: @O( n )@
   reverse      :: s a -> s a
 
   -- | Reverse a sequence onto the front of another sequence.
   --
   -- > reverseOnto <x0,...,xn-1> <y0,...,ym-1> = <xn-1,...,x0,y0,...,ym-1>
+  --
+  --   Default running time: @O( n1 )@
   reverseOnto  :: s a -> s a -> s a
 
 ----------------------------------------------------------------------
@@ -179,6 +233,10 @@ class (Functor s, MonadPlus s) => Sequence s where
   --   every element of a sequence.
   --
   -- > map f <x0,...,xn-1> = <f x0,...,f xn-1>
+  --
+  --   Default running time: @O( t * n )@
+  --     where @t@ is the running time of @f@
+
   map        :: (a -> b) -> s a -> s b
 
   -- | Apply a sequence-producing function to every element
@@ -187,6 +245,10 @@ class (Functor s, MonadPlus s) => Sequence s where
   --   arguments in the reverse order.
   -- 
   -- > concatMap f xs = concat (map f xs)
+  --
+  --   Default running time: @O( t * n + m )@
+  --     where @n@ is the length of the input sequence, @m@ is the
+  --     length of the output sequence, and @t@ is the running time of @f@
   concatMap  :: (a -> s b) -> s a -> s b
 
   -- | Combine all the elements of a sequence into a single value,
@@ -194,6 +256,9 @@ class (Functor s, MonadPlus s) => Sequence s where
   --   value.
   -- 
   -- > foldr (+) c <x0,...,xn-1> = x0 + (x1 + ... + (xn-1 + c))
+  --
+  --   Default running time: @O( t * n)@
+  --     where @t@ is the running time of @f@
   foldr     :: (a -> b -> b) -> b -> s a -> b
 
   -- | Combine all the elements of a sequence into a single value,
@@ -201,6 +266,9 @@ class (Functor s, MonadPlus s) => Sequence s where
   --   value.
   --
   -- > foldl (+) c <x0,...,xn-1> = ((c + x0) + x1) + ... + xn-1
+  --
+  --   Default running time: @O( t * n )@
+  --     where @t@ is the running time of @f@
   foldl     :: (b -> a -> b) -> b -> s a -> b
 
   -- | Combine all the elements of a non-empty sequence into a
@@ -210,6 +278,9 @@ class (Functor s, MonadPlus s) => Sequence s where
   -- > foldr1 (+) <x0,...,xn-1>
   -- >   | n==0 = error "ModuleName.foldr1: empty sequence"
   -- >   | n>0  = x0 + (x1 + ... + xn-1)
+  --
+  --   Default running time: @O( t * n )@
+  --     where @t@ is the running time of @f@
   foldr1    :: (a -> a -> a) -> s a -> a  
 
   -- | Combine all the elements of a non-empty sequence into
@@ -219,6 +290,9 @@ class (Functor s, MonadPlus s) => Sequence s where
   -- > foldl1 (+) <x0,...,xn-1>
   -- >  | n==0 = error "ModuleName.foldl1: empty sequence"
   -- >  | n>0  = (x0 + x1) + ... + xn-1
+  --
+  --   Default running time: @O( t * n )@
+  --     where @t@ is the running time of @f@
   foldl1    :: (a -> a -> a) -> s a -> a  
 
   -- | reduce is similar to fold, but combines elements in a balanced fashion.
@@ -229,7 +303,7 @@ class (Functor s, MonadPlus s) => Sequence s where
   --   What is meant by \"in a balanced fashion\"?  We mean that
   --   @reduce1 (%) \<x0,x1,...,xn-1>@ equals some complete parenthsization of
   --   @x0 % x1 % ... % xn-1@ such that the nesting depth of parentheses
-  --   is @O( log n )@.  The precice shape of this parenthesization is
+  --   is @O( log n )@.  The precise shape of this parenthesization is
   --   unspecified.
   --
   -- > reducer (+) x xs = reduce1 (+) (cons x xs)
@@ -239,7 +313,7 @@ class (Functor s, MonadPlus s) => Sequence s where
   -- > reduce1 (+) <x0,...,xn-1> =
   -- >     (reduce1 (+) <x0,...,xi>) + (reduce1 (+) <xi+1,...,xn-1>)
   --
-  --   for some i such that @ 0 \<= i && i \< n-1 @
+  --   for some @i@ such that @ 0 \<= i && i \< n-1 @
   --
   --   Although the exact value of i is unspecified it tends toward @n\/2@
   --   so that the depth of calls to + is at most logarithmic.
@@ -254,6 +328,9 @@ class (Functor s, MonadPlus s) => Sequence s where
   --   mergesort where:
   --
   -- > mergesort xs = reducer merge empty (map single xs)
+  --
+  --   Default running time: @O( t * n )@
+  --     where @t@ is the running time of @n@
 
   reducer   :: (a -> a -> a) -> a -> s a -> a
   reducel   :: (a -> a -> a) -> a -> s a -> a
@@ -269,6 +346,8 @@ class (Functor s, MonadPlus s) => Sequence s where
   --   is too large.
   --
   -- > take i xs = fst (splitAt i xs)
+  --
+  --   Default running time: @O( i )@
   take        :: Int -> s a -> s a
 
   -- | Delete a prefix of length @i@ from a sequence.  Return
@@ -276,6 +355,8 @@ class (Functor s, MonadPlus s) => Sequence s where
   --   @i@ is too large.
   --
   -- > drop i xs = snd (splitAt i xs)
+  --
+  --   Default running time: @O( i )@
   drop        :: Int -> s a -> s a
   
   -- | Split a sequence into a prefix of length @i@
@@ -287,6 +368,8 @@ class (Functor s, MonadPlus s) => Sequence s where
   -- >  | i < 0  = (<>           , <x0,...,xn-1>)
   -- >  | i < n  = (<x0,...,xi-1>, <xi,...,xn-1>)
   -- >  | i >= n = (<x0,...,xn-1>, <>           )
+  --
+  --   Default running time: @O( i )@
   splitAt     :: Int -> s a -> (s a, s a)
 
 
@@ -297,6 +380,8 @@ class (Functor s, MonadPlus s) => Sequence s where
   --   start index or length are negative or too large.
   --
   -- > subseq i len xs = take len (drop i xs)
+  --
+  --   Default running time: @O( i + len )@
   subseq      :: Int -> Int -> s a -> s a
 
 ----------------------------------------------------------------------
@@ -308,6 +393,9 @@ class (Functor s, MonadPlus s) => Sequence s where
   --
   -- > filter p xs = foldr pcons empty xs
   -- >      where pcons x xs = if p x then cons x xs else xs
+  --
+  --   Default running time: @O( t * n )@
+  --     where @t@ is the running time of @p@
   filter      :: (a -> Bool) -> s a -> s a
 
   -- | Separate the elements of a sequence into those that
@@ -316,18 +404,27 @@ class (Functor s, MonadPlus s) => Sequence s where
   --   original sequence.
   --
   -- > partition p xs = (filter p xs, filter (not . p) xs)
+  --
+  --   Default running time: @O( t * n )@
+  --     where @t@ is the running time of @p@
   partition   :: (a -> Bool) -> s a -> (s a, s a)
 
   -- | Extract the maximal prefix of elements satisfying the
   --   given predicate.
   --
   -- > takeWhile p xs = fst (splitWhile p xs)
+  --
+  --   Default running time: @O( t * n )@
+  --     where @t@ is the running time of @p@
   takeWhile   :: (a -> Bool) -> s a -> s a
 
   -- | Delete the maximal prefix of elements satifying the
   --   given predicate.
   --
   -- > dropWhile p xs = snd (splitWhile p xs)
+  --
+  --   Default running time: @O( t * n )@
+  --     where @t@ is the runningn time of @p@
   dropWhile   :: (a -> Bool) -> s a -> s a
 
   -- | Split a sequence into the maximal prefix of elements
@@ -335,6 +432,9 @@ class (Functor s, MonadPlus s) => Sequence s where
   --
   -- > splitWhile p <x0,...,xn-1> = (<x0,...,xi-1>, <xi,...,xn-1>)
   -- >   where i = min j such that p xj (or n if no such j)
+  --
+  --   Default running time: @O( t * n )@
+  --     where @t@ is the running time of @p@
   splitWhile  :: (a -> Bool) -> s a -> (s a, s a)
 
 
@@ -344,6 +444,8 @@ class (Functor s, MonadPlus s) => Sequence s where
   -- | Test whether an index is valid for the given sequence.
   --
   -- > inBounds <x0,...,xn-1> i = (0 <= i && i < n)
+  --
+  --   Default running time: @O( i )@
   inBounds  :: s a -> Int -> Bool
 
   -- | Return the element at the given index.  
@@ -352,6 +454,8 @@ class (Functor s, MonadPlus s) => Sequence s where
   -- > lookup xs@<x0,...,xn-1> i 
   -- >   | inBounds xs = xi
   -- >   | otherwise = error "ModuleName.lookup: index out of bounds"
+  --
+  --   Default running time: @O( i )@
   lookup    :: s a -> Int -> a
 
   -- | Return the element at the given index.
@@ -360,6 +464,8 @@ class (Functor s, MonadPlus s) => Sequence s where
   -- > lookupM xs@<x0,...,xn-1> i 
   -- >   | inBounds xs = Just xi
   -- >   | otherwise = Nothing
+  --
+  --   Default running time: @O( i )@
   lookupM   :: (Monad m) => s a -> Int -> m a
 
   -- | Return the element at the given index, or the
@@ -368,6 +474,8 @@ class (Functor s, MonadPlus s) => Sequence s where
   -- > lookupWithDefault d xs@<x0,...,xn-1> i 
   -- >   | inBounds xs = xi
   -- >   | otherwise = d
+  --
+  --   Default running time: @O( i )@
   lookupWithDefault  :: a -> s a -> Int -> a
 
   lookup m k = ID.runIdentity (lookupM m k)
@@ -378,6 +486,8 @@ class (Functor s, MonadPlus s) => Sequence s where
   -- > update i y xs@<x0,...,xn-1>
   -- >   | inBounds xs = <x0,...xi-1,y,xi+1,...,xn-1>
   -- >   | otherwise = xs
+  --
+  --   Default running time: @O( i )@
   update    :: Int -> a -> s a -> s a
 
   -- | Apply a function to the element at the given index, or
@@ -386,23 +496,35 @@ class (Functor s, MonadPlus s) => Sequence s where
   -- > adjust f i xs@<x0,...,xn-1>
   -- >   | inBounds xs = <x0,...xi-1,f xi,xi+1,...,xn-1>
   -- >   | otherwise = xs
+  --
+  --   Default running time: @O( i + t )@
+  --     where @t@ is the running time of @f@
   adjust    :: (a -> a) -> Int -> s a -> s a -- map a single element
 
   -- | Like 'map', but include the index with each element.
   --
   -- > mapWithIndex f <x0,...,xn-1> = <f 0 x0,...,f (n-1) xn-1>
+  --
+  --   Default running time: @O( t * n )@
+  --     where @t@ is the running time of @f@
   mapWithIndex    :: (Int -> a -> b) -> s a -> s b
 
   -- | Like 'foldr', but include the index with each element.
   --
   -- > foldrWithIndex f c <x0,...,xn-1> = 
   -- >     f 0 x0 (f 1 x1 (... (f (n-1) xn-1 c)))
+  --
+  --   Default running time: @O( t * n )@
+  --     where @t@ is the running time of @f@
   foldrWithIndex  :: (Int -> a -> b -> b) -> b -> s a -> b
 
   -- | Like 'foldl', but include the index with each element.
   --
   -- > foldlWithIndex f c <x0,...,xn-1> =
   -- >     f (...(f (f c 0 x0) 1 x1)...) (n-1) xn-1)
+  --
+  --   Default running time: @O( t * n )@
+  --     where @t@ is the running time of @f@
   foldlWithIndex  :: (b -> Int -> a -> b) -> b -> s a -> b
 
 ----------------------------------------------------------------------
@@ -415,6 +537,8 @@ class (Functor s, MonadPlus s) => Sequence s where
   --
   -- > zip <x0,...,xn-1> <y0,...,ym-1> = <(x0,y0),...,(xj-1,yj-1)>
   -- >     where j = min {n,m}
+  --
+  --   Default running time: @O( min( n1, n2) )@
   zip         :: s a -> s b -> s (a,b)
 
   -- | Like 'zip', but combines three sequences into triples.
@@ -422,6 +546,8 @@ class (Functor s, MonadPlus s) => Sequence s where
   -- > zip3 <x0,...,xn-1> <y0,...,ym-1> <z0,...,zk-1> = 
   -- >      <(x0,y0,z0),...,(xj-1,yj-1,zj-1)>
   -- >    where j = min {n,m,k}
+  --
+  --   Default running time: @O( min( n1, n2, n3 ) )@
   zip3        :: s a -> s b -> s c -> s (a,b,c)
 
   -- | Combine two sequences into a single sequence by mapping
@@ -430,17 +556,25 @@ class (Functor s, MonadPlus s) => Sequence s where
   --   of the longer sequence are discarded.
   --
   -- > zipWith f xs ys = map (uncurry f) (zip xs ys)
+  --
+  --   Default running time: @O( t * min( n1, n2 ) )@
+  --     where @t@ is the running time of @f@
   zipWith     :: (a -> b -> c) -> s a -> s b -> s c
 
   -- | Like 'zipWith' but for a three-place function and three
   --   sequences.
   --
   -- > zipWith3 f xs ys zs = map (uncurry f) (zip3 xs ys zs)
+  --
+  --   Default running time: @O( t * min( n1, n2, n3 ) )@
+  --     where @t@ is the running time of @f@
   zipWith3    :: (a -> b -> c -> d) -> s a -> s b -> s c -> s d
 
   -- | Transpose a sequence of pairs into a pair of sequences.
   --
   -- > unzip xs = (map fst xs, map snd xs)
+  --
+  --   Default running time: @O( n )@
   unzip       :: s (a,b) -> (s a, s b)
 
   -- | Transpose a sequence of triples into a triple of sequences
@@ -449,18 +583,28 @@ class (Functor s, MonadPlus s) => Sequence s where
   -- >    where fst3 (x,y,z) = x
   -- >          snd3 (x,y,z) = y
   -- >          thd3 (x,y,z) = z
+  --
+  --   Default running time: @O( n )@
   unzip3      :: s (a,b,c) -> (s a, s b, s c)
 
   -- | Map two functions across every element of a sequence,
   --   yielding a pair of sequences
   --
   -- > unzipWith f g xs = (map f xs, map g xs)
+  --
+  --   Default running time: @O( t * n )@
+  --     where @t@ is the maximum running time
+  --     of @f@ and @g@
   unzipWith   :: (a -> b) -> (a -> c) -> s a -> (s b, s c)
 
   -- | Map three functions across every element of a sequence,
   --   yielding a triple of sequences.
   --
   -- > unzipWith3 f g h xs = (map f xs, map g xs, map h xs)
+  --
+  --   Default running time: @O( t * n )@
+  --     where @t@ is the maximum running time
+  --     of @f@, @g@, and @h@
   unzipWith3  :: (a -> b) -> (a -> c) -> (a -> d) -> s a -> (s b, s c, s d)
 
 ----------------------------------------------------------------------
