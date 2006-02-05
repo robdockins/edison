@@ -53,10 +53,14 @@ rcons          :: Seq a -> a -> Seq a
 append         :: Seq a -> Seq a -> Seq a
 lview          :: (Monad m) => Seq a -> m (a, Seq a)
 lhead          :: Seq a -> a
+lheadM         :: (Monad m) => Seq a -> m a
 ltail          :: Seq a -> Seq a
+ltailM         :: (Monad m) => Seq a -> m (Seq a)
 rview          :: (Monad m) => Seq a -> m (Seq a, a)
 rhead          :: Seq a -> a
+rheadM         :: (Monad m) => Seq a -> m a
 rtail          :: Seq a -> Seq a
+rtailM         :: (Monad m) => Seq a -> m (Seq a)
 null           :: Seq a -> Bool
 size           :: Seq a -> Int
 concat         :: Seq (Seq a) -> Seq a
@@ -136,12 +140,24 @@ lhead E = error "JoinList.lhead: empty sequence"
 lhead (L x) = x
 lhead (A xs ys) = lhead xs
 
+lheadM E = fail "JoinList.lheadM: empty sequence"
+lheadM (L x) = return x
+lheadM (A xs ys) = lheadM xs
+
 ltail E = error "JoinList.ltail: empty sequence"
 ltail (L x) = E
 ltail (A xs ys) = ltl xs ys
   where ltl E zs = error "JoinList.ltl: bug"
         ltl (L x) zs = zs
         ltl (A xs ys) zs = ltl xs (A ys zs)
+
+ltailM E = fail "JoinList.ltailM: empty sequence"
+ltailM (L x) = return E
+ltailM (A xs ys) = return (ltl xs ys)
+  where ltl E zs = error "JoinList.ltl: bug"
+        ltl (L x) zs = zs
+        ltl (A xs ys) zs = ltl xs (A ys zs)
+
 
 -- Don't want to do plain path reversal on rview/rtail because of expectation
 -- that left accesses are more common, so we would prefer to keep the left
@@ -159,9 +175,21 @@ rhead E = error "JoinList.rhead: empty sequence"
 rhead (L x) = x
 rhead (A xs ys) = rhead ys
 
+rheadM E = fail "JoinList.rheadM: empty sequence"
+rheadM (L x) = return x
+rheadM (A xs ys) = rheadM ys
+
 rtail E = error "JoinList.rtail: empty sequence"
 rtail (L x) = E
 rtail (A xs ys) = rtl xs ys
+  where rtl xs (A ys (A zs s)) = A (A xs ys) (rtl zs s)
+        rtl xs (A ys (L _)) = A xs ys
+        rtl xs (L x) = xs
+        rtl xs _ = error "JoinList.rtl: bug"
+
+rtailM E = fail "JoinList.rtailM: empty sequence"
+rtailM (L x) = return E
+rtailM (A xs ys) = return (rtl xs ys)
   where rtl xs (A ys (A zs s)) = A (A xs ys) (rtl zs s)
         rtl xs (A ys (L _)) = A xs ys
         rtl xs (L x) = xs
@@ -260,6 +288,7 @@ unzipWith3 = unzipWith3UsingFoldr
 instance S.Sequence Seq where
   {empty = empty; single = single; lcons = lcons; rcons = rcons;
    append = append; lview = lview; lhead = lhead; ltail = ltail;
+   lheadM = lheadM; ltailM = ltailM; rheadM = rheadM; rtailM = rtailM;
    rview = rview; rhead = rhead; rtail = rtail; null = null;
    size = size; concat = concat; reverse = reverse; 
    reverseOnto = reverseOnto; fromList = fromList; toList = toList;
