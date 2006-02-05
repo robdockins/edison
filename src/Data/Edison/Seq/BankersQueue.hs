@@ -22,6 +22,7 @@ module Data.Edison.Seq.BankersQueue (
 
     -- * Sequence operations
     empty,single,lcons,rcons,append,lview,lhead,ltail,rview,rhead,rtail,
+    lheadM,ltailM,rheadM,rtailM,
     null,size,concat,reverse,reverseOnto,fromList,toList,
     map,concatMap,foldr,foldl,foldr1,foldl1,reducer,reducel,reduce1,
     copy,inBounds,lookup,lookupM,lookupWithDefault,update,adjust,
