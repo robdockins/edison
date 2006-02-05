@@ -108,13 +108,13 @@ append = (++)
 lview [] = fail "ListSeq.lview: empty sequence"
 lview (x:xs) = return (x, xs)
 
-lheadM [] = fail "ListSeq.lhead: empty sequence"
+lheadM [] = fail "ListSeq.lheadM: empty sequence"
 lheadM (x:xs) = return x
 
 lhead [] = error "ListSeq.lhead: empty sequence"
 lhead (x:xs) = x
 
-ltailM [] = fail "ListSeq.ltail: empty sequence"
+ltailM [] = fail "ListSeq.ltailM: empty sequence"
 ltailM (x:xs) = return xs
 
 ltail [] = error "ListSeq.ltail: empty sequence"
@@ -123,7 +123,7 @@ ltail (x:xs) = xs
 rview [] = fail "ListSeq.rview: empty sequence"
 rview xs = return (rtail xs, rhead xs)
 
-rheadM [] = fail "ListSeq.rhead: empty sequence"
+rheadM [] = fail "ListSeq.rheadM: empty sequence"
 rheadM (x:xs) = rh x xs
   where rh y [] = return y
         rh y (x:xs) = rh x xs
@@ -133,7 +133,7 @@ rhead (x:xs) = rh x xs
   where rh y [] = y
         rh y (x:xs) = rh x xs
 
-rtailM [] = fail "ListSeq.rtail: empty sequence"
+rtailM [] = fail "ListSeq.rtailM: empty sequence"
 rtailM (x:xs) = return (rt x xs)
   where rt y [] = []
         rt y (x:xs) = y : rt x xs
