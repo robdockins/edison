@@ -49,10 +49,14 @@ rcons          :: S.Sequence s => Sized s a -> a -> Sized s a
 append         :: S.Sequence s => Sized s a -> Sized s a -> Sized s a
 lview          :: (S.Sequence s, Monad m) => Sized s a -> m (a, Sized s a)
 lhead          :: S.Sequence s => Sized s a -> a
+lheadM         :: (S.Sequence s, Monad m) => Sized s a -> m a
 ltail          :: S.Sequence s => Sized s a -> Sized s a
+ltailM         :: (S.Sequence s, Monad m) => Sized s a -> m (Sized s a)
 rview          :: (S.Sequence s, Monad m) => Sized s a -> m (Sized s a, a)
 rhead          :: S.Sequence s => Sized s a -> a
+rheadM         :: (S.Sequence s, Monad m) => Sized s a -> m a
 rtail          :: S.Sequence s => Sized s a -> Sized s a
+rtailM         :: (S.Sequence s, Monad m) => Sized s a -> m (Sized s a)
 null           :: S.Sequence s => Sized s a -> Bool
 size           :: S.Sequence s => Sized s a -> Int
 concat         :: S.Sequence s => Sized s (Sized s a) -> Sized s a
@@ -123,8 +127,13 @@ lview (N n xs) = case S.lview xs of
 
 lhead (N n xs) = S.lhead xs
 
+lheadM (N n xs) = S.lheadM xs
+
 ltail (N 0 xs) = error "SizedSeq.ltail: empty sequence"
 ltail (N n xs) = N (n-1) (S.ltail xs)
+
+ltailM (N 0 xs) = fail "SizedSeq.ltailM: empty sequence"
+ltailM (N n xs) = return (N (n-1) (S.ltail xs))
 
 rview (N n xs) = case S.rview xs of
                    Nothing     -> fail "SizedSeq.rview: empty sequence"
@@ -132,8 +141,13 @@ rview (N n xs) = case S.rview xs of
  
 rhead (N n xs) = S.rhead xs
 
+rheadM (N n xs) = S.rheadM xs
+
 rtail (N 0 xs) = error "SizedSeq.rtail: empty sequence"
 rtail (N n xs) = N (n-1) (S.rtail xs)
+
+rtailM (N 0 xs) = fail "SizedSeq.rtailM: empty sequence"
+rtailM (N n xs) = return (N (n-1) (S.rtail xs))
 
 null (N n xs) = n == 0
 size (N n xs) = n
@@ -226,6 +240,7 @@ unzipWith3 f g h (N n xyzs) = (N n xs, N n ys, N n zs)
 instance S.Sequence s => S.Sequence (Sized s) where
   {empty = empty; single = single; lcons = lcons; rcons = rcons;
    append = append; lview = lview; lhead = lhead; ltail = ltail;
+   lheadM = lheadM; ltailM = ltailM; rheadM = rheadM; rtailM = rtailM;
    rview = rview; rhead = rhead; rtail = rtail; null = null;
    size = size; concat = concat; reverse = reverse; 
    reverseOnto = reverseOnto; fromList = fromList; toList = toList;
