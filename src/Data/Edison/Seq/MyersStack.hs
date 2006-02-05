@@ -49,10 +49,14 @@ rcons          :: Seq a -> a -> Seq a
 append         :: Seq a -> Seq a -> Seq a
 lview          :: (Monad m) => Seq a -> m (a, Seq a)
 lhead          :: Seq a -> a
+lheadM         :: (Monad m) => Seq a -> m a
 ltail          :: Seq a -> Seq a
+ltailM         :: (Monad m) => Seq a -> m (Seq a)
 rview          :: (Monad m) => Seq a -> m (Seq a, a)
 rhead          :: Seq a -> a
+rheadM         :: (Monad m) => Seq a -> m a
 rtail          :: Seq a -> Seq a
+rtailM         :: (Monad m) => Seq a -> m (Seq a)
 null           :: Seq a -> Bool
 size           :: Seq a -> Int
 concat         :: Seq (Seq a) -> Seq a
@@ -119,8 +123,14 @@ lview (C _ x xs _) = return (x, xs)
 lhead E = error "MyersStack.lhead: empty sequence"
 lhead (C _ x xs _) = x
 
+lheadM E = fail "MyersStack.lheadM: empty sequence"
+lheadM (C _ x xs _) = return x
+
 ltail E = error "MyersStack.ltail: empty sequence"
 ltail (C _ x xs _) = xs
+
+ltailM E = fail "MyersStack.ltailM: empty sequence"
+ltailM (C _ x xs _) = return xs
 
 rview E = fail "MyersStack.rview: empty sequence"
 rview xs = return (rtail xs, rhead xs)
@@ -131,8 +141,19 @@ rhead (C _ x xs xs') = rh x xs xs'
         rh x (C _ y ys ys') E = rh y ys ys'
         rh x E E = x
 
+rheadM E = fail "MyersStack.rheadM: empty sequence"
+rheadM (C _ x xs xs') = return (rh x xs xs')
+  where rh x xs (C _ y ys ys') = rh y ys ys'
+        rh x (C _ y ys ys') E = rh y ys ys'
+        rh x E E = x
+
 rtail E = error "MyersStack.rtail: empty sequence"
 rtail (C _ x xs _) = rt x xs
+  where rt y E = E
+        rt y (C _ x xs _) = lcons y (rt x xs)
+
+rtailM E = fail "MyersStack.rtailM: empty sequence"
+rtailM (C _ x xs _) = return (rt x xs)
   where rt y E = E
         rt y (C _ x xs _) = lcons y (rt x xs)
 
@@ -277,6 +298,7 @@ zipWith3 = zipWith3UsingLists
 instance S.Sequence Seq where
   {empty = empty; single = single; lcons = lcons; rcons = rcons;
    append = append; lview = lview; lhead = lhead; ltail = ltail;
+   lheadM = lheadM; ltailM = ltailM; rheadM = rheadM; rtailM = rtailM;
    rview = rview; rhead = rhead; rtail = rtail; null = null;
    size = size; concat = concat; reverse = reverse; 
    reverseOnto = reverseOnto; fromList = fromList; toList = toList;
