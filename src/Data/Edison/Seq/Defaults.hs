@@ -44,6 +44,18 @@ rtailUsingLview xs =
             Nothing      -> empty
             Just (y, ys) -> lcons x (rt y ys)
 
+rtailMUsingLview :: (Monad m,Sequence s) => s a -> m (s a)
+rtailMUsingLview xs = 
+    case lview xs of
+      Nothing      -> fail $ instanceName xs ++ ".rtailM: empty sequence"
+      Just (x, xs) -> return (rt x xs)
+  where rt x xs =
+          case lview xs of
+            Nothing      -> empty
+            Just (y, ys) -> lcons x (rt y ys)
+
+
+
 concatUsingFoldr :: Sequence s => s (s a) -> s a
 concatUsingFoldr = foldr append empty
 

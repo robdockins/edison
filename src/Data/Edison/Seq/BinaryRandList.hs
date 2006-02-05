@@ -53,10 +53,14 @@ rcons          :: Seq a -> a -> Seq a
 append         :: Seq a -> Seq a -> Seq a
 lview          :: (Monad m) => Seq a -> m (a, Seq a)
 lhead          :: Seq a -> a
+lheadM         :: (Monad m) => Seq a -> m a
 ltail          :: Seq a -> Seq a
+ltailM         :: (Monad m) => Seq a -> m (Seq a)
 rview          :: (Monad m) => Seq a -> m (Seq a, a)
 rhead          :: Seq a -> a
+rheadM         :: (Monad m) => Seq a -> m a
 rtail          :: Seq a -> Seq a
+rtailM         :: (Monad m) => Seq a -> m (Seq a)
 null           :: Seq a -> Bool
 size           :: Seq a -> Int
 concat         :: Seq (Seq a) -> Seq a
@@ -147,15 +151,30 @@ lhead E = error "BinaryRandList.lhead: empty sequence"
 lhead (Even ps) = fst (lhead ps)
 lhead (Odd x ps) = x
 
+lheadM E = fail "BinaryRandList.lheadM: empty sequence"
+lheadM (Even ps) = return (fst (lhead ps))
+lheadM (Odd x ps) = return (x)
+
 ltail E = error "BinaryRandList.ltail: empty sequence"
 ltail (Even ps) = case lview ps of
                     Just ((x,y), ps') -> Odd y ps'
 ltail (Odd x ps) = mkEven ps
 
+ltailM E = fail "BinaryRandList.ltailM: empty sequence"
+ltailM (Even ps) = case lview ps of
+                      Just ((x,y), ps') -> return (Odd y ps')
+ltailM (Odd x ps) = return (mkEven ps)
+
 rhead E = error "BinaryRandList.rhead: empty sequence"
 rhead (Even ps) = snd (rhead ps)
 rhead (Odd x E) = x
 rhead (Odd x ps) = snd (rhead ps)
+
+rheadM E = fail "BinaryRandList.rheadM: empty sequence"
+rheadM (Even ps) = return (snd (rhead ps))
+rheadM (Odd x E) = return x
+rheadM (Odd x ps) = return (snd (rhead ps))
+
 
 null E = True
 null _ = False
@@ -254,6 +273,7 @@ drop n xs = if n <= 0 then xs else drp n xs
 rcons = rconsUsingFoldr
 rview = rviewDefault
 rtail = rtailUsingLview
+rtailM = rtailMUsingLview
 concat = concatUsingFoldr
 reverse = reverseUsingReverseOnto
 reverseOnto = reverseOntoUsingFoldl
@@ -293,6 +313,7 @@ unzipWith3 = unzipWith3UsingLists
 instance S.Sequence Seq where
   {empty = empty; single = single; lcons = lcons; rcons = rcons;
    append = append; lview = lview; lhead = lhead; ltail = ltail;
+   lheadM = lheadM; ltailM = ltailM; rheadM = rheadM; rtailM = rtailM;
    rview = rview; rhead = rhead; rtail = rtail; null = null;
    size = size; concat = concat; reverse = reverse; 
    reverseOnto = reverseOnto; fromList = fromList; toList = toList;
