@@ -55,10 +55,14 @@ rcons          :: Seq a -> a -> Seq a
 append         :: Seq a -> Seq a -> Seq a
 lview          :: (Monad m) => Seq a -> m (a, Seq a)
 lhead          :: Seq a -> a
+lheadM         :: (Monad m) => Seq a -> m a
 ltail          :: Seq a -> Seq a
+ltailM         :: (Monad m) => Seq a -> m (Seq a)
 rview          :: (Monad m) => Seq a -> m (Seq a, a)
 rhead          :: Seq a -> a
+rheadM         :: (Monad m) => Seq a -> m a
 rtail          :: Seq a -> Seq a
+rtailM         :: (Monad m) => Seq a -> m (Seq a)
 null           :: Seq a -> Bool
 size           :: Seq a -> Int
 concat         :: Seq (Seq a) -> Seq a
@@ -129,8 +133,14 @@ lview (Q i (x:xs) ys j) = return (x, makeQ (i-1) xs ys j)
 lhead (Q _ [] _ _) = error "BankersQueue.lhead: empty sequence"
 lhead (Q _ (x:xs) _ _) = x
 
+lheadM (Q _ [] _ _) = fail "BankersQueue.lheadM: empty sequence"
+lheadM (Q _ (x:xs) _ _) = return x
+
 ltail (Q i (x:xs) ys j) = makeQ (i-1) xs ys j
 ltail q = error "BankersQueue.ltail: empty sequence"
+
+ltailM (Q i (x:xs) ys j) = return (makeQ (i-1) xs ys j)
+ltailM q = fail "BankersQueue.ltail: empty sequence"
 
 rview (Q i xs (y:ys) j) = return (Q i xs ys (j-1), y)
 rview (Q i xs [] _) =
@@ -142,9 +152,17 @@ rhead (Q i xs (y:ys) j) = y
 rhead (Q _ [] [] _) = error "BankersQueue.rhead: empty sequence"
 rhead (Q i xs [] _) = L.rhead xs
 
+rheadM (Q i xs (y:ys) j) = return y
+rheadM (Q _ [] [] _) = fail "BankersQueue.rheadM: empty sequence"
+rheadM (Q i xs [] _) = return (L.rhead xs)
+
 rtail (Q i xs (y:ys) j) = Q i xs ys (j-1)
 rtail q@(Q _ [] [] _) = error "BankersQueue.rtail: empty sequence"
 rtail (Q i xs [] _) = Q (i-1) (L.rtail xs) [] 0
+
+rtailM (Q i xs (y:ys) j) = return (Q i xs ys (j-1))
+rtailM q@(Q _ [] [] _) = fail "BankersQueue.rtailM: empty sequence"
+rtailM (Q i xs [] _) = return (Q (i-1) (L.rtail xs) [] 0)
 
 null (Q i _ _ _) = (i == 0)
 size (Q i xs ys j) = i + j
@@ -278,6 +296,7 @@ unzipWith3 = unzipWith3UsingLists
 instance S.Sequence Seq where
   {empty = empty; single = single; lcons = lcons; rcons = rcons;
    append = append; lview = lview; lhead = lhead; ltail = ltail;
+   lheadM = lheadM; ltailM = ltailM; rheadM = rheadM; rtailM = rtailM;
    rview = rview; rhead = rhead; rtail = rtail; null = null;
    size = size; concat = concat; reverse = reverse; 
    reverseOnto = reverseOnto; fromList = fromList; toList = toList;
