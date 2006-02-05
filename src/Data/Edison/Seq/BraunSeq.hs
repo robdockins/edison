@@ -59,10 +59,14 @@ rcons          :: Seq a -> a -> Seq a
 append         :: Seq a -> Seq a -> Seq a
 lview          :: (Monad m) => Seq a -> m (a, Seq a)
 lhead          :: Seq a -> a
+lheadM         :: (Monad m) => Seq a -> m a
 ltail          :: Seq a -> Seq a
+ltailM         :: (Monad m) => Seq a -> m (Seq a)
 rview          :: (Monad m) => Seq a -> m (Seq a, a)
 rhead          :: Seq a -> a
+rheadM         :: (Monad m) => Seq a -> m a
 rtail          :: Seq a -> Seq a
+rtailM         :: (Monad m) => Seq a -> m (Seq a)
 null           :: Seq a -> Bool
 size           :: Seq a -> Int
 concat         :: Seq (Seq a) -> Seq a
@@ -154,8 +158,14 @@ combine (B x a b) c = B x c (combine a b)
 lhead E = error "BraunSeq.lhead: empty sequence"
 lhead (B x a b) = x
 
+lheadM E = fail "BraunSeq.lheadM: empty sequence"
+lheadM (B x a b) = return x
+
 ltail E = error "BraunSeq.ltail: empty sequence"
 ltail (B x a b) = combine a b
+
+ltailM E = fail "BraunSeq.ltailM: empty sequence"
+ltailM (B x a b) = return (combine a b)
 
 -- not exported
 -- precondition: i >= 0
@@ -172,8 +182,14 @@ rview xs = return (delAt m xs, lookup xs m)
 rhead E = error "BraunSeq.rhead: empty sequence"
 rhead xs = lookup xs (size xs - 1)
 
+rheadM E = fail  "BraunSeq.rheadM: empty sequence"
+rheadM xs = return (lookup xs (size xs - 1))
+
 rtail E = error "BraunSeq.rtail: empty sequence"
 rtail xs = delAt (size xs - 1) xs
+
+rtailM E = fail "BraunSeq.rtailM: empty sequence"
+rtailM xs = return (delAt (size xs - 1) xs)
 
 null E = True
 null _ = False
@@ -392,6 +408,7 @@ splitWhile = splitWhileUsingLview
 instance S.Sequence Seq where
   {empty = empty; single = single; lcons = lcons; rcons = rcons;
    append = append; lview = lview; lhead = lhead; ltail = ltail;
+   lheadM = lheadM; ltailM = ltailM; rheadM = rheadM; rtailM = rtailM;
    rview = rview; rhead = rhead; rtail = rtail; null = null;
    size = size; concat = concat; reverse = reverse; 
    reverseOnto = reverseOnto; fromList = fromList; toList = toList;
