@@ -57,10 +57,14 @@ rcons          :: Seq a -> a -> Seq a
 append         :: Seq a -> Seq a -> Seq a
 lview          :: (Monad m) => Seq a -> m (a, Seq a)
 lhead          :: Seq a -> a
+lheadM         :: (Monad m) => Seq a -> m a
 ltail          :: Seq a -> Seq a
+ltailM         :: (Monad m) => Seq a -> m (Seq a)
 rview          :: (Monad m) => Seq a -> m (Seq a, a)
 rhead          :: Seq a -> a
+rheadM         :: (Monad m) => Seq a -> m a
 rtail          :: Seq a -> Seq a
+rtailM         :: (Monad m) => Seq a -> m (Seq a)
 null           :: Seq a -> Bool
 size           :: Seq a -> Int
 concat         :: Seq (Seq a) -> Seq a
@@ -132,9 +136,16 @@ lview (Q (x:xs) ys) = return (x, Q xs ys)
 lhead (Q [] _) = error "SimpleQueue.lhead: empty sequence"
 lhead (Q (x:xs) _) = x
 
+lheadM (Q [] _) = fail "SimpleQueue.lheadM: empty sequence"
+lheadM (Q (x:xs) _) = return x
+
 ltail (Q [x] ys) = Q (L.reverse ys) []
 ltail (Q (x:xs) ys) = Q xs ys
 ltail q@(Q [] _) = error "SimpleQueue.ltail: empty sequence"
+
+ltailM (Q [x] ys) = return (Q (L.reverse ys) [])
+ltailM (Q (x:xs) ys) = return (Q xs ys)
+ltailM q@(Q [] _) = fail "SimpleQueue.ltailM: empty sequence"
 
 rview (Q xs (y:ys)) = return (Q xs ys, y)
 rview (Q xs []) =
@@ -146,9 +157,17 @@ rhead (Q xs (y:ys)) = y
 rhead (Q [] []) = error "SimpleQueue.rhead: empty sequence"
 rhead (Q xs []) = L.rhead xs
 
+rheadM (Q xs (y:ys)) = return y
+rheadM (Q [] []) = fail "SimpleQueue.rheadM: empty sequence"
+rheadM (Q xs []) = return (L.rhead xs)
+
 rtail (Q xs (y:ys)) = Q xs ys
 rtail q@(Q [] []) = error "SimpleQueue.rtail: empty sequence"
 rtail (Q xs []) = Q (L.rtail xs) []
+
+rtailM (Q xs (y:ys)) = return (Q xs ys)
+rtailM q@(Q [] []) = fail "SimpleQueue.rtailM: empty sequence"
+rtailM (Q xs []) = return (Q (L.rtail xs) [])
 
 null (Q [] _) = True
 null _ = False
@@ -233,6 +252,7 @@ unzipWith3 = unzipWith3UsingLists
 instance S.Sequence Seq where
   {empty = empty; single = single; lcons = lcons; rcons = rcons;
    append = append; lview = lview; lhead = lhead; ltail = ltail;
+   lheadM = lheadM; ltailM = ltailM; rheadM = rheadM; rtailM = rtailM;
    rview = rview; rhead = rhead; rtail = rtail; null = null;
    size = size; concat = concat; reverse = reverse; 
    reverseOnto = reverseOnto; fromList = fromList; toList = toList;
