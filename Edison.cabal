@@ -44,3 +44,4 @@ Extensions:
      MultiParamTypeClasses
      FunctionalDependencies
      AllowUndecidableInstances
+Ghc-Options: -funbox-strict-fields
