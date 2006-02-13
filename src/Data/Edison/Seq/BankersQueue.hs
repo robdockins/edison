@@ -1,20 +1,19 @@
 -- Copyright (c) 1998-1999 Chris Okasaki.  
 -- See COPYRIGHT file for terms and conditions.
 
-{- | This module implements Banker's Queues. It has the standard running
-     times from "Data.Edison.Seq" except for the following:
-
-     * rcons   @O( 1 )@
-
-     References:
-
-     * Chris Okasaki, Purely Functional Data Structures,  
-       1998, sections 6.3.2 and 8.4.1.
-
-     * Chris Okasaki, \"Simple and efficient purely functional
-       queues and deques\", JFP 5(4):583-592, October 1995.
--}
-
+-- | This module implements Banker's Queues. It has the standard running
+--   times from "Data.Edison.Seq" except for the following:
+--
+--   * rcons   @O( 1 )@
+--
+--   /References:/
+--
+--   * Chris Okasaki, /Purely Functional Data Structures/,
+--     1998, sections 6.3.2 and 8.4.1.
+--
+--   * Chris Okasaki, \"Simple and efficient purely functional
+--     queues and deques\", /Journal of Function Programming/
+--     5(4):583-592, October 1995.
 
 module Data.Edison.Seq.BankersQueue (
     -- * Sequence Type

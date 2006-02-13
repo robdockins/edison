@@ -1,11 +1,10 @@
 -- Copyright (c) 1998 Chris Okasaki.  
 -- See COPYRIGHT file for terms and conditions.
 
-{- | This module packages the standard prelude list type as a
-     sequence.  This is the baseline sequence implementation and
-     all methods have the default running times listed in
-     "Data.Edison.Seq".
--}
+-- | This module packages the standard prelude list type as a
+--   sequence.  This is the baseline sequence implementation and
+--   all methods have the default running times listed in
+--   "Data.Edison.Seq".
 
 module Data.Edison.Seq.ListSeq (
     -- * Sequence Type

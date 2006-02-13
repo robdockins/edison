@@ -1,28 +1,27 @@
 -- Copyright (c) 1998-1999 Chris Okasaki.  
 -- See COPYRIGHT file for terms and conditions.
 
-{- | The sequence abstraction is usually viewed as a hierarchy of ADTs
-     including lists, queues, deques, catenable lists, etc. However, such
-     a hierarchy is based on efficiency rather than functionality. For example,
-     a list supports all the operations that a deque supports, even though
-     some of the operations may be inefficient. Hence, in Edison, all sequence
-     data structures are defined as instances of the single Sequence class:
-
-     @   class (Functor s, MonadPlus s) => Sequence s@
-
-     All sequences are also instances of 'Functor', 'Monad', and 'MonadPlus'.
-     In addition, all sequences are expected to be instances of 'Eq' and 'Show',
-     although this is not enforced (in fact, is not enforceable in any 
-     reasonable way).
-
-     We follow the naming convention that every module implementing sequences
-     defines a type constructor named Seq.
-
-     For each method the \"default\" complexity is listed.  Individual
-     implementations may differ for some methods.  The documentation for
-     each implementation will list those methods for which the running time
-     differs from these.
--}
+-- | The sequence abstraction is usually viewed as a hierarchy of ADTs
+--   including lists, queues, deques, catenable lists, etc. However, such
+--   a hierarchy is based on efficiency rather than functionality. For example,
+--   a list supports all the operations that a deque supports, even though
+--   some of the operations may be inefficient. Hence, in Edison, all sequence
+--   data structures are defined as instances of the single Sequence class:
+--
+--   @   class (Functor s, MonadPlus s) => Sequence s@
+--
+--   All sequences are also instances of 'Functor', 'Monad', and 'MonadPlus'.
+--   In addition, all sequences are expected to be instances of 'Eq' and 'Show',
+--   although this is not enforced (in fact, is not enforceable in any 
+--   reasonable way).
+--
+--   We follow the naming convention that every module implementing sequences
+--   defines a type constructor named Seq.
+--
+--   For each method the \"default\" complexity is listed.  Individual
+--   implementations may differ for some methods.  The documentation for
+--   each implementation will list those methods for which the running time
+--   differs from these.
 
 module Data.Edison.Seq (
   Sequence (..)

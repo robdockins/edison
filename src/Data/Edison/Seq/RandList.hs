@@ -1,21 +1,20 @@
 -- Copyright (c) 1998-1999 Chris Okasaki.  
 -- See COPYRIGHT file for terms and conditions.
 
-{- | Random-Access Lists.  All operations are as listed in "Data.Edison.Seq"
-     except the following:
-
-     * lookup @O( log n )@
-
-     * update @O( log n )@
-
-     References:
-
-     * Chris Okasaki. Purely Functional Data Structures. 1998.
-       Section 9.3.1.
-
-     * Chris Okasaki. \"Purely Functional Random Access Lists\".  FPCA'95,
-       pages 86-95.
--}
+-- | Random-Access Lists.  All operations are as listed in "Data.Edison.Seq"
+--   except the following:
+--
+--   * lookup @O( log n )@
+--
+--   * update @O( log n )@
+--
+--   /References:/
+--
+--   * Chris Okasaki. /Purely Functional Data Structures/. 1998.
+--     Section 9.3.1.
+--
+--   * Chris Okasaki. \"Purely Functional Random Access Lists\".  FPCA'95,
+--     pages 86-95.
 
 module Data.Edison.Seq.RandList (
     -- * Sequence Type

@@ -1,21 +1,20 @@
 -- Copyright (c) 1998-1999 Chris Okasaki.  
 -- See COPYRIGHT file for terms and conditions.
 
-{- | Join lists. All running times are as listed in "Data.Edison.Seq" except
-     for the following:
-
-     * rcons  @O( 1 )@
-
-     * append @O( 1 )@
-
-     * lview  @O( n )@  (but @O( 1 )@ in practice)
-
-     * ltail  @O( n )@  (but @O( 1 )@ in practice)
-
-     * rview  @O( n )@  (but @O( 1 )@ in practice)
-
-     * rtail  @O( n )@  (but @O( 1 )@ in practice)
--}
+-- | Join lists. All running times are as listed in "Data.Edison.Seq" except
+--   for the following:
+--
+--   * rcons  @O( 1 )@
+--
+--   * append @O( 1 )@
+--
+--   * lview  @O( n )@  (but @O( 1 )@ in practice)
+--
+--   * ltail  @O( n )@  (but @O( 1 )@ in practice)
+--
+--   * rview  @O( n )@  (but @O( 1 )@ in practice)
+--
+--   * rtail  @O( n )@  (but @O( 1 )@ in practice)
 
 module Data.Edison.Seq.JoinList (
     -- * Sequence Type

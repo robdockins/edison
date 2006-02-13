@@ -1,25 +1,24 @@
 -- Copyright (c) 1998-1999 Chris Okasaki.  
 -- See COPYRIGHT file for terms and conditions.
 
-{- | One-sided Braun sequences.  All running times are as listed in 
-     "Data.Edison.Seq" except the following:
-
-     * lcons   @O( log n )@
-     
-     * rcons   @O( log^2 n )@
-
-     * lookup  @O( log i )@
-
-     * update  @O( log i )@
-
-     By keeping track of the size, we could get rcons
-     down to @O(log n)@ as well.
-
-     Reference:
-
-     * R. R. Hoogerwoord. \"A symmetric set of efficient list operations.\"
-       Journal of Functional Programming, 2(4):505--513, 1992.
--}
+-- | One-sided Braun sequences.  All running times are as listed in 
+--   "Data.Edison.Seq" except the following:
+--
+--   * lcons   @O( log n )@
+--
+--   * rcons   @O( log^2 n )@
+--
+--   * lookup  @O( log i )@
+--
+--   * update  @O( log i )@
+--
+--   By keeping track of the size, we could get rcons
+--   down to @O(log n)@ as well.
+--
+--   /References:/
+--
+--   * R. R. Hoogerwoord. \"A symmetric set of efficient list operations.\"
+--     /Journal of Functional Programming/, 2(4):505--513, 1992.
 
 module Data.Edison.Seq.BraunSeq (
     -- * Sequence Type

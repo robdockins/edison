@@ -1,19 +1,17 @@
 -- Copyright (c) 1998-1999 Chris Okasaki.  
 -- See COPYRIGHT file for terms and conditions.
 
-{- | Binary Random-Access lists.  All functions have the standard running
-     times from "Data.Edison.Seq" except the following:
-
-     * lookup   @O( log n )@
-     
-     * update   @O( log n )@
-
-     References:
-
-     * Chris Okasaki. Purely Functional Data Structures. 1998.
-       Section 10.1.2.
--}
-
+-- | Binary Random-Access lists.  All functions have the standard running
+--   times from "Data.Edison.Seq" except the following:
+--
+--  * lookup   @O( log n )@
+--
+--  * update   @O( log n )@
+--
+--    /References:/
+--
+--  * Chris Okasaki. /Purely Functional Data Structures/. 1998.
+--    Section 10.1.2.
 
 module Data.Edison.Seq.BinaryRandList (
     -- * Sequence Type

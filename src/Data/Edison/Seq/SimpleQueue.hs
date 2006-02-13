@@ -1,24 +1,22 @@
 -- Copyright (c) 1998-1999 Chris Okasaki.  
 -- See COPYRIGHT file for terms and conditions.
 
-{- | Simple Queues.  All operations have running times as listed in
-     "Data.Edison.Seq" except for the following:
-
-     * rcons  @O( 1 )@
-
-     * lview  @O( 1 )@ if single threaded, @O( n )@ otherwise
-
-     * ltail  @O( 1 )@ if single threaded, @O( n )@ otherwise
-
-     References:
-
-     * Chris Okasaki. Purely Functional Data Structures. 1998.
-       Section 5.2.
-
-     * F. Warren Burton. \"An efficient functional implementation of FIFO queues\".
-       Information Processing Letters, 14(5):205-206, July 1982.
--}
-
+-- | Simple Queues.  All operations have running times as listed in
+--   "Data.Edison.Seq" except for the following:
+--
+--   * rcons  @O( 1 )@
+--
+--   * lview  @O( 1 )@ if single threaded, @O( n )@ otherwise
+--
+--   * ltail  @O( 1 )@ if single threaded, @O( n )@ otherwise
+--
+--   /References:/
+--
+--   * Chris Okasaki. /Purely Functional Data Structures/. 1998.
+--     Section 5.2.
+--
+--   * F. Warren Burton. \"An efficient functional implementation of FIFO queues\".
+--     /Information Processing Letters/, 14(5):205-206, July 1982.
 
 module Data.Edison.Seq.SimpleQueue (
     -- * Sequence Type

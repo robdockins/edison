@@ -1,16 +1,15 @@
 -- Copyright (c) 1998-1999 Chris Okasaki.  
 -- See COPYRIGHT file for terms and conditions.
 
-{- | Meyers Stacks.  All operations are as listed in "Data.Edison.Seq" except
-     the following:
-    
-     * lookup @O( log n )@
-
-     Reference:
-
-     * Eugene Myers. \"An applicative random-access stack\". Information
-       Processing Letters, 17(5):241-248, December 1983.
--}
+-- | Meyers Stacks.  All operations are as listed in "Data.Edison.Seq" except
+--   the following:
+--
+-- * lookup @O( log n )@
+--
+--   /References:/
+--
+-- * Eugene Myers. \"An applicative random-access stack\". /Information
+--   Processing Letters/, 17(5):241-248, December 1983.
 
 module Data.Edison.Seq.MyersStack (
     -- * Sequence Type
