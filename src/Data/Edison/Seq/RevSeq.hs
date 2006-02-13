@@ -42,6 +42,7 @@ import qualified Data.Edison.Seq as S ( Sequence(..) )
 import qualified Data.Edison.Seq.ListSeq as L
 import Data.Edison.Seq.Defaults -- only used by concatMap
 import Control.Monad
+import Test.QuickCheck
 
 
 -- signatures for exported functions
@@ -286,12 +287,14 @@ instance S.Sequence s => MonadPlus (Rev s) where
   mplus = append
   mzero = empty
 
--- want to say
---   instance Eq (s a) => Eq (Rev s a) where
---     (N m xs) == (N n ys) = (m == n) && (xs == ys)
--- but can't because can't write Eq (s a) context
-instance (S.Sequence s, Eq a) => Eq (Rev s a) where
-  (N m xs) == (N n ys) = (m == n) && (S.toList xs == S.toList ys)
+instance Eq (s a) => Eq (Rev s a) where
+  (N m xs) == (N n ys) = (m == n) && (xs == ys)
 
-instance (S.Sequence s, Show a) => Show (Rev s a) where
-  show xs = show (toList xs)
+instance (S.Sequence s, Show (s a)) => Show (Rev s a) where
+  show xs = show (toSeq xs)
+
+instance (S.Sequence s, Arbitrary (s a)) => Arbitrary (Rev s a) where
+  arbitrary = do xs <- arbitrary
+                 return (fromSeq xs)
+
+  coarbitrary xs = coarbitrary (toSeq xs)
