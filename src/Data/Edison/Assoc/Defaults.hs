@@ -1,6 +1,9 @@
 -- Copyright (c) 1998 Chris Okasaki.  
 -- See COPYRIGHT file for terms and conditions.
 
+-- | This module provides default implementations of many of the associative
+--   collection operations.  These function are used to fill in collection
+--   implementations and are not intended to be used directly by end users.
 module Data.Edison.Assoc.Defaults 
 where
 

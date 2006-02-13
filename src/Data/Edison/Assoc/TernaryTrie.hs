@@ -1,35 +1,35 @@
 -- Copyright (c) 2002 Andrew Bromage.  
 -- See COPYRIGHT file for terms and conditions.
 
+-- | Finite maps implemented as ternary search tries.
 module Data.Edison.Assoc.TernaryTrie (
-    -- type of ternary search tries
-    FM(..), -- instance of Assoc(X), FiniteMap(X)
-    FMB(..),
-    FMB'(..),
+    -- * Type of ternary search tries
+    FM, -- instance of Assoc(X), FiniteMap(X)
         -- also instance of Functor
 
-    -- AssocX operations
+    -- * AssocX operations
     empty,single,fromSeq,insert,insertSeq,union,unionSeq,delete,deleteAll,
     deleteSeq,null,size,member,count,lookup,lookupM,lookupAll,
     lookupWithDefault,adjust,adjustAll,map,fold,fold1,filter,partition,elements,
 
-    -- Assoc operations
+    -- * Assoc operations
     toSeq,keys,mapWithKey,foldWithKey,filterWithKey,partitionWithKey,
 
-    -- FiniteMapX operations
+    -- * FiniteMapX operations
     fromSeqWith,fromSeqWithKey,insertWith,insertWithKey,insertSeqWith,
     insertSeqWithKey,unionl,unionr,unionWith,unionSeqWith,intersectWith,
     difference,subset,subsetEq,
 
-    -- FiniteMap operations
+    -- * FiniteMap operations
     unionWithKey,unionSeqWithKey,intersectWithKey,
 
+    -- * Other supported operations
     mergeKVFM,
 
-    -- documentation
+    -- * Documentation
     moduleName,
 
-    -- unit testing
+    -- * Unit testing
     structuralInvariantFM
 ) where
 
@@ -106,8 +106,6 @@ intersectWithKey :: Ord k => ([k] -> a -> b -> c) -> FM k a -> FM k b -> FM k c
 
 moduleName = "TernaryTrie"
 
--- Finite maps as ternary search tries.
---  
 
 data FM k a
   = FM !(Maybe a) !(FMB k a)

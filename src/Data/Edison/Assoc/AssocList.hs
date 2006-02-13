@@ -1,28 +1,34 @@
 -- Copyright (c) 1998 Chris Okasaki.  
 -- See COPYRIGHT file for terms and conditions.
 
+-- | This module implements finite maps as simple association lists.
+--  
+--   Duplicates are removed conceptually, but not physically.  The first
+--   occurrence of a given key is the one that is considered to be in the map.
+--
+--   The list type is mildly customized to prevent boxing the pairs.
 module Data.Edison.Assoc.AssocList (
-    -- type of simple association lists
+    -- * Type of simple association lists
     FM, -- instance of Assoc(X), FiniteMap(X)
         -- also instance of Functor
 
-    -- AssocX operations
+    -- * AssocX operations
     empty,single,fromSeq,insert,insertSeq,union,unionSeq,delete,deleteAll,
     deleteSeq,null,size,member,count,lookup,lookupM,lookupAll,
     lookupWithDefault,adjust,adjustAll,map,fold,fold1,filter,partition,elements,
 
-    -- Assoc operations
+    -- * Assoc operations
     toSeq,keys,mapWithKey,foldWithKey,filterWithKey,partitionWithKey,
 
-    -- FiniteMapX operations
+    -- * FiniteMapX operations
     fromSeqWith,fromSeqWithKey,insertWith,insertWithKey,insertSeqWith,
     insertSeqWithKey,unionl,unionr,unionWith,unionSeqWith,intersectWith,
     difference,subset,subsetEq,
 
-    -- FiniteMap operations
+    -- * FiniteMap operations
     unionWithKey,unionSeqWithKey,intersectWithKey,
 
-    -- documentation
+    -- * Documentation
     moduleName
 ) where
 
@@ -95,12 +101,6 @@ intersectWithKey :: Eq k => (k -> a -> b -> c) -> FM k a -> FM k b -> FM k c
 
 moduleName = "AssocList"
 
--- Finite maps as simple association lists.
---  
--- Duplicates are removed conceptually, but not physically.  The first
--- occurrence of a given key is the one that is considered to be in the map.
---
--- The list type is mildly customized to prevent boxing the pairs.
 
 data FM k a = E | I k a (FM k a)
 
@@ -259,4 +259,3 @@ instance Eq k => A.FiniteMap (FM k) k where
 
 instance Eq k => Functor (FM k) where
   fmap =  map
-

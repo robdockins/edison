@@ -1,28 +1,35 @@
 -- Copyright (c) 1998 Chris Okasaki.  
 -- See COPYRIGHT file for terms and conditions.
 
+-- | Finite maps implemented as little-endian Patricia trees.
+--
+--   /References:/
+--
+-- * Chris Okasaki and Any Gill.  \"Fast Mergeable Integer Maps\".
+--   Workshop on ML, September 1998, pages 77-86.
+
 module Data.Edison.Assoc.PatriciaLoMap (
-    -- type of little-endian Patricia trees
+    -- * Type of little-endian Patricia trees
     FM, -- instance of Assoc(X), FiniteMap(X)
         -- also instance of Functor
 
-    -- AssocX operations
+    -- * AssocX operations
     empty,single,fromSeq,insert,insertSeq,union,unionSeq,delete,deleteAll,
     deleteSeq,null,size,member,count,lookup,lookupM,lookupAll,
     lookupWithDefault,adjust,adjustAll,map,fold,fold1,filter,partition,elements,
 
-    -- Assoc operations
+    -- * Assoc operations
     toSeq,keys,mapWithKey,foldWithKey,filterWithKey,partitionWithKey,
 
-    -- FiniteMapX operations
+    -- * FiniteMapX operations
     fromSeqWith,fromSeqWithKey,insertWith,insertWithKey,insertSeqWith,
     insertSeqWithKey,unionl,unionr,unionWith,unionSeqWith,intersectWith,
     difference,subset,subsetEq,
 
-    -- FiniteMap operations
+    -- * FiniteMap operations
     unionWithKey,unionSeqWithKey,intersectWithKey,
 
-    -- documentation
+    -- * Documentation
     moduleName
 ) where
 
@@ -37,9 +44,6 @@ import Data.Bits
 
 moduleName = "PatriciaLoMap"
 
--- Adapted from
---   Chris Okasaki and Any Gill.  "Fast Mergeable Integer Maps".
---   Workshop on ML, September 1998, pages 77-86.
 
 data FM a
   = E
