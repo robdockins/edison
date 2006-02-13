@@ -24,6 +24,7 @@ Exposed-modules:
      Data.Edison.Coll.MinHeap
      Data.Edison.Coll.SkewHeap
      Data.Edison.Coll.SplayHeap
+     Data.Edison.Coll.StandardSet
      Data.Edison.Coll.UnbalancedSet
      Data.Edison.Seq
      Data.Edison.Seq.Defaults
