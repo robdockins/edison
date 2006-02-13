@@ -261,12 +261,12 @@ class CollX c a => SetX c a | c -> a where
   difference  :: c -> c -> c
 
   -- | Test whether the first set is a proper subset of the second set;
-  --   that is, every element in the first set is also a member of the
+  --   that is, if every element in the first set is also a member of the
   --   second set AND there exists some element in the second set which
   --   is not present in the first.
   subset      :: c -> c -> Bool    
 
-  -- | Test whether the first set is a subset of the second set; that is,
+  -- | Test whether the first set is a subset of the second set; that is, if
   --   every element in the first set is also a member of the second set.
   subsetEq    :: c -> c -> Bool
 
@@ -393,7 +393,7 @@ class (Coll c a, OrdCollX c a) => OrdColl c a | c -> a where
 --   in the case of duplicates. They are required to satisfy the precondition
 --   that, given two equal elements, they return a third element equal to the
 --   other two.  Usually, the combining function just returns its first or
---   second argument, but it can combind elements in non-trivial ways.
+--   second argument, but it can combine elements in non-trivial ways.
 --
 --   The combining function should usually be associative.  In any case, the
 --   elements will be combined from left-to-right, but with an unspecified
@@ -420,14 +420,14 @@ class (Coll c a, SetX c a) => Set c a | c -> a where
   --
   --   /Axioms:/
   --
-  -- * @unionl = unionWith (\x y -> x)@
+  -- * @unionl = unionWith (\\x y -> x)@
   unionl          :: c -> c -> c
  
   -- | Right biased union.
   --
   --   /Axioms:/
   --
-  -- * @unionr = unionWith (\x y -> y)@
+  -- * @unionr = unionWith (\\x y -> y)@
   unionr          :: c -> c -> c
 
 
