@@ -39,7 +39,7 @@ class Hash a => UniqueHash a
 -- @hash (unhash i) == i@
 --
 -- does not necessarily hold because unhash is not necessarily
--- defined for all i, only for all i in the range of hash.
+-- defined for all @i@, only for all @i@ in the range of hash.
 
 class UniqueHash a => ReversibleHash a where
   unhash :: Int -> a
