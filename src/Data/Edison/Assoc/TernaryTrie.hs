@@ -104,7 +104,7 @@ unionSeqWithKey  :: (Ord k,S.Sequence seq) =>
                        ([k] -> a -> a -> a) -> seq (FM k a) -> FM k a
 intersectWithKey :: Ord k => ([k] -> a -> b -> c) -> FM k a -> FM k b -> FM k c
 
-moduleName = "TernaryTrie"
+moduleName = "Data.Edison.Assoc.TernaryTrie"
 
 
 data FM k a

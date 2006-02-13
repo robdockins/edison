@@ -107,7 +107,7 @@ unzip3         :: Seq (a,b,c) -> (Seq a, Seq b, Seq c)
 unzipWith      :: (a -> b) -> (a -> c) -> Seq a -> (Seq b, Seq c)
 unzipWith3     :: (a -> b) -> (a -> c) -> (a -> d) -> Seq a -> (Seq b, Seq c, Seq d)
 
-moduleName = "BankersQueue"
+moduleName = "Data.Edison.Seq.BankersQueue"
 
 
 data Seq a = Q !Int [a] [a] !Int

@@ -111,7 +111,7 @@ unzip3         :: Seq (a,b,c) -> (Seq a, Seq b, Seq c)
 unzipWith      :: (a -> b) -> (a -> c) -> Seq a -> (Seq b, Seq c)
 unzipWith3     :: (a -> b) -> (a -> c) -> (a -> d) -> Seq a -> (Seq b, Seq c, Seq d)
 
-moduleName = "BraunSeq"
+moduleName = "Data.Edison.Seq.BraunSeq"
 
 -- Adapted from
 --   Rob Hoogerwoord.  "A Logarithmic Implementation of Flexible Arrays".

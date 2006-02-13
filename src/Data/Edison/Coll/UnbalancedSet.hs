@@ -113,7 +113,7 @@ unionSeqWith :: (Ord a,S.Sequence seq) => (a -> a -> a) -> seq (Set a) -> Set a
 intersectWith :: Ord a => (a -> a -> a) -> Set a -> Set a -> Set a
 unsafeMapMonotonic :: Ord a => (a -> a) -> Set a -> Set a
 
-moduleName = "UnbalancedSet"
+moduleName = "Data.Edison.Coll.UnbalancedSet"
 
 data Set a = E | T (Set a) a (Set a)  deriving (Show)
 

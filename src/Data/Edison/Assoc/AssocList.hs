@@ -99,7 +99,7 @@ unionSeqWithKey  :: (Eq k,S.Sequence seq) =>
                         (k -> a -> a -> a) -> seq (FM k a) -> FM k a
 intersectWithKey :: Eq k => (k -> a -> b -> c) -> FM k a -> FM k b -> FM k c
 
-moduleName = "AssocList"
+moduleName = "Data.Edison.Assoc.AssocList"
 
 
 data FM k a = E | I k a (FM k a)

@@ -107,7 +107,7 @@ toSeq          :: S.Sequence s => Sized s a -> s a
 
 
 
-moduleName = "SizedSeq"
+moduleName = "Data.Edison.Seq.SizedSeq"
 instanceName (N n s) = "SizedSeq(" ++ S.instanceName s ++ ")"
 
 data Sized s a = N !Int (s a)

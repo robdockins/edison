@@ -43,7 +43,7 @@ import Data.Edison.Coll.Defaults
 import Control.Monad
 import Test.QuickCheck
 
-moduleName = "LeftistHeap"
+moduleName = "Data.Edison.Coll.LeftistHeap"
 
 data Heap a = E | L !Int a !(Heap a) !(Heap a)
   -- want to say !a, but would need Eval a context

@@ -42,7 +42,7 @@ import Data.Edison.Assoc.Defaults
 import Data.Int
 import Data.Bits
 
-moduleName = "PatriciaLoMap"
+moduleName = "Data.Edison.Assoc.PatriciaLoMap"
 
 
 data FM a

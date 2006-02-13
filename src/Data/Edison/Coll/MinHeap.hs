@@ -36,7 +36,7 @@ import Test.QuickCheck
 
 data Min h a = E | M a h  deriving (Eq)
 
-moduleName = "MinHeap"
+moduleName = "Data.Edison.Coll.MinHeap"
 
 instanceName E = "MinHeap(empty)"
 instanceName (M x h) = "MinHeap(" ++ C.instanceName h ++ ")"

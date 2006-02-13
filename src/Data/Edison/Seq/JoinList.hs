@@ -105,7 +105,7 @@ unzip3         :: Seq (a,b,c) -> (Seq a, Seq b, Seq c)
 unzipWith      :: (a -> b) -> (a -> c) -> Seq a -> (Seq b, Seq c)
 unzipWith3     :: (a -> b) -> (a -> c) -> (a -> d) -> Seq a -> (Seq b, Seq c, Seq d)
 
-moduleName = "JoinList"
+moduleName = "Data.Edison.Seq.JoinList"
 
 data Seq a = E | L a | A (Seq a) (Seq a)
   -- invariant: E never a child of A

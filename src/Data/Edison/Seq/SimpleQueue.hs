@@ -108,7 +108,7 @@ unzip3         :: Seq (a,b,c) -> (Seq a, Seq b, Seq c)
 unzipWith      :: (a -> b) -> (a -> c) -> Seq a -> (Seq b, Seq c)
 unzipWith3     :: (a -> b) -> (a -> c) -> (a -> d) -> Seq a -> (Seq b, Seq c, Seq d)
 
-moduleName = "SimpleQueue"
+moduleName = "Data.Edison.Seq.SimpleQueue"
 
 
 data Seq a = Q [a] [a]

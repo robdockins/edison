@@ -106,7 +106,7 @@ unzip3         :: S.Sequence s => Rev s (a,b,c) -> (Rev s a, Rev s b, Rev s c)
 unzipWith      :: S.Sequence s => (a -> b) -> (a -> c) -> Rev s a -> (Rev s b, Rev s c)
 unzipWith3     :: S.Sequence s => (a -> b) -> (a -> c) -> (a -> d) -> Rev s a -> (Rev s b, Rev s c, Rev s d)
 
-moduleName = "RevSeq"
+moduleName = "Data.Edison.Seq.RevSeq"
 instanceName (N m s) = "RevSeq(" ++ S.instanceName s ++ ")"
 
 data Rev s a = N !Int (s a)

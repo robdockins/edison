@@ -104,7 +104,7 @@ unzip3         :: Seq (a,b,c) -> (Seq a, Seq b, Seq c)
 unzipWith      :: (a -> b) -> (a -> c) -> Seq a -> (Seq b, Seq c)
 unzipWith3     :: (a -> b) -> (a -> c) -> (a -> d) -> Seq a -> (Seq b, Seq c, Seq d)
 
-moduleName = "BinaryRandList"
+moduleName = "Data.Edison.Seq.BinaryRandList"
 
 
 data Seq a = E | Even (Seq (a,a)) | Odd a (Seq (a,a))    deriving (Eq)

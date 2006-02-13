@@ -45,7 +45,7 @@ import Data.List(sort)
 import Control.Monad
 import Test.QuickCheck
 
-moduleName = "LazyPairingHeap"
+moduleName = "Data.Edison.Coll.LazyPairingHeap"
 
 
 data Heap a = E 

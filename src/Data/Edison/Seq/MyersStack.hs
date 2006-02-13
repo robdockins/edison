@@ -101,7 +101,7 @@ unzip3         :: Seq (a,b,c) -> (Seq a, Seq b, Seq c)
 unzipWith      :: (a -> b) -> (a -> c) -> Seq a -> (Seq b, Seq c)
 unzipWith3     :: (a -> b) -> (a -> c) -> (a -> d) -> Seq a -> (Seq b, Seq c, Seq d)
 
-moduleName = "MyersStack"
+moduleName = "Data.Edison.Seq.MyersStack"
 
 
 data Seq a = E | C !Int a (Seq a) (Seq a)

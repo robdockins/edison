@@ -94,7 +94,7 @@ unzip3         :: [(a,b,c)] -> ([a], [b], [c])
 unzipWith      :: (a -> b) -> (a -> c) -> [a] -> ([b], [c])
 unzipWith3     :: (a -> b) -> (a -> c) -> (a -> d) -> [a] -> ([b], [c], [d])
 
-moduleName = "ListSeq"
+moduleName = "Data.Edison.Seq.ListSeq"
 
 type Seq a = [a]
 

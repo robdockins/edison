@@ -46,7 +46,7 @@ import Data.Edison.Coll.Defaults
 import Control.Monad
 import Test.QuickCheck
 
-moduleName = "SplayHeap"
+moduleName = "Data.Edison.Coll.SplayHeap"
 
 data Heap a = E | T (Heap a) a (Heap a)
 

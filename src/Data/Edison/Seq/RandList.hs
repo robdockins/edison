@@ -106,7 +106,7 @@ unzip3         :: Seq (a,b,c) -> (Seq a, Seq b, Seq c)
 unzipWith      :: (a -> b) -> (a -> c) -> Seq a -> (Seq b, Seq c)
 unzipWith3     :: (a -> b) -> (a -> c) -> (a -> d) -> Seq a -> (Seq b, Seq c, Seq d)
 
-moduleName = "RandList"
+moduleName = "Data.Edison.Seq.RandList"
 
 
 data Tree a = L a | T a (Tree a) (Tree a)   deriving (Eq)

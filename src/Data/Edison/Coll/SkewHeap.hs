@@ -43,7 +43,7 @@ import Data.Edison.Coll.Defaults
 import Control.Monad
 import Test.QuickCheck
 
-moduleName = "SkewHeap"
+moduleName = "Data.Edison.Coll.SkewHeap"
 
 data Heap a = E | T a (Heap a) (Heap a)
 
