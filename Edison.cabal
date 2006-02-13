@@ -9,6 +9,7 @@ Category:       Data structures
 Stability:      Beta
 Hs-Source-Dir:  src
 Exposed-modules:
+     Data.Edison
      Data.Edison.Prelude
      Data.Edison.Assoc
      Data.Edison.Assoc.Defaults
