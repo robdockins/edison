@@ -1,27 +1,28 @@
 -- Copyright (c) 1999 Chris Okasaki.  
 -- See COPYRIGHT file for terms and conditions.
 
+-- | A generic adaptor for bags to keep the minimum element sparately.
 module Data.Edison.Coll.MinHeap (
-    -- generic adaptor for bags to keep the minimum element separately
+    -- * Min heap adaptor type
     Min, -- instance of Coll/CollX, OrdColl/OrdCollX
 
-    -- CollX operations
+    -- * CollX operations
     empty,single,fromSeq,insert,insertSeq,union,unionSeq,delete,deleteAll,
     deleteSeq,null,size,member,count,
 
-    -- Coll operations
+    -- * Coll operations
     toSeq, lookup, lookupM, lookupAll, lookupWithDefault, fold, fold1,
     filter, partition,
 
-    -- OrdCollX operations
+    -- * OrdCollX operations
     deleteMin,deleteMax,unsafeInsertMin,unsafeInsertMax,unsafeFromOrdSeq,
     unsafeAppend,filterLT,filterLE,filterGT,filterGE,partitionLT_GE,
     partitionLE_GT,partitionLT_GT,
 
-    -- OrdColl operations
+    -- * OrdColl operations
     minView,minElem,maxView,maxElem,foldr,foldl,foldr1,foldl1,toOrdSeq,
 
-    -- documentation
+    -- * Documentation
     moduleName
 ) where
 
@@ -323,5 +324,3 @@ instance (C.OrdColl h a,Arbitrary h,Arbitrary a) => Arbitrary (Min h a) where
 
   coarbitrary E = variant 0
   coarbitrary (M x xs) = variant 1 . coarbitrary x . coarbitrary xs
-
-

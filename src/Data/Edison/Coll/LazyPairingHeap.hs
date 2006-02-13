@@ -1,30 +1,37 @@
 -- Copyright (c) 1998-1999 Chris Okasaki.  
 -- See COPYRIGHT file for terms and conditions.
 
+-- | Lazy Paring Heaps.
+--
+--   /References:/
+--
+-- * Chris Okasaki. /Purely Functional Data Structures/. 1998.
+--   Section 6.5.
+
 module Data.Edison.Coll.LazyPairingHeap (
-    -- type of pairing heaps
+    -- * Type of pairing heaps
     Heap, -- instance of Coll/CollX, OrdColl/OrdCollX
 
-    -- CollX operations
+    -- * CollX operations
     empty,single,fromSeq,insert,insertSeq,union,unionSeq,delete,deleteAll,
     deleteSeq,null,size,member,count,
 
-    -- Coll operations
+    -- * Coll operations
     toSeq, lookup, lookupM, lookupAll, lookupWithDefault, fold, fold1,
     filter, partition,
 
-    -- OrdCollX operations
+    -- * OrdCollX operations
     deleteMin,deleteMax,unsafeInsertMin,unsafeInsertMax,unsafeFromOrdSeq,
     unsafeAppend,filterLT,filterLE,filterGT,filterGE,partitionLT_GE,
     partitionLE_GT,partitionLT_GT,
 
-    -- OrdColl operations
+    -- * OrdColl operations
     minView,minElem,maxView,maxElem,foldr,foldl,foldr1,foldl1,toOrdSeq,
 
-    -- other supported operations
+    -- * Other supported operations
     unsafeMapMonotonic,
 
-    -- documentation
+    -- * Documentation
     moduleName
 ) where
 
@@ -40,9 +47,6 @@ import Test.QuickCheck
 
 moduleName = "LazyPairingHeap"
 
--- Adapted from
---   Chris Okasaki. Purely Functional Data Structures. 1998.
---   Section 6.5.
 
 data Heap a = E 
             | H1 a (Heap a)

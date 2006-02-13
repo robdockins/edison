@@ -1,30 +1,40 @@
 -- Copyright (c) 1999 Chris Okasaki.  
 -- See COPYRIGHT file for terms and conditions.
 
+-- | Splay heaps.
+--
+--   If 'minElem' is called frequently, then SplayHeap should
+--   be used in conjunction with "Data.Edison.Coll.MinHeap".
+--
+--   /References:/
+--
+-- * Chris Okasaki. /Purely Functional Data Structures/. 1998.
+--   Section 5.4.
+
 module Data.Edison.Coll.SplayHeap (
-    -- type of splay heaps
+    -- * Type of splay heaps
     Heap, -- instance of Coll/CollX, OrdColl/OrdCollX
 
-    -- CollX operations
+    -- * CollX operations
     empty,single,fromSeq,insert,insertSeq,union,unionSeq,delete,deleteAll,
     deleteSeq,null,size,member,count,
 
-    -- Coll operations
+    -- * Coll operations
     toSeq, lookup, lookupM, lookupAll, lookupWithDefault, fold, fold1,
     filter, partition,
 
-    -- OrdCollX operations
+    -- * OrdCollX operations
     deleteMin,deleteMax,unsafeInsertMin,unsafeInsertMax,unsafeFromOrdSeq,
     unsafeAppend,filterLT,filterLE,filterGT,filterGE,partitionLT_GE,
     partitionLE_GT,partitionLT_GT,
 
-    -- OrdColl operations
+    -- * OrdColl operations
     minView,minElem,maxView,maxElem,foldr,foldl,foldr1,foldl1,toOrdSeq,
 
-    -- other supported operations
+    -- * Other supported operations
     unsafeMapMonotonic,
 
-    -- documentation
+    -- * Documentation
     moduleName
 ) where
 
@@ -37,13 +47,6 @@ import Control.Monad
 import Test.QuickCheck
 
 moduleName = "SplayHeap"
-
--- Adapted from
---   Chris Okasaki. Purely Functional Data Structures. 1998.
---   Section 5.4.
---
--- If minElem is called frequently, then SplayHeap should
--- be used in conjunction with MinHeap.
 
 data Heap a = E | T (Heap a) a (Heap a)
 
@@ -412,4 +415,3 @@ instance (Ord a,Arbitrary a) => Arbitrary (Heap a) where
   coarbitrary E = variant 0
   coarbitrary (T a x b) = 
     variant 1 . coarbitrary a . coarbitrary x . coarbitrary b
-

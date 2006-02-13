@@ -3,37 +3,38 @@
 
 -- defaults can be improved!
 
+-- | Sets implemented as unbalanced binary search trees.
 module Data.Edison.Coll.UnbalancedSet (
-    -- types
+    -- * Set type
     Set, -- instance of Coll/CollX, OrdColl/OrdCollX, Set/SetX, OrdSet/OrdSetX
 
-    -- CollX operations
+    -- * CollX operations
     empty,single,fromSeq,insert,insertSeq,union,unionSeq,delete,deleteAll,
     deleteSeq,null,size,member,count,
 
-    -- Coll operations
+    -- * Coll operations
     toSeq,lookup,lookupM,lookupAll,lookupWithDefault,fold,fold1,
     filter,partition,
 
-    -- OrdCollX operations
+    -- * OrdCollX operations
     deleteMin,deleteMax,unsafeInsertMin,unsafeInsertMax,unsafeFromOrdSeq,
     unsafeAppend,filterLT,filterLE,filterGT,filterGE,partitionLT_GE,
     partitionLE_GT,partitionLT_GT,
 
-    -- OrdColl operations
+    -- * OrdColl operations
     minView,minElem,maxView,maxElem,foldr,foldl,foldr1,foldl1,toOrdSeq,
 
-    -- SetX operations
+    -- * SetX operations
     intersect,difference,subset,subsetEq,
 
-    -- Set operations
+    -- * Set operations
     fromSeqWith,insertWith,insertSeqWith,unionl,unionr,unionWith,
     unionSeqWith,intersectWith,
 
-    -- other supported operations
+    -- * Dther supported operations
     unsafeMapMonotonic,
 
-    -- documentation
+    -- * Documentation
     moduleName
 ) where
 

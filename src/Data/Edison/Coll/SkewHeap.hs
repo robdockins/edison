@@ -1,30 +1,37 @@
 -- Copyright (c) 1998-1999 Chris Okasaki.  
 -- See COPYRIGHT file for terms and conditions.
 
+-- | Skew heaps.
+--
+--   /References:/
+--
+-- * Daniel Sleator and Robert Tarjan. \"Self-Adjusting Heaps\".
+--   /SIAM Journal on Computing/, 15(1):52-69, February 1986.
+
 module Data.Edison.Coll.SkewHeap (
-    -- type of skew heaps
+    -- * Type of skew heaps
     Heap, -- instance of Coll/CollX, OrdColl/OrdCollX
 
-    -- CollX operations
+    -- * CollX operations
     empty,single,fromSeq,insert,insertSeq,union,unionSeq,delete,deleteAll,
     deleteSeq,null,size,member,count,
 
-    -- Coll operations
+    -- * Coll operations
     toSeq, lookup, lookupM, lookupAll, lookupWithDefault, fold, fold1,
     filter, partition,
 
-    -- OrdCollX operations
+    -- * OrdCollX operations
     deleteMin,deleteMax,unsafeInsertMin,unsafeInsertMax,unsafeFromOrdSeq,
     unsafeAppend,filterLT,filterLE,filterGT,filterGE,partitionLT_GE,
     partitionLE_GT,partitionLT_GT,
 
-    -- OrdColl operations
+    -- * OrdColl operations
     minView,minElem,maxView,maxElem,foldr,foldl,foldr1,foldl1,toOrdSeq,
 
-    -- other supported operations
+    -- * Other supported operations
     unsafeMapMonotonic,
 
-    -- documentation
+    -- * Documentation
     moduleName
 ) where
 
@@ -37,10 +44,6 @@ import Control.Monad
 import Test.QuickCheck
 
 moduleName = "SkewHeap"
-
--- Adapted from
---   Daniel Sleator and Robert Tarjan. "Self-Adjusting Heaps".
---   SIAM Journal on Computing, 15(1):52-69, February 1986.
 
 data Heap a = E | T a (Heap a) (Heap a)
 
