@@ -31,7 +31,7 @@ module Data.Edison.Coll.UnbalancedSet (
     fromSeqWith,insertWith,insertSeqWith,unionl,unionr,unionWith,
     unionSeqWith,intersectWith,
 
-    -- * Dther supported operations
+    -- * Other supported operations
     unsafeMapMonotonic,
 
     -- * Documentation

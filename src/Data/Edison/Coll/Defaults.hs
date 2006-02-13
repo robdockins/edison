@@ -95,7 +95,7 @@ lookupMUsingLookupAll :: (Coll c a, Monad m) => c -> a -> m a
 lookupMUsingLookupAll ys x =
   case lookupAll ys x of
     (y:_) -> return y
-    []    -> fail $ instanceName ys ++ ".lookup: lookup failed"
+    []    -> fail $ instanceName ys ++ ".lookupM: lookup failed"
 
 lookupWithDefaultUsingLookupAll :: Coll c a => a -> c -> a -> a
 lookupWithDefaultUsingLookupAll dflt ys x =
