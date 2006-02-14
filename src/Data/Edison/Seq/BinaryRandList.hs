@@ -36,6 +36,7 @@ import Prelude hiding (concat,reverse,map,concatMap,foldr,foldl,foldr1,foldl1,
                        zip,zip3,zipWith,zipWith3,unzip,unzip3,null)
 
 import Control.Monad.Identity
+import Data.Maybe
 
 import Data.Edison.Prelude
 import qualified Data.Edison.Seq as S ( Sequence(..) ) 
@@ -262,10 +263,10 @@ drop n xs = if n <= 0 then xs else drp n xs
         drp i E = E
         drp i (Even ps)
           | even i = mkEven (drp (half i) ps)
-          | otherwise = ltail (mkEven (drp (half i) ps))
+          | otherwise = fromMaybe empty (ltailM (mkEven (drp (half i) ps)))
         drp i (Odd _ ps)
           | odd i = mkEven (drp (half (i-1)) ps)
-          | otherwise = ltail (mkEven (drp (half (i-1)) ps))
+          | otherwise = fromMaybe empty (ltailM (mkEven (drp (half (i-1)) ps)))
 
 -- the remaining functions all use defaults
 
