@@ -203,7 +203,7 @@ splitAt i original@(N m xs)
 
 subseq i len original@(N m xs)
   | i <= 0 = take len original
-  | i >  m = empty
+  | i >  m || len <= 0 = empty
   | i+len > m = N (m-i) (S.take (m-i+1) xs)
   | otherwise = N (len-1) (S.subseq (m-i-len+1) len xs)
 
