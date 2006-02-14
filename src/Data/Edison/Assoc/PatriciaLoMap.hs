@@ -144,20 +144,20 @@ size E = 0
 size (L _ _) = 1
 size (B _ _ t0 t1) = size t0 + size t1
 
-member :: FM a -> Int -> Bool
-member E k = False
-member (L j x) k = (j == k)
-member (B p m t0 t1) k = if zeroBit k m then member t0 k else member t1 k
+member :: Int -> FM a -> Bool
+member k E = False
+member k (L j x) = (j == k)
+member k (B p m t0 t1) = if zeroBit k m then member k t0 else member k t1
 
-lookup :: FM a -> Int -> a
-lookup m k = runIdentity (lookupM m k)
+lookup :: Int -> FM a -> a
+lookup k m = runIdentity (lookupM k m)
 
-lookupM :: (Monad rm) => FM a -> Int -> rm a
-lookupM E k = fail "PatriciaLoMap.lookup: lookup failed"
-lookupM (L j x) k
+lookupM :: (Monad rm) => Int -> FM a -> rm a
+lookupM k E = fail "PatriciaLoMap.lookup: lookup failed"
+lookupM k (L j x)
   | j == k    = return x
   | otherwise = fail "PatriciaLoMap.lookup: lookup failed"
-lookupM (B p m t0 t1) k = if zeroBit k m then lookupM t0 k else lookupM t1 k
+lookupM k (B p m t0 t1) = if zeroBit k m then lookupM k t0 else lookupM k t1
 
 adjust :: (a -> a) -> Int -> FM a -> FM a
 adjust f k E = E
@@ -284,12 +284,12 @@ intersectWith f s@(B p m s0 s1) t@(B q n t0 t1)
   | otherwise = if p /= q then E
                 else makeB p m (intersectWith f s0 t0) (intersectWith f s1 t1)
 intersectWith f (B p m s0 s1) (L k y) =
-    case lookupM (if zeroBit k m then s0 else s1) k of
+    case lookupM k (if zeroBit k m then s0 else s1) of
       Just x  -> L k (f x y)
       Nothing -> E
 intersectWith f s@(B _ _ _ _) E = E
 intersectWith f (L k x) t =
-    case lookupM t k of
+    case lookupM k t of
       Just y  -> L k (f x y)
       Nothing -> E
 intersectWith f E t = E
@@ -312,7 +312,7 @@ difference s@(B p m s0 s1) (L k y) =
                      else rmakeB p m s0 (delete k s1)
     else s
 difference s@(B _ _ _ _) E = s
-difference s@(L k x) t = if member t k then E else s
+difference s@(L k x) t = if member k t then E else s
 difference E t = E
 
 subset :: FM a -> FM b -> Bool
@@ -332,7 +332,7 @@ subset' s@(B p m s0 s1) t@(B q n t0 t1)
                 else GT
 subset' (B p m s0 s1) _ = GT
 subset' (L k x) (L j y) = if k == j then EQ else GT
-subset' (L k x) t = if member t k then LT else GT
+subset' (L k x) t = if member k t then LT else GT
 subset' E E = EQ
 subset' E _ = LT
 
@@ -343,7 +343,7 @@ subsetEq s@(B p m s0 s1) t@(B q n t0 t1)
                                                      else subsetEq s t1)
   | otherwise = (p == q) && subsetEq s0 t0 && subsetEq s1 t1
 subsetEq (B p m s0 s1) _ = False
-subsetEq (L k x) t = member t k
+subsetEq (L k x) t = member k t
 subsetEq E t = True
 
 mapWithKey :: (Int -> a -> b) -> FM a -> FM b
@@ -404,12 +404,12 @@ intersectWithKey f s@(B p m s0 s1) t@(B q n t0 t1)
   | otherwise = if p /= q then E
                 else makeB p m (intersectWithKey f s0 t0) (intersectWithKey f s1 t1)
 intersectWithKey f (B p m s0 s1) (L k y) =
-    case lookupM (if zeroBit k m then s0 else s1) k of
+    case lookupM k (if zeroBit k m then s0 else s1) of
       Just x  -> L k (f k x y)
       Nothing -> E
 intersectWithKey f s@(B _ _ _ _) E = E
 intersectWithKey f (L k x) t =
-    case lookupM t k of
+    case lookupM k t of
       Just y  -> L k (f k x y)
       Nothing -> E
 intersectWithKey f E t = E
@@ -428,13 +428,13 @@ deleteAll = delete
 deleteSeq :: S.Sequence seq => seq Int -> FM a -> FM a
 deleteSeq = deleteSeqUsingFoldr
 
-count :: FM a -> Int -> Int
+count :: Int -> FM a -> Int
 count = countUsingMember
 
-lookupAll :: S.Sequence seq => FM a -> Int -> seq a
+lookupAll :: S.Sequence seq => Int -> FM a -> seq a
 lookupAll = lookupAllUsingLookupM
 
-lookupWithDefault :: a -> FM a -> Int -> a
+lookupWithDefault :: a -> Int -> FM a -> a
 lookupWithDefault = lookupWithDefaultUsingLookupM
 
 elements :: S.Sequence seq => FM a -> seq a

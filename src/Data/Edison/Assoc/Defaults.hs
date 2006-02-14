@@ -28,25 +28,25 @@ unionSeqUsingReduce ms = S.reducel union empty ms
 deleteSeqUsingFoldr :: (AssocX m k,S.Sequence seq) => seq k -> m a -> m a
 deleteSeqUsingFoldr ks m = S.foldr delete m ks
 
-memberUsingLookupM :: (AssocX m k) => m a -> k -> Bool
-memberUsingLookupM m k
-  = case lookupM m k of
+memberUsingLookupM :: (AssocX m k) => k -> m a -> Bool
+memberUsingLookupM k m
+  = case lookupM k m of
   	Just _  -> True
 	Nothing -> False
 
 sizeUsingElements :: (AssocX m k) => m a -> Int
 sizeUsingElements m = length (elements m)
 
-countUsingMember :: AssocX m k => m a -> k -> Int
-countUsingMember m k = if member m k then 1 else 0
+countUsingMember :: AssocX m k => k -> m a -> Int
+countUsingMember k m = if member k m then 1 else 0
 
-lookupAllUsingLookupM :: (AssocX m k,S.Sequence seq) => m a -> k -> seq a
-lookupAllUsingLookupM m k = case lookupM m k of
+lookupAllUsingLookupM :: (AssocX m k,S.Sequence seq) => k -> m a -> seq a
+lookupAllUsingLookupM k m = case lookupM k m of
                               Just x -> S.single x
                               Nothing -> S.empty
 
-lookupWithDefaultUsingLookupM :: AssocX m k => a -> m a -> k -> a
-lookupWithDefaultUsingLookupM d m k = case lookupM m k of
+lookupWithDefaultUsingLookupM :: AssocX m k => a -> k -> m a -> a
+lookupWithDefaultUsingLookupM d k m = case lookupM k m of
                                         Just x -> x
                                         Nothing -> d
 
@@ -68,9 +68,9 @@ nullUsingElements m
 insertWithUsingLookupM :: 
     FiniteMapX m k => (a -> a -> a) -> k -> a -> m a -> m a
 insertWithUsingLookupM f k x m =
-    case lookupM m k of
+    case lookupM k m of
       Nothing -> insert k x m
-      Just y -> insert k (f x y) m
+      Just y  -> insert k (f x y) m
 
 fromSeqWithUsingInsertSeqWith ::
     (FiniteMapX m k,S.Sequence seq) => (a -> a -> a) -> seq (k,a) -> m a
@@ -133,16 +133,16 @@ unionSeqWithKeyUsingFoldr f ms = S.foldr (unionWithKey f) empty ms
 intersectWithUsingLookupM :: 
     FiniteMap m k => (a -> b -> c) -> m a -> m b -> m c
 intersectWithUsingLookupM f m1 m2 = foldWithKey ins empty m1
-  where ins k x m = case lookupM m2 k of
+  where ins k x m = case lookupM k m2 of
                       Nothing -> m
-                      Just y -> insert k (f x y) m
+                      Just y  -> insert k (f x y) m
 
 intersectWithKeyUsingLookupM :: 
     FiniteMap m k => (k -> a -> b -> c) -> m a -> m b -> m c
 intersectWithKeyUsingLookupM f m1 m2 = foldWithKey ins empty m1
-  where ins k x m = case lookupM m2 k of
+  where ins k x m = case lookupM k m2 of
                       Nothing -> m
-                      Just y -> insert k (f k x y) m
+                      Just y  -> insert k (f k x y) m
 
 differenceUsingDelete :: FiniteMap m k => m a -> m b -> m a
 differenceUsingDelete m1 m2 = foldWithKey del m1 m2
@@ -153,4 +153,4 @@ subsetUsingSubsetEq m1 m2 = subsetEq m1 m2 && size m1 < size m2
 
 subsetEqUsingMember :: FiniteMap m k => m a -> m b -> Bool
 subsetEqUsingMember m1 m2 = foldWithKey mem True m1
-  where mem k _ b = member m2 k && b
+  where mem k _ b = member k m2 && b

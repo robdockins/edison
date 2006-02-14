@@ -59,12 +59,12 @@ deleteAll     :: Ord k => [k] -> FM k a -> FM k a
 deleteSeq     :: (Ord k,S.Sequence seq) => seq [k] -> FM k a -> FM k a
 null          :: Ord k => FM k a -> Bool
 size          :: Ord k => FM k a -> Int
-member        :: Ord k => FM k a -> [k] -> Bool
-count         :: Ord k => FM k a -> [k] -> Int
-lookup        :: Ord k => FM k a -> [k] -> a
-lookupM       :: (Ord k, Monad rm) => FM k a -> [k] -> rm a
-lookupAll     :: (Ord k,S.Sequence seq) => FM k a -> [k] -> seq a
-lookupWithDefault :: Ord k => a -> FM k a -> [k] -> a
+member        :: Ord k => [k] -> FM k a -> Bool
+count         :: Ord k => [k] -> FM k a -> Int
+lookup        :: Ord k => [k] -> FM k a -> a
+lookupM       :: (Ord k, Monad rm) => [k] -> FM k a -> rm a
+lookupAll     :: (Ord k,S.Sequence seq) => [k] -> FM k a -> seq a
+lookupWithDefault :: Ord k => a -> [k] -> FM k a -> a
 adjust        :: Ord k => (a -> a) -> [k] -> FM k a -> FM k a
 adjustAll     :: Ord k => (a -> a) -> [k] -> FM k a -> FM k a
 map           :: Ord k => (a -> b) -> FM k a -> FM k b
@@ -451,11 +451,11 @@ count = countUsingMember
 
 lookup m k = runIdentity (lookupM m k)
 
-lookupM (FM Nothing _) []
+lookupM [] (FM Nothing _)
   = fail "TernaryTrie.lookup: lookup failed"
-lookupM (FM (Just v) _) []
+lookupM [] (FM (Just v) _)
   = return v
-lookupM (FM _ fmb) xs
+lookupM xs (FM _ fmb)
   = case  lookupFMB xs fmb  of
         Nothing -> fail "TernaryTrie.lookup: lookup failed"
         Just v  -> return v

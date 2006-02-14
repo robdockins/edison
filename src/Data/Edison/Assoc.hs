@@ -102,30 +102,30 @@ class (Eq k,Functor m) => AssocX m k | m -> k where
   size           :: m a -> Int
 
   -- | Test whether the given key is bound in the associative collection.
-  member         :: m a -> k -> Bool
+  member         :: k -> m a -> Bool
  
   -- | Returns the number of bindings with the given key.  For set-like 
   --   associative collections, this will always return 0 or 1.
-  count          :: m a -> k -> Int
+  count          :: k -> m a -> Int
 
   -- | Find the element associated with the given key.  Signals an error if
   --   the given key is not bound.  If more than one element is bound by the
   --   given key, it is unspecified which is returned.
-  lookup         :: m a -> k -> a
+  lookup         :: k -> m a -> a
  
   -- | Find the element associated with the given key.  Calls 'fail' if the
   --   given key is not bound.  If more than one element is bound by the given
   --   key, it is unspecified which is returned.
-  lookupM        :: (Monad rm) => m a -> k -> rm a
+  lookupM        :: (Monad rm) => k -> m a -> rm a
 
   -- | Return all elements bound by the given key in an unspecified order.
-  lookupAll      :: Sequence seq => m a -> k -> seq a
+  lookupAll      :: Sequence seq => k -> m a -> seq a
 
   -- | Return the element associated with the given key.  If no such element
   --   is found, return the default.
   lookupWithDefault  :: a    -- ^ default element
-                     -> m a  -- ^ the associative collection
                      -> k    -- ^ the key to look up
+                     -> m a  -- ^ the associative collection
                      -> a
 
   -- | Change a single binding for the given key by applying a function to its
@@ -196,7 +196,7 @@ class (AssocX m k, Ord k) => OrdAssocX m k | m -> k where
   --   with the remaining associative collection.  Calls 'fail' if the
   --   associative collection is empty.  Which binding is removed if there
   --   is more than one maxmimum is unspecified.
-  maxView            :: (Monad rm) => m a -> rm (m a, a)
+  maxView            :: (Monad rm) => m a -> rm (a, m a)
 
   -- | Find the binding with the maximum key and return its element.  Signals
   --   an error if the associative collection is empty.  Which element is chosen
@@ -210,7 +210,7 @@ class (AssocX m k, Ord k) => OrdAssocX m k | m -> k where
   -- | Insert a binding into an associative collection with the precondition
   --   that the given key is @>=@ any existing keys alread in the collection.
   --   For finite maps, this precondition is strengthened to @>@.
-  unsafeInsertMax    :: m a -> k -> a -> m a
+  unsafeInsertMax    :: k -> a -> m a -> m a
 
   -- | Fold across the elements of an associative collection in non-decreasing
   --   order by key with right associativity.  For finite maps, the order
@@ -390,7 +390,7 @@ class (Assoc m k, OrdAssocX m k) => OrdAssoc m k | m -> k where
   --   associative collection.  Calls 'fail' if the associative collection 
   --   is empty.  Which binding is chosen if there are multiple minimum keys
   --   is unspecified.
-  minViewWithKey  :: (Monad rm) => m a -> rm (k, a, m a)
+  minViewWithKey  :: (Monad rm) => m a -> rm ((k, a), m a)
 
   -- | Find the binding with the minimum key in an associative collection and
   --   return the key and the element.  Signals an error if the associative
@@ -403,7 +403,7 @@ class (Assoc m k, OrdAssocX m k) => OrdAssoc m k | m -> k where
   --   associative collection.  Calls 'fail' if the associative collection 
   --   is empty.  Which binding is chosen if there are multiple maximumkeys
   --   is unspecified.
-  maxViewWithKey  :: (Monad rm) => m a -> rm (m a, k, a)
+  maxViewWithKey  :: (Monad rm) => m a -> rm ((k, a), m a)
 
   -- | Find the binding with the maximum key in an associative collection and
   --   return the key and the element.  Signals an error if the associative
@@ -452,7 +452,7 @@ fromList          :: AssocX m k => [(k,a)] -> m a
 insertList        :: AssocX m k => [(k,a)] -> m a -> m a
 unionList         :: AssocX m k => [m a] -> m a
 deleteList        :: AssocX m k => [k] -> m a -> m a
-lookupList        :: AssocX m k => m a -> k -> [a]
+lookupList        :: AssocX m k => k -> m a -> [a]
 elementsList      :: AssocX m k => m a -> [a]
 unsafeFromOrdList :: OrdAssocX m k => [(k,a)] -> m a
 fromListWith      :: FiniteMapX m k => (a -> a -> a) -> [(k,a)] -> m a

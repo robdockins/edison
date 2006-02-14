@@ -66,12 +66,12 @@ deleteAll         :: Ord k => k -> FM k a -> FM k a
 deleteSeq         :: (Ord k,S.Sequence seq) => seq k -> FM k a -> FM k a
 null              :: FM k a -> Bool
 size              :: FM k a -> Int
-member            :: Ord k => FM k a -> k -> Bool
-count             :: Ord k => FM k a -> k -> Int
-lookup            :: Ord k => FM k a -> k -> a
-lookupAll         :: (Ord k,S.Sequence seq) => FM k a -> k -> seq a
-lookupM           :: (Ord k,Monad m) => FM k a -> k -> m a
-lookupWithDefault :: Ord k => a -> FM k a -> k -> a
+member            :: Ord k => k -> FM k a -> Bool
+count             :: Ord k => k -> FM k a -> Int
+lookup            :: Ord k => k -> FM k a -> a
+lookupAll         :: (Ord k,S.Sequence seq) => k -> FM k a -> seq a
+lookupM           :: (Ord k,Monad m) => k -> FM k a -> m a
+lookupWithDefault :: Ord k => a -> k -> FM k a -> a
 adjust            :: Ord k => (a->a) -> k -> FM k a -> FM k a
 adjustAll         :: Ord k => (a->a) -> k -> FM k a -> FM k a
 map               :: (Ord k,Functor (FM k)) => (a -> b) -> FM k a -> FM k b
@@ -85,10 +85,10 @@ minView           :: (Ord k,Monad m) => FM k a -> m (a, FM k a)
 minElem           :: Ord k => FM k a -> a
 deleteMin         :: Ord k => FM k a -> FM k a
 unsafeInsertMin   :: Ord k => k -> a -> FM k a -> FM k a
-maxView           :: (Ord k,Monad m) => FM k a -> m (FM k a, a)
+maxView           :: (Ord k,Monad m) => FM k a -> m (a, FM k a)
 maxElem           :: Ord k => FM k a -> a
 deleteMax         :: Ord k => FM k a -> FM k a
-unsafeInsertMax   :: Ord k => FM k a -> k -> a -> FM k a
+unsafeInsertMax   :: Ord k => k -> a -> FM k a -> FM k a
 foldr             :: Ord k => (a -> b -> b) -> b -> FM k a -> b
 foldl             :: Ord k => (b -> a -> b) -> b -> FM k a -> b
 foldr1            :: Ord k => (a -> a -> a) -> FM k a -> a
@@ -133,9 +133,9 @@ foldWithKey       :: Ord k => (k -> a -> b -> b) -> b -> FM k a -> b
 filterWithKey     :: Ord k => (k -> a -> Bool) -> FM k a -> FM k a
 partitionWithKey  :: Ord k => (k -> a -> Bool) -> FM k a -> (FM k a,FM k a)
 
-minViewWithKey    :: (Ord k,Monad m) => FM k a -> m (k, a, FM k a)
+minViewWithKey    :: (Ord k,Monad m) => FM k a -> m ((k, a), FM k a)
 minElemWithKey    :: Ord k => FM k a -> (k,a)
-maxViewWithKey    :: (Ord k,Monad m) => FM k a -> m (FM k a, k, a)
+maxViewWithKey    :: (Ord k,Monad m) => FM k a -> m ((k, a), FM k a)
 maxElemWithKey    :: Ord k => FM k a -> (k,a)
 foldrWithKey      :: (k -> a -> b -> b) -> b -> FM k a -> b
 foldlWithKey      :: (b -> k -> a -> b) -> b -> FM k a -> b
@@ -159,14 +159,14 @@ deleteAll          = DM.delete -- by finite map property
 deleteSeq          = deleteSeqUsingFoldr
 null               = DM.null
 size               = DM.size
-member             = flip DM.member
+member             = DM.member
 count              = countUsingMember
-lookup m k         = case lookupM m k of
+lookup k m         = case lookupM k m of
                          Nothing -> error (moduleName ++ ".lookup: failed")
                          Just x  -> x
-lookupM            = flip DM.lookup
+lookupM            = DM.lookup
 lookupAll          = lookupAllUsingLookupM
-lookupWithDefault d = flip (DM.findWithDefault d)
+lookupWithDefault  = DM.findWithDefault
 adjust             = DM.adjust
 adjustAll          = DM.adjust
 map                = fmap
@@ -186,10 +186,10 @@ unsafeInsertMin    = DM.insert
 maxView m          = if DM.null m
                        then fail (moduleName ++ ".maxView: failed")
                        else let ((k,x),m') = DM.deleteFindMax m 
-                            in return (m',x)
+                            in return (x,m')
 maxElem            = snd . DM.findMax
 deleteMax          = DM.deleteMax
-unsafeInsertMax m k x = DM.insert k x m
+unsafeInsertMax    = DM.insert
 foldr  f x m       = Prelude.foldr  f x (DM.elems m)
 foldl  f x m       = Prelude.foldl  f x (DM.elems m)
 foldr1 f   m       = Prelude.foldr1 f   (DM.elems m)
@@ -228,13 +228,11 @@ partitionWithKey   = DM.partitionWithKey
 
 minViewWithKey m   = if DM.null m
                         then fail (moduleName ++ ".minViewWithKey: failed")
-	                else let ((k,x),m') = DM.deleteFindMin m 
-                             in return (k,x,m')
+	                else return (DM.deleteFindMin m)
 minElemWithKey     = DM.findMin
 maxViewWithKey m   = if DM.null m
                         then fail (moduleName ++ ".maxViewWithKey: failed")
-	                else let ((k,x),m') = DM.deleteFindMax m 
-                             in return (m',k,x)
+	                else return (DM.deleteFindMax m)
 maxElemWithKey     = DM.findMax
 foldrWithKey       = DM.foldWithKey
 foldlWithKey f x m = Prelude.foldl (\b (k,a) -> f b k a) x (DM.toAscList m)

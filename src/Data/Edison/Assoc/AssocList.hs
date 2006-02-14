@@ -53,12 +53,12 @@ deleteAll     :: Eq k => k -> FM k a -> FM k a
 deleteSeq     :: (Eq k,S.Sequence seq) => seq k -> FM k a -> FM k a
 null          :: Eq k => FM k a -> Bool
 size          :: Eq k => FM k a -> Int
-member        :: Eq k => FM k a -> k -> Bool
-count         :: Eq k => FM k a -> k -> Int
-lookup        :: Eq k => FM k a -> k -> a
-lookupM       :: (Eq k, Monad rm) => FM k a -> k -> rm a
-lookupAll     :: (Eq k,S.Sequence seq) => FM k a -> k -> seq a
-lookupWithDefault :: Eq k => a -> FM k a -> k -> a
+member        :: Eq k => k -> FM k a -> Bool
+count         :: Eq k => k -> FM k a -> Int
+lookup        :: Eq k => k -> FM k a -> a
+lookupM       :: (Eq k, Monad rm) => k -> FM k a -> rm a
+lookupAll     :: (Eq k,S.Sequence seq) => k -> FM k a -> seq a
+lookupWithDefault :: Eq k => a -> k -> FM k a -> a
 adjust        :: Eq k => (a -> a) -> k -> FM k a -> FM k a
 adjustAll     :: Eq k => (a -> a) -> k -> FM k a -> FM k a
 map           :: Eq k => (a -> b) -> FM k a -> FM k b
@@ -131,26 +131,26 @@ null (I k x m) = False
 size E = 0
 size (I k x m) = 1 + size (delete k m)
 
-member E key = False
-member (I k x m) key = key == k || member m key
+member key E = False
+member key (I k x m) = key == k || member key m
 
-count E key = 0
-count (I k x m) key | key == k  = 1
-                    | otherwise = count m key
+count key E = 0
+count key (I k x m) | key == k  = 1
+                    | otherwise = count key m
 
-lookup m key = runIdentity (lookupM m key)
+lookup key m = runIdentity (lookupM key m)
 
-lookupM E key = fail "AssocList.lookup: lookup failed"
-lookupM (I k x m) key | key == k  = return x
-                      | otherwise = lookupM m key
+lookupM key E = fail "AssocList.lookup: lookup failed"
+lookupM key (I k x m) | key == k  = return x
+                      | otherwise = lookupM key m
 
-lookupAll E key = S.empty
-lookupAll (I k x m) key | key == k  = S.single x 
-                        | otherwise = lookupAll m key
+lookupAll key E = S.empty
+lookupAll key (I k x m) | key == k  = S.single x 
+                        | otherwise = lookupAll key m
 
-lookupWithDefault d E key = d
-lookupWithDefault d (I k x m) key | key == k = x
-                                  | otherwise = lookupWithDefault d m key
+lookupWithDefault d key E = d
+lookupWithDefault d key (I k x m) | key == k = x
+                                  | otherwise = lookupWithDefault d key m
 
 elements E = S.empty
 elements (I k x m) = S.lcons x (elements (delete k m))
