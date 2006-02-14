@@ -1,8 +1,8 @@
--- | The standard library "Data.Map" repackaged as an Edison 
+-- | The standard library "Data.Map" repackaged as an Edison
 --   associative collection.
 
 module Data.Edison.Assoc.StandardMap (
-    -- * Type of finite map
+    -- * Type of standard finite maps
     FM,
 
     -- * AssocX operations
@@ -39,7 +39,7 @@ import Prelude hiding (null,map,lookup,foldr,foldl,foldr1,foldl1,filter)
 import qualified Prelude
 import Control.Monad.Identity (runIdentity)
 import Data.Edison.Prelude
-import qualified Data.Edison.Assoc as A 
+import qualified Data.Edison.Assoc as A
 	( AssocX(..), OrdAssocX(..),  FiniteMapX(..), OrdFiniteMapX(..),
           Assoc(..),  OrdAssoc(..),   FiniteMap(..),  OrdFiniteMap(..) )
 import qualified Data.Edison.Seq as S
@@ -54,155 +54,157 @@ type FM = DM.Map
 moduleName :: String
 moduleName = "Data.Edison.Assoc.StandardMap"
 
-
-empty     :: FM k a
-single    :: Ord k => k -> a -> FM k a
-fromSeq   :: (Ord k,S.Sequence seq) => seq (k,a) -> FM k a
-insert    :: Ord k => k -> a -> FM k a -> FM k a
-insertSeq :: (Ord k,S.Sequence seq) => seq (k,a) -> FM k a -> FM k a
-union     :: Ord k => FM k a -> FM k a -> FM k a
-unionSeq  :: (Ord k,S.Sequence seq) => seq (FM k a) -> FM k a
-delete    :: Ord k => k -> FM k a -> FM k a
-deleteAll :: Ord k => k -> FM k a -> FM k a
-deleteSeq :: (Ord k,S.Sequence seq) => seq k -> FM k a -> FM k a
-null      :: FM k a -> Bool
-size      :: FM k a -> Int
-member    :: Ord k => FM k a -> k -> Bool
-count     :: Ord k => FM k a -> k -> Int
-lookup    :: Ord k => FM k a -> k -> a
-lookupAll :: (Ord k,S.Sequence seq) => FM k a -> k -> seq a
-lookupM   :: (Ord k,Monad m) => FM k a -> k -> m a
+empty             :: FM k a
+single            :: Ord k => k -> a -> FM k a
+fromSeq           :: (Ord k,S.Sequence seq) => seq (k,a) -> FM k a
+insert            :: Ord k => k -> a -> FM k a -> FM k a
+insertSeq         :: (Ord k,S.Sequence seq) => seq (k,a) -> FM k a -> FM k a
+union             :: Ord k => FM k a -> FM k a -> FM k a
+unionSeq          :: (Ord k,S.Sequence seq) => seq (FM k a) -> FM k a
+delete            :: Ord k => k -> FM k a -> FM k a
+deleteAll         :: Ord k => k -> FM k a -> FM k a
+deleteSeq         :: (Ord k,S.Sequence seq) => seq k -> FM k a -> FM k a
+null              :: FM k a -> Bool
+size              :: FM k a -> Int
+member            :: Ord k => FM k a -> k -> Bool
+count             :: Ord k => FM k a -> k -> Int
+lookup            :: Ord k => FM k a -> k -> a
+lookupAll         :: (Ord k,S.Sequence seq) => FM k a -> k -> seq a
+lookupM           :: (Ord k,Monad m) => FM k a -> k -> m a
 lookupWithDefault :: Ord k => a -> FM k a -> k -> a
-adjust    :: Ord k => (a->a) -> k -> FM k a -> FM k a
-adjustAll :: Ord k => (a->a) -> k -> FM k a -> FM k a
-map       :: (Ord k,Functor (FM k)) => (a -> b) -> FM k a -> FM k b
-fold      :: Ord k => (a -> b -> b) -> b -> FM k a -> b
-fold1     :: Ord k => (a -> a -> a) -> FM k a -> a
-filter    :: Ord k => (a -> Bool) -> FM k a -> FM k a
-partition :: Ord k => (a -> Bool) -> FM k a -> (FM k a,FM k a)
-elements  :: (Ord k,S.Sequence seq) => FM k a -> seq a
+adjust            :: Ord k => (a->a) -> k -> FM k a -> FM k a
+adjustAll         :: Ord k => (a->a) -> k -> FM k a -> FM k a
+map               :: (Ord k,Functor (FM k)) => (a -> b) -> FM k a -> FM k b
+fold              :: Ord k => (a -> b -> b) -> b -> FM k a -> b
+fold1             :: Ord k => (a -> a -> a) -> FM k a -> a
+filter            :: Ord k => (a -> Bool) -> FM k a -> FM k a
+partition         :: Ord k => (a -> Bool) -> FM k a -> (FM k a,FM k a)
+elements          :: (Ord k,S.Sequence seq) => FM k a -> seq a
 
-minView   :: (Ord k,Monad m) => FM k a -> m (a, FM k a)
-minElem   :: Ord k => FM k a -> a
-deleteMin :: Ord k => FM k a -> FM k a
-unsafeInsertMin :: Ord k => k -> a -> FM k a -> FM k a
-maxView   :: (Ord k,Monad m) => FM k a -> m (FM k a, a)
-maxElem   :: Ord k => FM k a -> a
-deleteMax :: Ord k => FM k a -> FM k a
-unsafeInsertMax :: Ord k => FM k a -> k -> a -> FM k a
-foldr     :: Ord k => (a -> b -> b) -> b -> FM k a -> b
-foldl     :: Ord k => (b -> a -> b) -> b -> FM k a -> b
-foldr1    :: Ord k => (a -> a -> a) -> FM k a -> a
-foldl1    :: Ord k => (a -> a -> a) -> FM k a -> a
-unsafeFromOrdSeq :: (Ord k,S.Sequence seq) => seq (k,a) -> FM k a
-unsafeAppend :: Ord k => FM k a -> FM k a -> FM k a
-filterLT  :: Ord k => k -> FM k a -> FM k a
-filterGT  :: Ord k => k -> FM k a -> FM k a
-filterLE  :: Ord k => k -> FM k a -> FM k a
-filterGE  :: Ord k => k -> FM k a -> FM k a
-partitionLT_GE :: Ord k => k -> FM k a -> (FM k a,FM k a)
-partitionLE_GT :: Ord k => k -> FM k a -> (FM k a,FM k a)
-partitionLT_GT :: Ord k => k -> FM k a -> (FM k a,FM k a)
+minView           :: (Ord k,Monad m) => FM k a -> m (a, FM k a)
+minElem           :: Ord k => FM k a -> a
+deleteMin         :: Ord k => FM k a -> FM k a
+unsafeInsertMin   :: Ord k => k -> a -> FM k a -> FM k a
+maxView           :: (Ord k,Monad m) => FM k a -> m (FM k a, a)
+maxElem           :: Ord k => FM k a -> a
+deleteMax         :: Ord k => FM k a -> FM k a
+unsafeInsertMax   :: Ord k => FM k a -> k -> a -> FM k a
+foldr             :: Ord k => (a -> b -> b) -> b -> FM k a -> b
+foldl             :: Ord k => (b -> a -> b) -> b -> FM k a -> b
+foldr1            :: Ord k => (a -> a -> a) -> FM k a -> a
+foldl1            :: Ord k => (a -> a -> a) -> FM k a -> a
+unsafeFromOrdSeq  :: (Ord k,S.Sequence seq) => seq (k,a) -> FM k a
+unsafeAppend      :: Ord k => FM k a -> FM k a -> FM k a
+filterLT          :: Ord k => k -> FM k a -> FM k a
+filterGT          :: Ord k => k -> FM k a -> FM k a
+filterLE          :: Ord k => k -> FM k a -> FM k a
+filterGE          :: Ord k => k -> FM k a -> FM k a
+partitionLT_GE    :: Ord k => k -> FM k a -> (FM k a,FM k a)
+partitionLE_GT    :: Ord k => k -> FM k a -> (FM k a,FM k a)
+partitionLT_GT    :: Ord k => k -> FM k a -> (FM k a,FM k a)
 
-fromSeqWith      :: (Ord k,S.Sequence seq) => (a -> a -> a) -> seq (k,a) -> FM k a
-fromSeqWithKey   :: (Ord k,S.Sequence seq) => (k -> a -> a -> a)
+fromSeqWith       :: (Ord k,S.Sequence seq) => (a -> a -> a) 
                          -> seq (k,a) -> FM k a
-insertWith       :: Ord k => (a -> a -> a) -> k -> a 
+fromSeqWithKey    :: (Ord k,S.Sequence seq) => (k -> a -> a -> a)
+                         -> seq (k,a) -> FM k a
+insertWith        :: Ord k => (a -> a -> a) -> k -> a
 	                 -> FM k a -> FM k a
-insertWithKey    :: Ord k => (k -> a -> a -> a) -> k -> a
+insertWithKey     :: Ord k => (k -> a -> a -> a) -> k -> a
                          -> FM k a -> FM k a
-insertSeqWith    :: (Ord k,S.Sequence seq) => (a -> a -> a) -> seq (k,a)
+insertSeqWith     :: (Ord k,S.Sequence seq) => (a -> a -> a) -> seq (k,a)
                          -> FM k a -> FM k a
-insertSeqWithKey :: (Ord k,S.Sequence seq) => (k -> a -> a -> a) -> seq (k,a)
+insertSeqWithKey  :: (Ord k,S.Sequence seq) => (k -> a -> a -> a) -> seq (k,a)
                          -> FM k a -> FM k a
-unionl           :: Ord k => FM k a -> FM k a -> FM k a
-unionr           :: Ord k => FM k a -> FM k a -> FM k a
-unionWith        :: Ord k => (a -> a -> a) -> FM k a -> FM k a -> FM k a
-unionSeqWith     :: (Ord k,S.Sequence seq) => 
+unionl            :: Ord k => FM k a -> FM k a -> FM k a
+unionr            :: Ord k => FM k a -> FM k a -> FM k a
+unionWith         :: Ord k => (a -> a -> a) -> FM k a -> FM k a -> FM k a
+unionSeqWith      :: (Ord k,S.Sequence seq) =>
                          (a -> a -> a) -> seq (FM k a) -> FM k a
-intersectWith    :: Ord k => (a -> b -> c) -> FM k a -> FM k b -> FM k c
-difference       :: Ord k => FM k a -> FM k b -> FM k a
-subset           :: Ord k => FM k a -> FM k b -> Bool
-subsetEq         :: Ord k => FM k a -> FM k b -> Bool
+intersectWith     :: Ord k => (a -> b -> c) -> FM k a -> FM k b -> FM k c
+difference        :: Ord k => FM k a -> FM k b -> FM k a
+subset            :: Ord k => FM k a -> FM k b -> Bool
+subsetEq          :: Ord k => FM k a -> FM k b -> Bool
 
 
-toSeq            :: (Ord k,S.Sequence seq) => FM k a -> seq (k,a)
-keys             :: (Ord k,S.Sequence seq) => FM k a -> seq k
-mapWithKey       :: Ord k => (k -> a -> b) -> FM k a -> FM k b
-foldWithKey      :: Ord k => (k -> a -> b -> b) -> b -> FM k a -> b
-filterWithKey    :: Ord k => (k -> a -> Bool) -> FM k a -> FM k a
-partitionWithKey :: Ord k => (k -> a -> Bool) -> FM k a -> (FM k a,FM k a)
+toSeq             :: (Ord k,S.Sequence seq) => FM k a -> seq (k,a)
+keys              :: (Ord k,S.Sequence seq) => FM k a -> seq k
+mapWithKey        :: Ord k => (k -> a -> b) -> FM k a -> FM k b
+foldWithKey       :: Ord k => (k -> a -> b -> b) -> b -> FM k a -> b
+filterWithKey     :: Ord k => (k -> a -> Bool) -> FM k a -> FM k a
+partitionWithKey  :: Ord k => (k -> a -> Bool) -> FM k a -> (FM k a,FM k a)
 
-minViewWithKey   :: (Ord k,Monad m) => FM k a -> m (k, a, FM k a)
-minElemWithKey   :: Ord k => FM k a -> (k,a)
-maxViewWithKey   :: (Ord k,Monad m) => FM k a -> m (FM k a, k, a)
-maxElemWithKey   :: Ord k => FM k a -> (k,a)
-foldrWithKey     :: (k -> a -> b -> b) -> b -> FM k a -> b
-foldlWithKey     :: (b -> k -> a -> b) -> b -> FM k a -> b
-toOrdSeq         :: (Ord k,S.Sequence seq) => FM k a -> seq (k,a)
+minViewWithKey    :: (Ord k,Monad m) => FM k a -> m (k, a, FM k a)
+minElemWithKey    :: Ord k => FM k a -> (k,a)
+maxViewWithKey    :: (Ord k,Monad m) => FM k a -> m (FM k a, k, a)
+maxElemWithKey    :: Ord k => FM k a -> (k,a)
+foldrWithKey      :: (k -> a -> b -> b) -> b -> FM k a -> b
+foldlWithKey      :: (b -> k -> a -> b) -> b -> FM k a -> b
+toOrdSeq          :: (Ord k,S.Sequence seq) => FM k a -> seq (k,a)
 
-unionWithKey     :: Ord k => (k -> a -> a -> a) -> FM k a -> FM k a -> FM k a
-unionSeqWithKey  :: (Ord k,S.Sequence seq) => (k -> a -> a -> a) 
+unionWithKey      :: Ord k => (k -> a -> a -> a) -> FM k a -> FM k a -> FM k a
+unionSeqWithKey   :: (Ord k,S.Sequence seq) => (k -> a -> a -> a)
                         -> seq (FM k a) -> FM k a
-intersectWithKey :: Ord k => (k -> a -> b -> c) -> FM k a -> FM k b -> FM k c
+intersectWithKey  :: Ord k => (k -> a -> b -> c) -> FM k a -> FM k b -> FM k c
 
 
-empty        = DM.empty
-single       = DM.singleton
-fromSeq      = fromSeqUsingInsertSeq
-insert       = DM.insert
-insertSeq    = insertSeqUsingFoldr
-union        = DM.union
-unionSeq     = DM.unions . S.toList
-delete       = DM.delete
-deleteAll    = DM.delete -- by finite map property
-deleteSeq    = deleteSeqUsingFoldr
-null         = DM.null
-size         = DM.size
-member       = flip DM.member
-count        = countUsingMember
-lookup m k   = case lookupM m k of 
-                  Nothing -> error (moduleName ++ ".lookup: failed")
-                  Just x  -> x
-lookupM      = flip DM.lookup
-lookupAll    = lookupAllUsingLookupM
+empty              = DM.empty
+single             = DM.singleton
+fromSeq            = fromSeqUsingInsertSeq
+insert             = DM.insert
+insertSeq          = insertSeqUsingFoldr
+union              = DM.union
+unionSeq           = DM.unions . S.toList
+delete             = DM.delete
+deleteAll          = DM.delete -- by finite map property
+deleteSeq          = deleteSeqUsingFoldr
+null               = DM.null
+size               = DM.size
+member             = flip DM.member
+count              = countUsingMember
+lookup m k         = case lookupM m k of
+                         Nothing -> error (moduleName ++ ".lookup: failed")
+                         Just x  -> x
+lookupM            = flip DM.lookup
+lookupAll          = lookupAllUsingLookupM
 lookupWithDefault d = flip (DM.findWithDefault d)
-adjust       = DM.adjust
-adjustAll    = DM.adjust
-map          = fmap
-fold         = DM.fold
-fold1        = fold1UsingElements
-filter       = DM.filter
-partition    = DM.partition
-elements     = elementsUsingFold
+adjust             = DM.adjust
+adjustAll          = DM.adjust
+map                = fmap
+fold               = DM.fold
+fold1              = fold1UsingElements
+filter             = DM.filter
+partition          = DM.partition
+elements           = elementsUsingFold
 
-minView m    = if DM.null m 
-                  then fail (moduleName ++ ".minView: failed")
-                  else let ((k,x),m') = DM.deleteFindMin m in return (x,m')
-minElem       = snd . DM.findMin
-deleteMin     = DM.deleteMin
-unsafeInsertMin = DM.insert
-maxView m     = if DM.null m
-                  then fail (moduleName ++ ".maxView: failed")
-                  else let ((k,x),m') = DM.deleteFindMax m in return (m',x)
-maxElem       = snd . DM.findMax
-deleteMax     = DM.deleteMax
+minView m          = if DM.null m
+                       then fail (moduleName ++ ".minView: failed")
+                       else let ((k,x),m') = DM.deleteFindMin m 
+                            in return (x,m')
+minElem            = snd . DM.findMin
+deleteMin          = DM.deleteMin
+unsafeInsertMin    = DM.insert
+maxView m          = if DM.null m
+                       then fail (moduleName ++ ".maxView: failed")
+                       else let ((k,x),m') = DM.deleteFindMax m 
+                            in return (m',x)
+maxElem            = snd . DM.findMax
+deleteMax          = DM.deleteMax
 unsafeInsertMax m k x = DM.insert k x m
-foldr  f x m  = Prelude.foldr  f x (DM.elems m)
-foldl  f x m  = Prelude.foldl  f x (DM.elems m)
-foldr1 f   m  = Prelude.foldr1 f   (DM.elems m)
-foldl1 f   m  = Prelude.foldl1 f   (DM.elems m)
-unsafeFromOrdSeq = DM.fromAscList . S.toList
-unsafeAppend  = DM.union
-filterLT k m  = fst . DM.split k $ m
-filterGT k m  = snd . DM.split k $ m
-filterLE k m  = DM.filterWithKey (\k' _ -> k'<=k) m
-filterGE k m  = DM.filterWithKey (\k' _ -> k'>=k) m
-partitionLT_GE k m = DM.partitionWithKey (\k' _ -> k'<k) m
-partitionLE_GT k m = DM.partitionWithKey (\k' _ -> k'<=k) m
-partitionLT_GT k m = DM.split k m
+foldr  f x m       = Prelude.foldr  f x (DM.elems m)
+foldl  f x m       = Prelude.foldl  f x (DM.elems m)
+foldr1 f   m       = Prelude.foldr1 f   (DM.elems m)
+foldl1 f   m       = Prelude.foldl1 f   (DM.elems m)
+unsafeFromOrdSeq   = DM.fromAscList . S.toList
+unsafeAppend       = DM.union
+filterLT k m       = fst . DM.split k $ m
+filterGT k m       = snd . DM.split k $ m
+filterLE k m       = DM.filterWithKey (\k' _ -> k' <= k) m
+filterGE k m       = DM.filterWithKey (\k' _ -> k' >= k) m
+partitionLT_GE k m = DM.partitionWithKey (\k' _ -> k' <  k) m
+partitionLE_GT k m = DM.partitionWithKey (\k' _ -> k' <= k) m
+partitionLT_GT     = DM.split
 
-fromSeqWith    f s = DM.fromAscListWith f (S.toList s)
+fromSeqWith    f s = DM.fromAscListWith    f (S.toList s)
 fromSeqWithKey f s = DM.fromAscListWithKey f (S.toList s)
 insertWith         = DM.insertWith
 insertWithKey      = DM.insertWithKey
@@ -217,39 +219,40 @@ difference         = DM.difference
 subset             = DM.isProperSubmapOfBy (\_ _ -> True)
 subsetEq           = DM.isSubmapOfBy (\_ _ -> True)
 
+toSeq              = toSeqUsingFoldWithKey
+keys               = keysUsingFoldWithKey
+mapWithKey         = DM.mapWithKey
+foldWithKey        = DM.foldWithKey
+filterWithKey      = DM.filterWithKey
+partitionWithKey   = DM.partitionWithKey
 
-toSeq               = toSeqUsingFoldWithKey
-keys                = keysUsingFoldWithKey
-mapWithKey          = DM.mapWithKey
-foldWithKey         = DM.foldWithKey
-filterWithKey       = DM.filterWithKey
-partitionWithKey    = DM.partitionWithKey
-
-minViewWithKey m    = if DM.null m 
+minViewWithKey m   = if DM.null m
                         then fail (moduleName ++ ".minViewWithKey: failed")
-	                else let ((k,x),m') = DM.deleteFindMin m in return (k,x,m')
-minElemWithKey      = DM.findMin
-maxViewWithKey m    = if DM.null m
+	                else let ((k,x),m') = DM.deleteFindMin m 
+                             in return (k,x,m')
+minElemWithKey     = DM.findMin
+maxViewWithKey m   = if DM.null m
                         then fail (moduleName ++ ".maxViewWithKey: failed")
-	                else let ((k,x),m') = DM.deleteFindMax m in return (m',k,x)
-maxElemWithKey      = DM.findMax
-foldrWithKey        = DM.foldWithKey
-foldlWithKey f x m  = Prelude.foldl (\b (k,a) -> f b k a) x (DM.toAscList m)
-toOrdSeq            = S.fromList . DM.toAscList
+	                else let ((k,x),m') = DM.deleteFindMax m 
+                             in return (m',k,x)
+maxElemWithKey     = DM.findMax
+foldrWithKey       = DM.foldWithKey
+foldlWithKey f x m = Prelude.foldl (\b (k,a) -> f b k a) x (DM.toAscList m)
+toOrdSeq           = S.fromList . DM.toAscList
 
-unionWithKey        = DM.unionWithKey
-unionSeqWithKey     = unionSeqWithKeyUsingReduce
-intersectWithKey    = DM.intersectionWithKey
+unionWithKey       = DM.unionWithKey
+unionSeqWithKey    = unionSeqWithKeyUsingReduce
+intersectWithKey   = DM.intersectionWithKey
 
 
 instance Ord k => A.AssocX (FM k) k where
-  {empty = empty; single = single; fromSeq = fromSeq; insert = insert; 
-   insertSeq = insertSeq; union = union; unionSeq = unionSeq; 
-   delete = delete; deleteAll = deleteAll; deleteSeq = deleteSeq; 
-   null = null; size = size; member = member; count = count; 
-   lookup = lookup; lookupM = lookupM; lookupAll = lookupAll; 
-   lookupWithDefault = lookupWithDefault; adjust = adjust; 
-   adjustAll = adjustAll; map = map; fold = fold; fold1 = fold1; 
+  {empty = empty; single = single; fromSeq = fromSeq; insert = insert;
+   insertSeq = insertSeq; union = union; unionSeq = unionSeq;
+   delete = delete; deleteAll = deleteAll; deleteSeq = deleteSeq;
+   null = null; size = size; member = member; count = count;
+   lookup = lookup; lookupM = lookupM; lookupAll = lookupAll;
+   lookupWithDefault = lookupWithDefault; adjust = adjust;
+   adjustAll = adjustAll; map = map; fold = fold; fold1 = fold1;
    filter = filter; partition = partition; elements = elements;
    instanceName m = moduleName}
 
@@ -264,18 +267,18 @@ instance Ord k => A.OrdAssocX (FM k) k where
    partitionLE_GT = partitionLE_GT; partitionLT_GT = partitionLT_GT}
 
 instance Ord k => A.FiniteMapX (FM k) k where
-  {fromSeqWith = fromSeqWith; fromSeqWithKey = fromSeqWithKey; 
-   insertWith = insertWith; insertWithKey = insertWithKey; 
-   insertSeqWith = insertSeqWith; insertSeqWithKey = insertSeqWithKey; 
-   unionl = unionl; unionr = unionr; unionWith = unionWith; 
-   unionSeqWith = unionSeqWith; intersectWith = intersectWith; 
+  {fromSeqWith = fromSeqWith; fromSeqWithKey = fromSeqWithKey;
+   insertWith = insertWith; insertWithKey = insertWithKey;
+   insertSeqWith = insertSeqWith; insertSeqWithKey = insertSeqWithKey;
+   unionl = unionl; unionr = unionr; unionWith = unionWith;
+   unionSeqWith = unionSeqWith; intersectWith = intersectWith;
    difference = difference; subset = subset; subsetEq = subsetEq}
 
 instance Ord k => A.OrdFiniteMapX (FM k) k
 
 instance Ord k => A.Assoc (FM k) k where
-  {toSeq = toSeq; keys = keys; mapWithKey = mapWithKey; 
-   foldWithKey = foldWithKey; filterWithKey = filterWithKey; 
+  {toSeq = toSeq; keys = keys; mapWithKey = mapWithKey;
+   foldWithKey = foldWithKey; filterWithKey = filterWithKey;
    partitionWithKey = partitionWithKey}
 
 instance Ord k => A.OrdAssoc (FM k) k where
@@ -289,4 +292,3 @@ instance Ord k => A.FiniteMap (FM k) k where
    intersectWithKey = intersectWithKey}
 
 instance Ord k => A.OrdFiniteMap (FM k) k
-
