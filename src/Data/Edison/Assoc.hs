@@ -190,7 +190,7 @@ class (AssocX m k, Ord k) => OrdAssocX m k | m -> k where
   -- | Insert a binding into an associative collection with the precondition
   --   that the given key is @\<=@ any existing keys already in the collection.
   --   For finite maps, this precondition is strengthened to @\<@.
-  unsafeInsertMin    :: a -> a -> m a -> m a
+  unsafeInsertMin    :: k -> a -> m a -> m a
 
   -- | Remove the biniding with the maximum key, and return its element together
   --   with the remaining associative collection.  Calls 'fail' if the
@@ -226,13 +226,13 @@ class (AssocX m k, Ord k) => OrdAssocX m k | m -> k where
   --   order by key with right associativity.  Signals an error if the
   --   associative collection is empty.  For finite maps, the order is
   --   increasing.
-  foldr1             :: (a -> a -> a) -> m a -> m a
+  foldr1             :: (a -> a -> a) -> m a -> a
 
   -- | Fold across the elements of an associative collction in non-decreasing
   --   order by key with left associativity.  Signals an error if the 
   --   associative collction is empty.  For finite maps, the order is
   --   increasing.
-  foldl1             :: (a -> a -> a) -> m a -> m a
+  foldl1             :: (a -> a -> a) -> m a -> a
 
   -- | Convert a sequence of bindings into an associative collection with the
   --   precondition that the sequence is sorted into non-decreasing order by
