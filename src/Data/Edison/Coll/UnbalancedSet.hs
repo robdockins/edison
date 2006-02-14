@@ -61,8 +61,8 @@ deleteAll  :: Ord a => a -> Set a -> Set a
 deleteSeq  :: (Ord a,S.Sequence seq) => seq a -> Set a -> Set a
 null       :: Set a -> Bool
 size       :: Set a -> Int
-member     :: Ord a => Set a -> a -> Bool
-count      :: Ord a => Set a -> a -> Int
+member     :: Ord a => a -> Set a -> Bool
+count      :: Ord a => a -> Set a -> Int
 
 toSeq      :: (Ord a,S.Sequence seq) => Set a -> seq a
 lookup     :: Ord a => Set a -> a -> a
@@ -77,7 +77,7 @@ partition  :: Ord a => (a -> Bool) -> Set a -> (Set a, Set a)
 deleteMin        :: Ord a => Set a -> Set a
 deleteMax        :: Ord a => Set a -> Set a
 unsafeInsertMin  :: Ord a => a -> Set a -> Set a
-unsafeInsertMax  :: Ord a => Set a -> a -> Set a
+unsafeInsertMax  :: Ord a => a -> Set a -> Set a
 unsafeFromOrdSeq :: (Ord a,S.Sequence seq) => seq a -> Set a
 unsafeAppend     :: Ord a => Set a -> Set a -> Set a
 filterLT         :: Ord a => a -> Set a -> Set a
@@ -90,7 +90,7 @@ partitionLT_GT   :: Ord a => a -> Set a -> (Set a, Set a)
 
 minView       :: (Monad m) => Set a -> m (a, Set a)
 minElem       :: Set a -> a
-maxView       :: (Monad m) => Set a -> m (Set a, a)
+maxView       :: (Monad m) => Set a -> m (a, Set a)
 maxElem       :: Set a -> a
 foldr         :: (a -> b -> b) -> b -> Set a -> b
 foldl         :: (b -> a -> b) -> b -> Set a -> b
@@ -142,12 +142,12 @@ size t = sz t 0
   where sz E i = i
         sz (T a x b) i = sz a (sz b (i+1))
 
-member E x = False
-member (T a y b) x =
+member x E = False
+member x (T a y b) =
   case compare x y of
-    LT -> member a x
+    LT -> member x a
     EQ -> True
-    GT -> member b x
+    GT -> member x b
 
 lookupM E x = fail "UnbalancedSet.lookupM: XXX"
 lookupM (T a y b) x =
@@ -171,7 +171,7 @@ deleteMax (T a x E) = a
 deleteMax (T a x b) = T a x (deleteMax b)
 
 unsafeInsertMin x t = T E x t
-unsafeInsertMax t x = T t x E
+unsafeInsertMax x t = T t x E
 
 unsafeFromOrdSeq xs = fst (ins xs (S.size xs))
   where ins xs 0 = (E,xs)
@@ -250,9 +250,9 @@ minElem (T E x b) = x
 minElem (T a x b) = minElem a
 
 maxView E = fail "UnbalancedSet.maxView: empty collection"
-maxView (T a x E) = return (a, x)
-maxView (T a x b) = return (T a x b', y)
-  where Just (b', y) = maxView b
+maxView (T a x E) = return (x, a)
+maxView (T a x b) = return (y, T a x b')
+  where Just (y, b') = maxView b
 
 maxElem E = error "UnbalancedSet.maxElem: empty collection"
 maxElem (T a x E) = x

@@ -152,12 +152,12 @@ class Eq a => CollX c a | c -> a where
   --
   -- /Axioms:/
   --
-  -- * @member xs x = (count xs x > 0)@
-  member         :: c -> a -> Bool
+  -- * @member x xs = (count x xs > 0)@
+  member         :: a -> c -> Bool
 
   -- | Count how many copies of the given element are in the collection.
   --   For sets, this will always return 0 or 1.
-  count          :: c -> a -> Int
+  count          :: a -> c -> Int
 
   -- | The name of the module implementing @c@
   instanceName   :: c -> String
@@ -183,7 +183,7 @@ class (CollX c a, Ord a) => OrdCollX c a | c -> a where
   -- | Insert an element into a collection which is guaranteed to be
   --   @>=@ any existing elements in the collection.  For sets, the 
   --   precondition is strenghtened to @>@.
-  unsafeInsertMax    :: c -> a -> c
+  unsafeInsertMax    :: a -> c -> c
 
   -- | Convert a sequence in non-decreasing order into a collection.
   --   For sets, the sequence must be in increasing order.
@@ -353,7 +353,7 @@ class (Coll c a, OrdCollX c a) => OrdColl c a | c -> a where
   --   copies of the maximum element, it is unspecified which is chosen.
   --   /Note/ that 'maxView', 'maxElem' and 'deleteMax' may make different
   --   choices.
-  maxView    :: (Monad m) => c -> m (c, a)
+  maxView    :: (Monad m) => c -> m (a, c)
 
   -- | Return the maximum element in the collection.  If there are multiple
   --   copies of the maximum element, it is unspecified which is chosen.

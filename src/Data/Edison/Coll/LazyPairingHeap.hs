@@ -161,31 +161,31 @@ size E = 0
 size (H1 x xs) = 1 + size xs
 size (H2 x h xs) = 1 + size h + size xs
 
-member :: Ord a => Heap a -> a -> Bool
-member E x = False
-member (H1 y ys) x =
+member :: Ord a => a -> Heap a -> Bool
+member x E = False
+member x (H1 y ys) =
   case compare x y of
     LT -> False
     EQ -> True
-    GT -> member ys x
-member (H2 y h ys) x =
+    GT -> member x ys
+member x (H2 y h ys) =
   case compare x y of
     LT -> False
     EQ -> True
-    GT -> member h x || member ys x
+    GT -> member x h || member x ys
 
-count :: Ord a => Heap a -> a -> Int
-count E x = 0
-count (H1 y ys) x =
+count :: Ord a => a -> Heap a -> Int
+count x E = 0
+count x (H1 y ys) =
   case compare x y of
     LT -> 0
-    EQ -> 1 + count ys x
-    GT -> count ys x
-count (H2 y h ys) x =
+    EQ -> 1 + count x ys
+    GT -> count x ys
+count x (H2 y h ys) =
   case compare x y of
     LT -> 0
-    EQ -> 1 + count h x + count ys x
-    GT -> count h x + count ys x
+    EQ -> 1 + count x h + count x ys
+    GT -> count x h + count x ys
 
 deleteMin :: Ord a => Heap a -> Heap a
 deleteMin E = E
@@ -195,10 +195,10 @@ deleteMin (H2 x h xs) = union h xs
 unsafeInsertMin :: Ord a => a -> Heap a -> Heap a
 unsafeInsertMin = H1
 
-unsafeInsertMax :: Ord a => Heap a -> a -> Heap a
-unsafeInsertMax E x = H1 x E
-unsafeInsertMax (H1 y ys) x = H2 y (H1 x E) ys
-unsafeInsertMax (H2 y h ys) x = H1 y (union (unsafeInsertMax h x) ys)
+unsafeInsertMax :: Ord a => a -> Heap a -> Heap a
+unsafeInsertMax x E = H1 x E
+unsafeInsertMax x (H1 y ys) = H2 y (H1 x E) ys
+unsafeInsertMax x (H2 y h ys) = H1 y (union (unsafeInsertMax x h) ys)
 
 unsafeAppend :: Ord a => Heap a -> Heap a -> Heap a
 unsafeAppend h E = h
@@ -341,9 +341,9 @@ minElem E = error "LazyPairingHeap.minElem: empty heap"
 minElem (H1 x xs) = x
 minElem (H2 x h xs) = x
 
-maxView :: (Ord a, Monad m) => Heap a -> m (Heap a, a)
+maxView :: (Ord a, Monad m) => Heap a -> m (a, Heap a)
 maxView E = fail "LazyPairingHeap.maxView: empty heap"
-maxView xs = return (xs',y)
+maxView xs = return (y,xs')
   where (xs', y) = maxView' xs
 
 -- not exported

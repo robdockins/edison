@@ -62,8 +62,8 @@ deleteAll :: Ord a => a -> Heap a -> Heap a
 deleteSeq :: (Ord a,S.Sequence s) => s a -> Heap a -> Heap a
 null      :: Heap a -> Bool
 size      :: Heap a -> Int
-member    :: Ord a => Heap a -> a -> Bool
-count     :: Ord a => Heap a -> a -> Int
+member    :: Ord a => a -> Heap a -> Bool
+count     :: Ord a => a -> Heap a -> Int
 
 toSeq     :: (Ord a, S.Sequence s) => Heap a -> s a
 lookup    :: Ord a => Heap a -> a -> a
@@ -78,7 +78,7 @@ partition :: Ord a => (a -> Bool) -> Heap a -> (Heap a, Heap a)
 deleteMin        :: Ord a => Heap a -> Heap a
 deleteMax        :: Ord a => Heap a -> Heap a
 unsafeInsertMin  :: Ord a => a -> Heap a -> Heap a
-unsafeInsertMax  :: Ord a => Heap a -> a -> Heap a
+unsafeInsertMax  :: Ord a => a -> Heap a -> Heap a
 unsafeFromOrdSeq :: (Ord a,S.Sequence s) => s a -> Heap a
 unsafeAppend     :: Ord a => Heap a -> Heap a -> Heap a
 filterLT         :: Ord a => a -> Heap a -> Heap a
@@ -91,7 +91,7 @@ partitionLT_GT   :: Ord a => a -> Heap a -> (Heap a, Heap a)
 
 minView  :: (Ord a,Monad m) => Heap a -> m (a, Heap a)
 minElem  :: Ord a => Heap a -> a
-maxView  :: (Ord a,Monad m) => Heap a -> m (Heap a, a)
+maxView  :: (Ord a,Monad m) => Heap a -> m (a, Heap a)
 maxElem  :: Ord a => Heap a -> a
 foldr    :: Ord a => (a -> b -> b) -> b -> Heap a -> b
 foldl    :: Ord a => (b -> a -> b) -> b -> Heap a -> b
@@ -115,7 +115,7 @@ delete x xs =
   let (a,b) = partitionLE_GT x xs
   in case maxView a of
        Nothing -> b
-       Just (a',y)
+       Just (y, a')
          | x > y -> T a' y b
          | otherwise -> unsafeAppend a' b
 
@@ -129,15 +129,15 @@ size = sz 0
   where sz n E = n
         sz n (T a x b) = sz (sz (1+n) a) b
   
-member E x = False
-member (T a y b) x = if x < y then member a x else x==y || member b x
+member x E = False
+member x (T a y b) = if x < y then member x a else x==y || member x b
 
 count = cnt 0
-  where cnt n E x = n
-        cnt n (T a y b) x
-          | x < y = cnt n a x
-          | x > y = cnt n b x
-          | otherwise = cnt (cnt (1+n) a x) b x
+  where cnt n x E = n
+        cnt n x (T a y b)
+          | x < y = cnt n x a
+          | x > y = cnt n x b
+          | otherwise = cnt (cnt (1+n) x a) x b
 
 toSeq xs = tos xs S.empty
   where tos E rest = rest
@@ -199,11 +199,11 @@ deleteMax (T a x b) = del a x b
         del a x (T b y (T c z d)) = T (T a x b) y (del c z d)
 
 unsafeInsertMin x xs = T E x xs
-unsafeInsertMax xs x = T xs x E
+unsafeInsertMax x xs = T xs x E
 
 unsafeAppend a b = case maxView a of
-                       Nothing     -> b
-                       Just (a',x) -> T a' x b
+                       Nothing      -> b
+                       Just (x, a') -> T a' x b
 
 filterLT k E = E
 filterLT k t@(T a x b) = 
@@ -330,7 +330,7 @@ minElem (T a x b) = minel a x
 
 
 maxView E = fail "SplayHeap.maxView: empty heap"
-maxView (T a x b) = return (ys,y)
+maxView (T a x b) = return (y,ys)
   where (ys,y) = maxv a x b
         maxv a x E = (a,x)
         maxv a x (T b y E) = (T a x b,y)

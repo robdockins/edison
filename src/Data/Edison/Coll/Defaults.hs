@@ -23,8 +23,8 @@ insertSeqUsingFoldr xs c = S.foldr insert c xs
 memberUsingFold :: Coll c a => c -> a -> Bool
 memberUsingFold h x = fold (\y ans -> (x == y) || ans) False h
 
-countUsingMember :: SetX c a => c -> a -> Int
-countUsingMember xs x = if member xs x then 1 else 0
+countUsingMember :: SetX c a => a -> c -> Int
+countUsingMember x xs = if member x xs then 1 else 0
 
 lookupAllUsingLookupM :: (Set c a,S.Sequence seq) => c -> a -> seq a
 lookupAllUsingLookupM xs x =
@@ -51,8 +51,8 @@ fromSeqUsingUnionSeq = unionList . S.foldl singleCons []
 toSeqUsingFold :: (Coll c a,S.Sequence seq) => c -> seq a
 toSeqUsingFold = fold S.lcons S.empty
 
-unsafeInsertMaxUsingUnsafeAppend :: OrdCollX c a => c -> a -> c
-unsafeInsertMaxUsingUnsafeAppend c x = unsafeAppend c (single x)
+unsafeInsertMaxUsingUnsafeAppend :: OrdCollX c a => a -> c -> c
+unsafeInsertMaxUsingUnsafeAppend x c = unsafeAppend c (single x)
 
 toOrdSeqUsingFoldr :: (OrdColl c a,S.Sequence seq) => c -> seq a
 toOrdSeqUsingFoldr = foldr S.lcons S.empty
@@ -112,7 +112,7 @@ lookupWithDefaultUsingLookupM dflt ys x =
 deleteMaxUsingMaxView :: OrdColl c a => c -> c
 deleteMaxUsingMaxView c =
   case maxView c of
-    Just (c',_) -> c'
+    Just (_,c') -> c'
     Nothing     -> c
 
 fromSeqWithUsingInsertWith :: (Set c a,S.Sequence seq) => (a -> a -> a) -> seq a -> c

@@ -58,8 +58,8 @@ deleteAll  :: Ord a => a -> Set a -> Set a
 deleteSeq  :: (Ord a,S.Sequence seq) => seq a -> Set a -> Set a
 null       :: Set a -> Bool
 size       :: Set a -> Int
-member     :: Ord a => Set a -> a -> Bool
-count      :: Ord a => Set a -> a -> Int
+member     :: Ord a => a -> Set a -> Bool
+count      :: Ord a => a -> Set a -> Int
 
 toSeq      :: (Ord a,S.Sequence seq) => Set a -> seq a
 lookup     :: Ord a => Set a -> a -> a
@@ -74,7 +74,7 @@ partition  :: Ord a => (a -> Bool) -> Set a -> (Set a, Set a)
 deleteMin        :: Ord a => Set a -> Set a
 deleteMax        :: Ord a => Set a -> Set a
 unsafeInsertMin  :: Ord a => a -> Set a -> Set a
-unsafeInsertMax  :: Ord a => Set a -> a -> Set a
+unsafeInsertMax  :: Ord a => a -> Set a -> Set a
 unsafeFromOrdSeq :: (Ord a,S.Sequence seq) => seq a -> Set a
 unsafeAppend     :: Ord a => Set a -> Set a -> Set a
 filterLT         :: Ord a => a -> Set a -> Set a
@@ -87,7 +87,7 @@ partitionLT_GT   :: Ord a => a -> Set a -> (Set a, Set a)
 
 minView       :: (Ord a,Monad m) => Set a -> m (a, Set a)
 minElem       :: Set a -> a
-maxView       :: (Ord a,Monad m) => Set a -> m (Set a, a)
+maxView       :: (Ord a,Monad m) => Set a -> m (a, Set a)
 maxElem       :: Set a -> a
 foldr         :: (a -> b -> b) -> b -> Set a -> b
 foldl         :: (b -> a -> b) -> b -> Set a -> b
@@ -126,7 +126,7 @@ deleteAll          = DS.delete -- by set property
 deleteSeq          = deleteSeqUsingDelete
 null               = DS.null
 size               = DS.size
-member             = flip DS.member
+member             = DS.member
 count              = countUsingMember
 
 toSeq              = toSeqUsingFold
@@ -142,7 +142,7 @@ partition          = DS.partition
 deleteMin          = DS.deleteMin
 deleteMax          = DS.deleteMax
 unsafeInsertMin    = DS.insert
-unsafeInsertMax    = flip DS.insert
+unsafeInsertMax    = DS.insert
 unsafeFromOrdSeq   = DS.fromDistinctAscList . S.toList
 unsafeAppend       = DS.union
 filterLT x         = DS.filter (<x)
@@ -160,7 +160,7 @@ minElem            = DS.findMin
 
 maxView set        = if DS.null set
                         then fail (moduleName ++ ".maxView: failed")
-                        else let (x,y) = (DS.deleteFindMax set) in return (y,x)
+                        else return (DS.deleteFindMax set)
 maxElem            = DS.findMax
 
 foldr  f x set     = Prelude.foldr  f x (DS.toAscList set)

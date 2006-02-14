@@ -53,8 +53,8 @@ deleteAll :: (C.OrdColl h a,Ord a) => a -> Min h a -> Min h a
 deleteSeq :: (C.OrdColl h a,Ord a,S.Sequence s) => s a -> Min h a -> Min h a
 null      :: Min h a -> Bool
 size      :: C.CollX h a => Min h a -> Int
-member    :: (C.CollX h a,Ord a) => Min h a -> a -> Bool
-count     :: (C.CollX h a,Ord a) => Min h a -> a -> Int
+member    :: (C.CollX h a,Ord a) => a -> Min h a -> Bool
+count     :: (C.CollX h a,Ord a) => a -> Min h a -> Int
 
 toSeq     :: (C.Coll h a,S.Sequence s) => Min h a -> s a
 lookup    :: (C.Coll h a,Ord a) => Min h a -> a -> a
@@ -69,7 +69,7 @@ partition :: (C.OrdColl h a) => (a -> Bool) -> Min h a -> (Min h a, Min h a)
 deleteMin :: (C.OrdColl h a,Ord a) => Min h a -> Min h a
 deleteMax :: (C.OrdCollX h a,Ord a) => Min h a -> Min h a
 unsafeInsertMin :: (C.OrdCollX h a,Ord a) => a -> Min h a -> Min h a
-unsafeInsertMax :: (C.OrdCollX h a,Ord a) => Min h a -> a -> Min h a
+unsafeInsertMax :: (C.OrdCollX h a,Ord a) => a -> Min h a -> Min h a
 unsafeFromOrdSeq :: (C.OrdCollX h a,Ord a,S.Sequence s) => s a -> Min h a
 unsafeAppend :: (C.OrdCollX h a,Ord a) => Min h a -> Min h a -> Min h a
 filterLT :: (C.OrdCollX h a,Ord a) => a -> Min h a -> Min h a
@@ -82,7 +82,7 @@ partitionLT_GT :: (C.OrdColl h a,Ord a) => a -> Min h a -> (Min h a, Min h a)
 
 minView :: (C.OrdColl h a,Ord a,Monad m) => Min h a -> m (a, Min h a)
 minElem :: (C.OrdColl h a,Ord a) => Min h a -> a
-maxView :: (C.OrdColl h a,Ord a,Monad m) => Min h a -> m (Min h a, a)
+maxView :: (C.OrdColl h a,Ord a,Monad m) => Min h a -> m (a, Min h a)
 maxElem :: (C.OrdColl h a,Ord a) => Min h a -> a
 foldr :: (C.OrdColl h a,Ord a) => (a -> b -> b) -> b -> Min h a -> b
 foldl :: (C.OrdColl h a,Ord a) => (b -> a -> b) -> b -> Min h a -> b
@@ -147,15 +147,15 @@ size E = 0
 size (M x xs) = 1 + C.size xs
 
 
-member E x = False
-member (M y ys) x
-  | x > y     = C.member ys x
+member x E = False
+member x (M y ys)
+  | x > y     = C.member x ys
   | otherwise = (x == y)
 
-count E x = 0
-count (M y ys) x
-  | x > y     = C.count ys x
-  | x == y    = 1 + C.count ys x
+count x E = 0
+count x (M y ys)
+  | x > y     = C.count x ys
+  | x == y    = 1 + C.count x ys
   | otherwise = 0
 
 toSeq E = S.empty
@@ -208,8 +208,8 @@ deleteMax (M x xs)
 
 unsafeInsertMin x xs = M x (toPrim xs)
 
-unsafeInsertMax E x = M x C.empty
-unsafeInsertMax (M y ys) x = M y (C.unsafeInsertMax ys x)
+unsafeInsertMax x E = M x C.empty
+unsafeInsertMax x (M y ys) = M y (C.unsafeInsertMax x ys)
 
 unsafeFromOrdSeq xs =
   case S.lview xs of
@@ -256,8 +256,8 @@ minElem (M x xs) = x
 
 maxView E = fail "MinHeap.maxView: empty heap"
 maxView (M x xs) = case C.maxView xs of
-                     Nothing     -> return (E, x)
-                     Just (ys,y) -> return (M x ys, y)
+                     Nothing     -> return (x, E)
+                     Just (y,ys) -> return (y, M x ys)
 
 maxElem E = error "MinHeap.minElem: empty heap"
 maxElem (M x xs)

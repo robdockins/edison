@@ -104,21 +104,21 @@ size h = sz h 0
   where sz E i = i
         sz (T _ a b) i = sz a (sz b (i + 1))
 
-member :: Ord a => Heap a -> a -> Bool
-member E x = False
-member (T y a b) x =
+member :: Ord a => a -> Heap a -> Bool
+member x E = False
+member x (T y a b) =
   case compare x y of
     LT -> False
     EQ -> True
-    GT -> member b x || member a x
+    GT -> member x b || member x a
 
-count :: Ord a => Heap a -> a -> Int
-count E x = 0
-count (T y a b) x =
+count :: Ord a => a -> Heap a -> Int
+count x E = 0
+count x (T y a b) =
   case compare x y of
     LT -> 0
-    EQ -> 1 + count b x + count a x
-    GT -> count b x + count a x
+    EQ -> 1 + count x b + count x a
+    GT -> count x b + count x a
 
 toSeq :: (Ord a,S.Sequence seq) => Heap a -> seq a
 toSeq h = tol h S.empty
@@ -174,7 +174,7 @@ deleteMin (T x a b) = union a b
 deleteMax :: Ord a => Heap a -> Heap a
 deleteMax h = case maxView h of
                 Nothing     -> E
-                Just (h',x) -> h'
+                Just (x,h') -> h'
 
 unsafeInsertMin :: Ord a => a -> Heap a -> Heap a
 unsafeInsertMin x h = T x h E
@@ -250,18 +250,18 @@ minElem :: Ord a => Heap a -> a
 minElem E = error "SkewHeap.minElem: empty collection"
 minElem (T x a b) = x
 
-maxView :: (Ord a, Monad m) => Heap a -> m (Heap a, a)
+maxView :: (Ord a, Monad m) => Heap a -> m (a, Heap a)
 maxView E = fail "SkewHeap.maxView: empty heap"
-maxView (T x E E) = return (E, x)
-maxView (T x a E) = return (T x a' E, y)
-  where Just (a', y) = maxView a
-maxView (T x E a) = return (T x a' E, y)
-  where Just (a', y) = maxView a
+maxView (T x E E) = return (x, E)
+maxView (T x a E) = return (y, T x a' E)
+  where Just (y, a') = maxView a
+maxView (T x E a) = return (y, T x a' E)
+  where Just (y, a') = maxView a
 maxView (T x a b)
-    | y >= z    = return (T x a' b, y)
-    | otherwise = return (T x a b', z)
-  where Just (a', y) = maxView a
-        Just (b', z) = maxView b
+    | y >= z    = return (y, T x a' b)
+    | otherwise = return (z, T x a b')
+  where Just (y, a') = maxView a
+        Just (z, b') = maxView b
 
 -- warning: maxView and maxElem may disagree if root is equal to max!
 
@@ -328,7 +328,7 @@ lookup = lookupUsingLookupM
 lookupWithDefault :: Ord a => a -> Heap a -> a -> a
 lookupWithDefault = lookupWithDefaultUsingLookupM
 
-unsafeInsertMax :: Ord a => Heap a -> a -> Heap a
+unsafeInsertMax :: Ord a => a -> Heap a -> Heap a
 unsafeInsertMax = unsafeInsertMaxUsingUnsafeAppend
 
 unsafeFromOrdSeq :: (Ord a,S.Sequence seq) => seq a -> Heap a
