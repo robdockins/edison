@@ -15,6 +15,7 @@ Exposed-modules:
      Data.Edison.Assoc.Defaults
      Data.Edison.Assoc.AssocList
      Data.Edison.Assoc.PatriciaLoMap
+     Data.Edison.Assoc.StandardMap
      Data.Edison.Assoc.TernaryTrie
      Data.Edison.Coll
      Data.Edison.Coll.Defaults
