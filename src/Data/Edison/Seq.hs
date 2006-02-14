@@ -35,7 +35,6 @@ import Control.Monad
 import qualified Control.Monad.Identity as ID
 import Data.Edison.Prelude
 
--- naming convention: instances of Sequence are named Seq whenever possible
 
 -- | The 'Sequence' class defines an interface for datatypes which
 --   implement sequences.  A discription for each function is
@@ -46,8 +45,8 @@ import Data.Edison.Prelude
 --
 -- > <x0,x1,x2...,xn-1>
 --
---   Such that @x0@ is at the left or front of the sequence and
---   @xn-1@ is at the right or rear of the sequence.
+--   Such that @x0@ is at the left (front) of the sequence and
+--   @xn-1@ is at the right (rear) of the sequence.
 
 
 class (Functor s, MonadPlus s) => Sequence s where
