@@ -1,21 +1,21 @@
 -- Copyright (c) 1999 Chris Okasaki.  
 -- See COPYRIGHT file for terms and conditions.
 
-module Data.Edison.Coll.OrdBag_t where
+module Data.Edison.Test.Bag where
 
 import Prelude hiding (concat,reverse,map,concatMap,foldr,foldl,foldr1,foldl1,
                        filter,takeWhile,dropWhile,lookup,take,drop,splitAt,
                        zip,zip3,zipWith,zipWith3,unzip,unzip3,null)
 import qualified Prelude
 
-import EdisonPrelude
-import qualified Collection as C
+import Data.Edison.Prelude
+import qualified Data.Edison.Coll as C
 import qualified List -- not ListSeq!
-import qualified ListSeq as L
-import Debug.QuickCheck
+import qualified Data.Edison.Seq.ListSeq as L
+import Test.QuickCheck
 
-import LazyPairingHeap -- the bag module being tested
-import qualified JoinList as S -- the sequence module being tested
+import Data.Edison.Coll.LazyPairingHeap -- the bag module being tested
+import qualified Data.Edison.Seq.JoinList as S -- the sequence module being tested
   -- To different modules, simply replace the names above.
   -- To test a bag module that does not name its type constructor "Bag",
   -- you also need to define a type synonym
@@ -80,13 +80,12 @@ prop_null_size xs =
     &&
     size xs == Prelude.length (tol xs)
 
-prop_member_count :: Bag Int -> Int -> Bool
-prop_member_count xs x =
-    member xs x == (c > 0)
+prop_member_count :: Int -> Bag Int -> Bool
+prop_member_count x xs =
+    member x xs == (c > 0)
     &&
     c == Prelude.length (Prelude.filter (== x) (tol xs))
-  where c = count xs x
-
+  where c = count x xs
 
 -- Coll operations
 
@@ -94,22 +93,22 @@ prop_toSeq :: Bag Int -> Bool
 prop_toSeq xs =
     List.sort (S.toList (toSeq xs)) == tol xs
 
-prop_lookup :: Bag Int -> Int -> Bool
-prop_lookup xs x =
-    if member xs x then
-      lookup xs x == x
+prop_lookup :: Int -> Bag Int -> Bool
+prop_lookup x xs =
+    if member x xs then
+      lookup x xs == x
       &&
-      lookupM xs x == Just x
+      lookupM x xs == Just x
       &&
-      lookupWithDefault 999 xs x == x
+      lookupWithDefault 999 x xs == x
       &&
-      lookupAll xs x == Prelude.take (count xs x) (repeat x)
+      lookupAll x xs == Prelude.take (count x xs) (repeat x)
     else
-      lookupM xs x == Nothing
+      lookupM x xs == Nothing
       &&
-      lookupWithDefault 999 xs x == 999
+      lookupWithDefault 999 x xs == 999
       &&
-      lookupAll xs x == []
+      lookupAll x xs == []
 
 prop_fold :: Bag Int -> Bool
 prop_fold xs =
@@ -138,11 +137,11 @@ prop_unsafeInsertMin_Max i xs =
     if null xs then
       unsafeInsertMin 0 xs == single 0
       &&
-      unsafeInsertMax xs 0 == single 0
+      unsafeInsertMax 0 xs == single 0
     else
       unsafeInsertMin lo xs == insert lo xs
       &&
-      unsafeInsertMax xs hi == insert hi xs
+      unsafeInsertMax hi xs == insert hi xs
   where lo = minElem xs - (if odd i then 1 else 0)
         hi = maxElem xs + (if odd i then 1 else 0)
     
@@ -190,7 +189,7 @@ prop_minView_maxView xs =
                               else Just (minElem xs, deleteMin xs))
     &&
     maxView xs == (if null xs then Nothing
-                              else Just (deleteMax xs, maxElem xs))
+                              else Just (maxElem xs, deleteMax xs))
 
 prop_minElem_maxElem :: Bag Int -> Property
 prop_minElem_maxElem xs =
