@@ -19,7 +19,7 @@ Exposed-modules:
      Data.Edison.Assoc.TernaryTrie
      Data.Edison.Coll
      Data.Edison.Coll.Defaults
-     Data.Edison.Coll.CollectionUtils
+     Data.Edison.Coll.Utils
      Data.Edison.Coll.LazyPairingHeap
      Data.Edison.Coll.LeftistHeap
      Data.Edison.Coll.MinHeap
