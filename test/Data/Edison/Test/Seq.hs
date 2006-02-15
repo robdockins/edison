@@ -1,21 +1,23 @@
 -- Copyright (c) 1999 Chris Okasaki.  
 -- See COPYRIGHT file for terms and conditions.
 
---module Data.Edison.Seq.Seq_t where
-module Main where
+module Data.Edison.Test.Seq where
 
 
 import Prelude hiding (concat,reverse,map,concatMap,foldr,foldl,foldr1,foldl1,
                        filter,takeWhile,dropWhile,lookup,take,drop,splitAt,
                        zip,zip3,zipWith,zipWith3,unzip,unzip3,null)
 import qualified Prelude
-import Data.List (intersperse)
 
 import Data.Edison.Prelude
 import Data.Edison.Seq
+import Data.Edison.Test.Utils
+
 import Test.QuickCheck
-import Test.QuickCheck.Batch
-import Test.HUnit (runTestTT, Test(..),assertFailure)
+import Test.HUnit (Test(..))
+
+------------------------------------------------------
+-- The sequnce implementations to check
 
 import qualified Data.Edison.Seq.BankersQueue as BQ
 import qualified Data.Edison.Seq.BinaryRandList as BRL
@@ -28,10 +30,30 @@ import qualified Data.Edison.Seq.SimpleQueue as SQ
 import qualified Data.Edison.Seq.SizedSeq as Sized
 import qualified Data.Edison.Seq.RevSeq as Rev
 
-main = runTestTT testAll
 
-testAll :: Test
-testAll = TestList
+--------------------------------------------------------
+-- Just a utility class to help propigate the class contexts
+-- we need down into the quick check properties
+
+class (Eq (seq a),Arbitrary (seq a),Show (seq a),Sequence seq) => SeqTest a seq
+
+instance (Eq a,Arbitrary a,Show a) => SeqTest a []
+instance (Eq a,Arbitrary a,Show a) => SeqTest a BQ.Seq
+instance (Eq a,Arbitrary a,Show a) => SeqTest a BS.Seq
+instance (Eq a,Arbitrary a,Show a) => SeqTest a JL.Seq
+instance (Eq a,Arbitrary a,Show a) => SeqTest a MS.Seq
+instance (Eq a,Arbitrary a,Show a) => SeqTest a RL.Seq
+instance (Eq a,Arbitrary a,Show a) => SeqTest a SQ.Seq
+instance (Eq a,Arbitrary a,Show a) => SeqTest a BRL.Seq
+instance (Eq a,Arbitrary a,Show a,SeqTest a seq) => SeqTest a (Sized.Sized seq)
+instance (Eq a,Arbitrary a,Show a,SeqTest a seq) => SeqTest a (Rev.Rev seq)
+
+
+---------------------------------------------------------
+-- List all permutations of sequence types to test
+
+allSequenceTests :: Test
+allSequenceTests = TestList
    [ seqTests (empty :: [a])
    , seqTests (empty :: Sized.Sized [] a)
    , seqTests (empty :: Rev.Rev [] a)
@@ -63,80 +85,45 @@ testAll = TestList
    ]
 
 
-class (Eq (seq a),Arbitrary (seq a),Show (seq a),Sequence seq) => SeqTest a seq
+---------------------------------------------------------------
+-- List all the tests to run for each type
 
-instance (Eq a,Arbitrary a,Show a) => SeqTest a []
-instance (Eq a,Arbitrary a,Show a) => SeqTest a BQ.Seq
-instance (Eq a,Arbitrary a,Show a) => SeqTest a BS.Seq
-instance (Eq a,Arbitrary a,Show a) => SeqTest a JL.Seq
-instance (Eq a,Arbitrary a,Show a) => SeqTest a MS.Seq
-instance (Eq a,Arbitrary a,Show a) => SeqTest a RL.Seq
-instance (Eq a,Arbitrary a,Show a) => SeqTest a SQ.Seq
-instance (Eq a,Arbitrary a,Show a) => SeqTest a BRL.Seq
-instance (Eq a,Arbitrary a,Show a,SeqTest a seq) => SeqTest a (Sized.Sized seq)
-instance (Eq a,Arbitrary a,Show a,SeqTest a seq) => SeqTest a (Rev.Rev seq)
-
-doTest :: Testable a => a -> Test
-doTest x = TestCase $ do
-   let testOpts = 
-        TestOptions 
-        { no_of_tests = 250
-        , length_of_tests = 20
-        , debug_tests = False
-        }
-
-   res <- run x testOpts
-
-   case res of
-     TestOk _ _ _ -> return ()
-
-     TestExausted msg i msgs -> 
-	assertFailure . concat $ ["Test time exausted: ",msg," ",show i
-                                 ," ",concat (intersperse " " (concat msgs))]
-
-     TestFailed msgs i -> 
-        assertFailure . concat $ ["Falsifiable: {{",concat (intersperse ", " msgs),"}} ",show i]
-
-     TestAborted ex    ->
-        assertFailure (show ex)
-
-
-seqTests seq = 
-  TestLabel ("Sequence test "++(instanceName seq)) . 
-  TestList $
-
-  [ doTest $ prop_equals seq
-  , doTest $ prop_fromList seq
-  , doTest $ prop_toList seq
-  , doTest $ prop_single seq
-  , doTest $ prop_lcons_rcons seq
-  , doTest $ prop_lview_rview seq
-  , doTest $ prop_lhead_rhead seq
-  , doTest $ prop_ltail_rtail seq
-  , doTest $ prop_append seq
-  , doTest $ prop_null_size seq
-  , doTest $ prop_reverse seq                      -- 10
-  , doTest $ prop_reverseOnto seq
-  , doTest $ prop_map seq
-  , doTest $ prop_fold seq 
-  , doTest $ prop_fold1 seq
-  , doTest $ prop_reduce seq
-  , doTest $ prop_reduce1 seq
-  , doTest $ prop_inBounds_lookup seq
-  , doTest $ prop_update_adjust seq
-  , doTest $ prop_withIndex seq
-  , doTest $ prop_take_drop_splitAt seq            -- 20
-  , doTest $ prop_subseq seq
-  , doTest $ prop_filter_takeWhile_dropWhile seq
-  , doTest $ prop_partition_splitWhile seq
-  , doTest $ prop_zip_zipWith seq
-  , doTest $ prop_zip3_zipWith3 seq
-  , doTest $ prop_unzip_unzipWith seq
-  , doTest $ prop_unzip3_unzipWith3 seq
-  , doTest $ prop_concat seq
-  , doTest $ prop_concatMap seq
+seqTests seq = TestLabel ("Sequence test "++(instanceName seq)) . TestList $
+  [ qcTest $ prop_equals seq
+  , qcTest $ prop_fromList seq
+  , qcTest $ prop_toList seq
+  , qcTest $ prop_single seq
+  , qcTest $ prop_lcons_rcons seq
+  , qcTest $ prop_lview_rview seq
+  , qcTest $ prop_lhead_rhead seq
+  , qcTest $ prop_ltail_rtail seq
+  , qcTest $ prop_append seq
+  , qcTest $ prop_null_size seq
+  , qcTest $ prop_reverse seq                      -- 10
+  , qcTest $ prop_reverseOnto seq
+  , qcTest $ prop_map seq
+  , qcTest $ prop_fold seq 
+  , qcTest $ prop_fold1 seq
+  , qcTest $ prop_reduce seq
+  , qcTest $ prop_reduce1 seq
+  , qcTest $ prop_inBounds_lookup seq
+  , qcTest $ prop_update_adjust seq
+  , qcTest $ prop_withIndex seq
+  , qcTest $ prop_take_drop_splitAt seq            -- 20
+  , qcTest $ prop_subseq seq
+  , qcTest $ prop_filter_takeWhile_dropWhile seq
+  , qcTest $ prop_partition_splitWhile seq
+  , qcTest $ prop_zip_zipWith seq
+  , qcTest $ prop_zip3_zipWith3 seq
+  , qcTest $ prop_unzip_unzipWith seq
+  , qcTest $ prop_unzip3_unzipWith3 seq
+  , qcTest $ prop_concat seq
+  , qcTest $ prop_concatMap seq
   ]
 
+
+---------------------------------------------------
+-- Properties to check
 
 prop_equals :: SeqTest Int seq => seq Int -> seq Int -> seq Int -> Bool
 prop_equals seq xs ys =

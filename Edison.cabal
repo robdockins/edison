@@ -42,9 +42,18 @@ Exposed-modules:
 Build-Depends:
      base >= 1.0,
      haskell98 >= 1.0,
-     QuickCheck >= 1.0
+     QuickCheck >= 1.0,
+     HUnit >= 1.1
 Extensions:
      MultiParamTypeClasses
      FunctionalDependencies
      AllowUndecidableInstances
-Ghc-Options: -funbox-strict-fields -O2
+Ghc-Options: -funbox-strict-fields -fwarn-incomplete-patterns -O2
+
+Executable: testSuite
+Hs-Source-Dir: test
+Main-Is: Main.hs
+Extensions:
+     MultiParamTypeClasses
+     FunctionalDependencies
+     AllowUndecidableInstances
