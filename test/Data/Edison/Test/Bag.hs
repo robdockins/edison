@@ -9,17 +9,16 @@ import Prelude hiding (concat,reverse,map,concatMap,foldr,foldl,foldr1,foldl1,
 import qualified Prelude
 import qualified List -- not ListSeq!
 
+import Test.QuickCheck
+import Test.HUnit (Test(..))
+
 import Data.Edison.Prelude
 import Data.Edison.Coll
 import Data.Edison.Test.Utils
 import qualified Data.Edison.Seq.ListSeq as L
 
-
-import Test.QuickCheck
-import Test.HUnit (Test(..))
-
 import Data.Edison.Seq.JoinList (Seq)
-import qualified Data.Edison.Seq.JoinList as S -- the sequence module being tested
+import qualified Data.Edison.Seq.JoinList as S
 
 --------------------------------------------------------------
 -- Bag implementations to test
@@ -29,8 +28,10 @@ import qualified Data.Edison.Coll.LeftistHeap as LH
 import qualified Data.Edison.Coll.SkewHeap as SkH
 import qualified Data.Edison.Coll.SplayHeap as SpH
 import qualified Data.Edison.Coll.MinHeap as Min
+
+
 ---------------------------------------------------------------
--- Some utility classes to propigate class contexts down
+-- A utility classe to propigate class contexts down
 -- to the quick check properties
 
 class (Eq (bag a),Arbitrary (bag a),Show (bag a),
@@ -43,7 +44,7 @@ instance (Ord a, Show a, Arbitrary a) => BagTest a SpH.Heap
 instance (Ord a, Show a, Arbitrary a, BagTest a bag)
    => BagTest a (Min.Min (bag a))
 
------------------------------------------------
+--------------------------------------------------------------
 -- List all permutations of bag types to test
 
 allBagTests :: Test
@@ -59,7 +60,7 @@ allBagTests = TestList
    , bagTests (empty :: Ord a => Min.Min (Min.Min (LPH.Heap a) a) a)
    ]
 
-------------------------------------------------
+---------------------------------------------------------------
 -- List all the tests to run for each type
 
 bagTests bag = TestLabel ("Bag test "++(instanceName bag)) . TestList $
@@ -92,6 +93,7 @@ bagTests bag = TestLabel ("Bag test "++(instanceName bag)) . TestList $
    , qcTest $ prop_unsafeMapMonotonic bag
    ]
 
+----------------------------------------------------
 -- utility operations
 lmerge :: [Int] -> [Int] -> [Int]
 lmerge xs [] = xs
@@ -101,6 +103,7 @@ lmerge xs@(x:xs') ys@(y:ys')
   | otherwise = y : lmerge xs ys'
 
 
+-----------------------------------------------------
 -- CollX operations
 
 prop_single :: BagTest Int bag => bag Int -> Int -> Bool
@@ -152,7 +155,7 @@ prop_member_count bag x xs =
     c == Prelude.length (Prelude.filter (== x) (toOrdList xs))
   where c = count x xs
 
-
+-------------------------------------------------------
 -- Coll operations
 
 prop_toSeq :: BagTest Int bag => bag Int -> bag Int -> Bool
@@ -190,6 +193,7 @@ prop_filter_partition bag xs =
   where p x = x `mod` 3 == 2
 
 
+------------------------------------------------------------------
 -- OrdCollX operations
 
 prop_deleteMin_Max :: BagTest Int bag => bag Int -> bag Int -> Bool
@@ -200,7 +204,8 @@ prop_deleteMin_Max bag xs =
     toOrdList (deleteMax xs) == (let l = toOrdList xs
                                  in if L.null l then L.empty else L.rtail l)
 
-prop_unsafeInsertMin_Max :: BagTest Int bag => bag Int -> Int -> bag Int -> Bool
+prop_unsafeInsertMin_Max :: BagTest Int bag => 
+	bag Int -> Int -> bag Int -> Bool
 prop_unsafeInsertMin_Max bag i xs =
     if null xs then
       unsafeInsertMin 0 xs == single 0
@@ -237,6 +242,7 @@ prop_partition bag x xs =
     partitionLT_GT x xs == (filterLT x xs, filterGT x xs)
 
 
+-----------------------------------------------------------------
 -- OrdColl operations
 
 prop_minView_maxView :: BagTest Int bag => bag Int -> bag Int -> Bool
@@ -273,7 +279,8 @@ prop_toOrdSeq :: BagTest Int bag => bag Int -> bag Int -> Bool
 prop_toOrdSeq bag xs =
     S.toList (toOrdSeq xs) == toOrdList xs
 
-prop_unsafeAppend :: BagTest Int bag => bag Int -> Int -> bag Int -> bag Int -> Bool
+prop_unsafeAppend :: BagTest Int bag => 
+	bag Int -> Int -> bag Int -> bag Int -> Bool
 prop_unsafeAppend bag i xs ys =
     if null xs || null ys then
       unsafeAppend xs ys == union xs ys
