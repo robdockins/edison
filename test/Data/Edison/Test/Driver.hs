@@ -7,5 +7,6 @@ import Data.Edison.Test.Bag
 
 edisonTests :: Test
 edisonTests = TestList $
-  [ TestLabel "sequence tests" allSequenceTests
+  [ TestLabel "bag tests"      allBagTests
+  , TestLabel "sequence tests" allSequenceTests
   ]

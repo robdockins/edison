@@ -26,7 +26,7 @@ qcTest x = TestCase $ do
                                  ," ",concat (intersperse " " (concat msgs))]
 
      TestFailed msgs i -> 
-        assertFailure . concat $ ["Falsifiable: {{",concat (intersperse ", " msgs),"}} ",show i]
+        assertFailure . concat $ ["Falsifiable: (| ",concat (intersperse ", " msgs)," |) ",show i]
 
      TestAborted ex    ->
         assertFailure (show ex)
