@@ -34,6 +34,7 @@ module Data.Edison.Assoc.PatriciaLoMap (
 ) where
 
 import Prelude hiding (null,map,lookup,foldr,foldl,foldr1,foldl1,filter)
+import qualified Prelude
 import Control.Monad.Identity (runIdentity)
 import Data.Edison.Prelude
 import qualified Data.Edison.Assoc as A ( AssocX(..), Assoc(..), FiniteMapX(..), FiniteMap(..) )
@@ -41,6 +42,7 @@ import qualified Data.Edison.Seq as S
 import Data.Edison.Assoc.Defaults
 import Data.Int
 import Data.Bits
+import Test.QuickCheck (Arbitrary(..), variant)
 
 moduleName = "Data.Edison.Assoc.PatriciaLoMap"
 
@@ -504,4 +506,13 @@ instance A.FiniteMap FM Int where
 
 instance Functor FM where
   fmap = map
+
+instance (Arbitrary a) => Arbitrary (FM a) where
+   arbitrary = do xs <- arbitrary
+                  return (Prelude.foldr (uncurry insert) empty xs)
+
+   coarbitrary E = variant 0
+   coarbitrary (L i a) = variant 1 . coarbitrary i . coarbitrary a
+   coarbitrary (B i j m n) = variant 2 . coarbitrary i . coarbitrary j
+                           . coarbitrary m . coarbitrary n
 

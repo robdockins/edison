@@ -34,12 +34,14 @@ module Data.Edison.Assoc.TernaryTrie (
 ) where
 
 import Prelude hiding (null,map,lookup,foldr,foldl,foldr1,foldl1,filter)
+import qualified Prelude
 import Data.Edison.Prelude
 import qualified Data.Edison.Assoc as A ( AssocX(..), Assoc(..), FiniteMapX(..), FiniteMap(..) )
 import qualified Data.Edison.Seq as S
 import qualified Data.List as L
 import Control.Monad.Identity
 import Data.Edison.Assoc.Defaults
+import Test.QuickCheck (Arbitrary(..), variant)
 
 import Debug.Trace
 
@@ -691,3 +693,18 @@ structuralInvariantFMB fmb@(I size k _ l (FMB' m) r)
 structuralInvariantFM :: (Show k, Ord k) => FM k a -> Bool
 structuralInvariantFM (FM k fmb) = structuralInvariantFMB fmb
 
+
+instance (Ord k,Arbitrary k,Arbitrary a) => Arbitrary (FM k a) where
+  arbitrary = do xs <- arbitrary
+                 return (Prelude.foldr (uncurry insert) empty xs)
+
+  coarbitrary (FM x fmb)  = coarbitrary_maybe x . coarbitrary_fmb fmb
+
+
+coarbitrary_maybe Nothing = variant 0
+coarbitrary_maybe (Just x) = variant 1 . coarbitrary x
+
+coarbitrary_fmb E = variant 0
+coarbitrary_fmb (I _ k x l (FMB' m) r) =
+	variant 1 . coarbitrary k . coarbitrary_maybe x .
+        coarbitrary_fmb l . coarbitrary_fmb m . coarbitrary_fmb r

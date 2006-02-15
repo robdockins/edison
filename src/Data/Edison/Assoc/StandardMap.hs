@@ -40,12 +40,11 @@ import qualified Prelude
 import Control.Monad.Identity (runIdentity)
 import Data.Edison.Prelude
 import qualified Data.Edison.Assoc as A
-	( AssocX(..), OrdAssocX(..),  FiniteMapX(..), OrdFiniteMapX(..),
-          Assoc(..),  OrdAssoc(..),   FiniteMap(..),  OrdFiniteMap(..) )
 import qualified Data.Edison.Seq as S
 import Data.Edison.Assoc.Defaults
 import Data.Int
 import Data.Bits
+import Test.QuickCheck (Arbitrary(..))
 
 import qualified Data.Map as DM
 
@@ -290,3 +289,9 @@ instance Ord k => A.FiniteMap (FM k) k where
    intersectWithKey = intersectWithKey}
 
 instance Ord k => A.OrdFiniteMap (FM k) k
+
+instance (Ord k,Arbitrary k,Arbitrary a) => Arbitrary (FM k a) where
+   arbitrary = do xs <- arbitrary
+                  return (Prelude.foldr (uncurry insert) empty xs)
+
+   coarbitrary map = coarbitrary (A.toList map)

@@ -33,11 +33,13 @@ module Data.Edison.Assoc.AssocList (
 ) where
 
 import Prelude hiding (null,map,lookup,foldr,foldl,foldr1,foldl1,filter)
+import qualified Prelude
 import Control.Monad.Identity
 import Data.Edison.Prelude
 import qualified Data.Edison.Assoc as A ( AssocX(..), Assoc(..), FiniteMapX(..), FiniteMap(..) )
 import qualified Data.Edison.Seq as S
 import Data.Edison.Assoc.Defaults
+import Test.QuickCheck (Arbitrary(..), variant)
 
 -- signatures for exported functions
 moduleName    :: String
@@ -259,3 +261,12 @@ instance Eq k => A.FiniteMap (FM k) k where
 
 instance Eq k => Functor (FM k) where
   fmap =  map
+
+instance (Eq k,Arbitrary k,Arbitrary a) => Arbitrary (FM k a) where
+   arbitrary = do xs <- arbitrary
+                  return (Prelude.foldr (uncurry insert) empty xs)
+
+   coarbitrary E = variant 0
+   coarbitrary (I k a m) = variant 1 . coarbitrary k
+                         . coarbitrary a . coarbitrary m
+
