@@ -1,4 +1,4 @@
--- Copyright (c) 1999 Chris Okasaki.  
+-- Copyright (c) 1999 Chris Okasaki.
 -- See COPYRIGHT file for terms and conditions.
 
 module Data.Edison.Test.Seq where
@@ -88,6 +88,8 @@ allSequenceTests = TestList
 ---------------------------------------------------------------
 -- List all the tests to run for each type
 
+-- infer the type so I don't have to write down the big nasty
+-- class context...
 seqTests seq = TestLabel ("Sequence test "++(instanceName seq)) . TestList $
   [ qcTest $ prop_equals seq
   , qcTest $ prop_fromList seq
@@ -102,7 +104,7 @@ seqTests seq = TestLabel ("Sequence test "++(instanceName seq)) . TestList $
   , qcTest $ prop_reverse seq                      -- 10
   , qcTest $ prop_reverseOnto seq
   , qcTest $ prop_map seq
-  , qcTest $ prop_fold seq 
+  , qcTest $ prop_fold seq
   , qcTest $ prop_fold1 seq
   , qcTest $ prop_reduce seq
   , qcTest $ prop_reduce1 seq
@@ -136,7 +138,7 @@ prop_fromList seq xs =
     toList (fromList xs `asTypeOf` seq) == xs
 
 prop_toList :: SeqTest Int seq => seq Int -> seq Int -> Bool
-prop_toList seq xs = 
+prop_toList seq xs =
     toList xs == foldr (:) [] xs
     &&
     fromList (toList xs) == xs
@@ -148,7 +150,7 @@ prop_single seq x =
 
 
 prop_lcons_rcons :: SeqTest Int seq => seq Int -> Int -> seq Int -> Bool
-prop_lcons_rcons seq x xs = 
+prop_lcons_rcons seq x xs =
     lcons x xs == append (single x) xs
     &&
     rcons xs x == append xs (single x)
@@ -175,7 +177,7 @@ prop_ltail_rtail seq xs =
       toList (rtail xs) == Prelude.init (toList xs)
 
 prop_append :: SeqTest Int seq => seq Int -> seq Int -> seq Int -> Bool
-prop_append seq xs ys = 
+prop_append seq xs ys =
     toList (append xs ys) == toList xs ++ toList ys
 
 prop_null_size :: SeqTest Int seq => seq Int -> seq Int -> Bool
@@ -185,16 +187,16 @@ prop_null_size seq xs =
     size xs == Prelude.length (toList xs)
 
 prop_reverse :: SeqTest Int seq => seq Int -> seq Int -> Bool
-prop_reverse seq xs = 
+prop_reverse seq xs =
     toList (reverse xs) == Prelude.reverse (toList xs)
 
 prop_reverseOnto :: SeqTest Int seq => seq Int -> seq Int -> seq Int -> Bool
-prop_reverseOnto seq xs ys = 
+prop_reverseOnto seq xs ys =
     reverseOnto xs ys == append (reverse xs) ys
 
 
 prop_map :: SeqTest Int seq => seq Int -> seq Int -> Bool
-prop_map seq xs = 
+prop_map seq xs =
     toList (map (+1) xs) == Prelude.map (+1) (toList xs)
 
 prop_fold :: SeqTest Int seq => seq Int -> seq Int -> Bool
@@ -205,7 +207,7 @@ prop_fold seq xs =
 
 prop_fold1 :: SeqTest Int seq => seq Int -> seq Int -> Property
 prop_fold1 seq xs =
-    not (null xs) ==> 
+    not (null xs) ==>
        foldr1 f xs == Prelude.foldr1 f (toList xs)
        &&
        foldl1 f xs == Prelude.foldl1 f (toList xs)
@@ -244,7 +246,7 @@ prop_update_adjust seq i xs =
     if inBounds xs i then
       let ys = take i xs
           zs = drop (i+1) xs
-          x = lookup xs i 
+          x = lookup xs i
       in
         update i 99 xs == append ys (lcons 99 zs)
         &&
@@ -277,7 +279,7 @@ prop_subseq :: SeqTest Int seq => seq Int -> Int -> Int -> seq Int -> Bool
 prop_subseq seq i len xs =
     subseq i len xs == take len (drop i xs)
 
-prop_filter_takeWhile_dropWhile :: SeqTest Int seq => 
+prop_filter_takeWhile_dropWhile :: SeqTest Int seq =>
 	seq Int -> Int -> seq Int -> Bool
 
 prop_filter_takeWhile_dropWhile seq x xs =
@@ -305,7 +307,7 @@ prop_zip_zipWith seq xs ys =
     toList (zipWith (,) xs ys) == xys
   where xys = Prelude.zip (toList xs) (toList ys)
 
-prop_zip3_zipWith3 :: SeqTest Int seq => 
+prop_zip3_zipWith3 :: SeqTest Int seq =>
 	seq Int -> seq Int -> seq Int -> seq Int -> Bool
 
 prop_zip3_zipWith3 seq xs ys zs =
@@ -326,7 +328,7 @@ prop_unzip_unzipWith seq xys =
         ys = map snd xys
 
 
-prop_unzip3_unzipWith3 :: (SeqTest Int seq,SeqTest (Int,Int,Int) seq) => 
+prop_unzip3_unzipWith3 :: (SeqTest Int seq,SeqTest (Int,Int,Int) seq) =>
 	seq Int -> seq (Int,Int,Int) -> Bool
 
 prop_unzip3_unzipWith3 seq xyzs =
@@ -337,17 +339,17 @@ prop_unzip3_unzipWith3 seq xyzs =
         ys = map snd3 xyzs
         zs = map thd3 xyzs
 
-        fst3 (x,y,z) = x        
+        fst3 (x,y,z) = x
         snd3 (x,y,z) = y
-        thd3 (x,y,z) = z        
+        thd3 (x,y,z) = z
 
 
 prop_concat :: (SeqTest (seq Int) seq,SeqTest Int seq) => seq Int -> Property
-prop_concat seq = forAll (genss seq) $ 
+prop_concat seq = forAll (genss seq) $
 	\xss -> concat xss == foldr append empty xss
 
 
-genss :: (SeqTest (seq Int) seq,SeqTest Int seq) => 
+genss :: (SeqTest (seq Int) seq,SeqTest Int seq) =>
 	seq Int -> Gen (seq (seq Int))
 
 genss seq = sized (\n -> resize (min 20 n) arbitrary)
