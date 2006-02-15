@@ -65,8 +65,7 @@
 --   Some implementations export a few extra functions beyond those included
 --   in the relavant classes.  These are typically operations that are
 --   particularly efficent for that implementation, but are not general enough
---   to warrant inclusion in a class.  An example of this is the function
---   @unsafeMapMonotonic@ that is supported by many priority queues.
+--   to warrant inclusion in a class.
 --
 --   Since qualified infix symbols are fairly ugly, they have been avoided as
 --   much as possible.
