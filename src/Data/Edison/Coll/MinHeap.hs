@@ -21,6 +21,7 @@ module Data.Edison.Coll.MinHeap (
 
     -- * OrdColl operations
     minView,minElem,maxView,maxElem,foldr,foldl,foldr1,foldl1,toOrdSeq,
+    unsafeMapMonotonic,
 
     -- * Documentation
     moduleName
@@ -89,6 +90,8 @@ foldl :: (C.OrdColl h a,Ord a) => (b -> a -> b) -> b -> Min h a -> b
 foldr1 :: (C.OrdColl h a,Ord a) => (a -> a -> a) -> Min h a -> a
 foldl1 :: (C.OrdColl h a,Ord a) => (a -> a -> a) -> Min h a -> a
 toOrdSeq :: (C.OrdColl h a,Ord a,S.Sequence s) => Min h a -> s a
+unsafeMapMonotonic :: (C.OrdColl h a,Ord a) => 
+      (a -> a) -> Min h a -> Min h a
 
 -- export?
 fromPrim xs = case C.minView xs of
@@ -281,6 +284,8 @@ foldl1 f (M x xs) = C.foldl f x xs
 toOrdSeq E = S.empty
 toOrdSeq (M x xs) = S.lcons x (C.toOrdSeq xs)
 
+unsafeMapMonotonic = unsafeMapMonotonicUsingFoldr
+
 
 -- instance declarations
 
@@ -307,7 +312,8 @@ instance (C.OrdColl h a, Ord a) => C.Coll (Min h a) a where
 instance (C.OrdColl h a, Ord a) => C.OrdColl (Min h a) a where
   {minView = minView; minElem = minElem; maxView = maxView; 
    maxElem = maxElem; foldr = foldr; foldl = foldl; foldr1 = foldr1; 
-   foldl1 = foldl1; toOrdSeq = toOrdSeq}
+   foldl1 = foldl1; toOrdSeq = toOrdSeq;
+   unsafeMapMonotonic = unsafeMapMonotonic}
 
 -- instance Eq is derived
 

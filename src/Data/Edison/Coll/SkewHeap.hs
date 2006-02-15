@@ -27,8 +27,6 @@ module Data.Edison.Coll.SkewHeap (
 
     -- * OrdColl operations
     minView,minElem,maxView,maxElem,foldr,foldl,foldr1,foldl1,toOrdSeq,
-
-    -- * Other supported operations
     unsafeMapMonotonic,
 
     -- * Documentation
@@ -362,7 +360,8 @@ instance Ord a => C.Coll (Heap a) a where
 instance Ord a => C.OrdColl (Heap a) a where
   {minView = minView; minElem = minElem; maxView = maxView; 
    maxElem = maxElem; foldr = foldr; foldl = foldl; foldr1 = foldr1; 
-   foldl1  = foldl1; toOrdSeq = toOrdSeq}
+   foldl1  = foldl1; toOrdSeq = toOrdSeq;
+   unsafeMapMonotonic = unsafeMapMonotonic}
 
 instance Ord a => Eq (Heap a) where
   xs == ys = C.toOrdList xs == C.toOrdList ys

@@ -18,6 +18,7 @@ module Data.Edison.Coll.StandardSet (
 
     -- * OrdColl operations
     minView,minElem,maxView,maxElem,foldr,foldl,foldr1,foldl1,toOrdSeq,
+    unsafeMapMonotonic,
 
     -- * SetX operations
     intersect,difference,subset,subsetEq,
@@ -25,9 +26,6 @@ module Data.Edison.Coll.StandardSet (
     -- * Set operations
     fromSeqWith,insertWith,insertSeqWith,unionl,unionr,unionWith,
     unionSeqWith,intersectWith,
-
-    -- * Other supported operations
-    unsafeMapMonotonic,
 
     -- * Documentation
     moduleName
@@ -212,7 +210,8 @@ instance Ord a => C.Coll (Set a) a where
 instance Ord a => C.OrdColl (Set a) a where
   {minView = minView; minElem = minElem; maxView = maxView; 
    maxElem = maxElem; foldr = foldr; foldl = foldl; foldr1 = foldr1; 
-   foldl1 = foldl1; toOrdSeq = toOrdSeq}
+   foldl1 = foldl1; toOrdSeq = toOrdSeq;
+   unsafeMapMonotonic = unsafeMapMonotonic }
 
 instance Ord a => C.SetX (Set a) a where
   {intersect = intersect; difference = difference;

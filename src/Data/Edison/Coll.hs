@@ -383,6 +383,11 @@ class (Coll c a, OrdCollX c a) => OrdColl c a | c -> a where
   --   be increasing order)
   toOrdSeq   :: Sequence seq => c -> seq a
 
+  -- | Map a monotonic function across all elements of a collection.  The 
+  --   function is required to satisfy the following precondition:
+  --
+  -- > forall x y. x < y ==> f x < f y
+  unsafeMapMonotonic :: (a -> a) -> c -> c
 
 -- | Collections with observable elements where the set property is maintained;
 --   that is, a set contains at most one element of the equivalance class

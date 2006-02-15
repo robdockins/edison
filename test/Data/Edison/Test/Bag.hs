@@ -88,12 +88,9 @@ bagTests bag = TestLabel ("Bag test "++(instanceName bag)) . TestList $
    , qcTest $ prop_foldr_foldl bag
    , qcTest $ prop_foldr1_foldl1 bag
    , qcTest $ prop_toOrdSeq bag
+   , qcTest $ prop_unsafeAppend bag
+   , qcTest $ prop_unsafeMapMonotonic bag
    ]
-
--- these require unsafeMapMonotonic
---   , qcTest $ prop_unsafeAppend bag
---   , qcTest $ prop_unsafeMapMonotonic bag
-
 
 -- utility operations
 lmerge :: [Int] -> [Int] -> [Int]
@@ -276,8 +273,6 @@ prop_toOrdSeq :: BagTest Int bag => bag Int -> bag Int -> Bool
 prop_toOrdSeq bag xs =
     S.toList (toOrdSeq xs) == toOrdList xs
 
-{-
--- hummm, requres unsafeMapMonotonic...
 prop_unsafeAppend :: BagTest Int bag => bag Int -> Int -> bag Int -> bag Int -> Bool
 prop_unsafeAppend bag i xs ys =
     if null xs || null ys then
@@ -290,9 +285,6 @@ prop_unsafeAppend bag i xs ys =
   -- to simply replacing the elements, then this test will
   -- not provide even coverage
 
--- bonus operation, not supported by all ordered collections
-
-prop_unsafeMapMonotonic :: Bag Int -> Bool
-prop_unsafeMapMonotonic xs =
+prop_unsafeMapMonotonic :: BagTest Int bag => bag Int -> bag Int -> Bool
+prop_unsafeMapMonotonic bag xs =
     toOrdList (unsafeMapMonotonic (2*) xs) == Prelude.map (2*) (toOrdList xs)
--}

@@ -197,5 +197,9 @@ intersectWithUsingOrdLists c xs ys = unsafeFromOrdList (inter (toOrdList xs) (to
         inter _ _ = []
 
 
+unsafeMapMonotonicUsingFoldr :: (OrdColl cin a, OrdCollX cout b) => (a -> b) -> (cin -> cout)
+unsafeMapMonotonicUsingFoldr f xs = foldr (unsafeInsertMin . f) empty xs
+
+
 
 
