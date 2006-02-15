@@ -125,18 +125,18 @@ toSeq h = tol h S.empty
   where tol E rest = rest
         tol (T x a b) rest = S.lcons x (tol b (tol a rest))
 
-lookupM :: (Ord a, Monad m) => Heap a -> a -> m a
-lookupM E x = fail "SkewHeap.lookupM: XXX"
-lookupM (T y a b) x =
+lookupM :: (Ord a, Monad m) => a -> Heap a -> m a
+lookupM x E = fail "SkewHeap.lookupM: XXX"
+lookupM x (T y a b) =
   case compare x y of
     LT -> fail "SkewHeap.lookupM: XXX"
     EQ -> return y
-    GT -> case lookupM b x `mplus` lookupM a x of
+    GT -> case lookupM x b `mplus` lookupM x a of
     		Nothing -> fail "SkewHeap.lookupM: XXX"
 		Just x  -> return x
 
-lookupAll :: (Ord a,S.Sequence seq) => Heap a -> a -> seq a
-lookupAll h x = look h S.empty
+lookupAll :: (Ord a,S.Sequence seq) => a -> Heap a -> seq a
+lookupAll x h = look h S.empty
   where look E ys = ys
         look (T y a b) ys =
           case compare x y of
@@ -322,10 +322,10 @@ unionSeq = unionSeqUsingReduce
 deleteSeq :: (Ord a,S.Sequence seq) => seq a -> Heap a -> Heap a
 deleteSeq = deleteSeqUsingDelete
 
-lookup :: Ord a => Heap a -> a -> a
+lookup :: Ord a => a -> Heap a -> a
 lookup = lookupUsingLookupM
 
-lookupWithDefault :: Ord a => a -> Heap a -> a -> a
+lookupWithDefault :: Ord a => a -> a -> Heap a -> a
 lookupWithDefault = lookupWithDefaultUsingLookupM
 
 unsafeInsertMax :: Ord a => a -> Heap a -> Heap a

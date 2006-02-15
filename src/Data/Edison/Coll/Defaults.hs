@@ -26,9 +26,9 @@ memberUsingFold h x = fold (\y ans -> (x == y) || ans) False h
 countUsingMember :: SetX c a => a -> c -> Int
 countUsingMember x xs = if member x xs then 1 else 0
 
-lookupAllUsingLookupM :: (Set c a,S.Sequence seq) => c -> a -> seq a
-lookupAllUsingLookupM xs x =
-  case lookupM xs x of
+lookupAllUsingLookupM :: (Set c a,S.Sequence seq) => a -> c -> seq a
+lookupAllUsingLookupM x xs =
+  case lookupM x xs of
     Nothing -> S.empty
     Just y  -> S.single y
 
@@ -81,31 +81,30 @@ intersectWitnessUsingToOrdList xs ys = witness (toOrdList xs) (toOrdList ys)
 	-- XXX
         witness _ _ = fail $ instanceName xs ++ ".intersect: failed"
 
-lookupUsingLookupM :: Coll c a => c -> a -> a
-lookupUsingLookupM ys x = runIdentity (lookupM ys x)
+lookupUsingLookupM :: Coll c a => a -> c -> a
+lookupUsingLookupM x ys = runIdentity (lookupM x ys)
 
-
-lookupUsingLookupAll :: Coll c a => c -> a -> a
-lookupUsingLookupAll ys x =
-  case lookupAll ys x of
+lookupUsingLookupAll :: Coll c a => a -> c -> a
+lookupUsingLookupAll x ys =
+  case lookupAll x ys of
     (y:_) -> y
     [] -> error $ instanceName ys ++ ".lookup: lookup failed"
 
-lookupMUsingLookupAll :: (Coll c a, Monad m) => c -> a -> m a
-lookupMUsingLookupAll ys x =
-  case lookupAll ys x of
+lookupMUsingLookupAll :: (Coll c a, Monad m) => a -> c -> m a
+lookupMUsingLookupAll x ys =
+  case lookupAll x ys of
     (y:_) -> return y
     []    -> fail $ instanceName ys ++ ".lookupM: lookup failed"
 
-lookupWithDefaultUsingLookupAll :: Coll c a => a -> c -> a -> a
-lookupWithDefaultUsingLookupAll dflt ys x =
-  case lookupAll ys x of
+lookupWithDefaultUsingLookupAll :: Coll c a => a -> a -> c -> a
+lookupWithDefaultUsingLookupAll dflt x ys =
+  case lookupAll x ys of
     (y:_) -> y
     [] -> dflt
 
-lookupWithDefaultUsingLookupM :: Coll c a => a -> c -> a -> a
-lookupWithDefaultUsingLookupM dflt ys x =
-  case lookupM ys x of
+lookupWithDefaultUsingLookupM :: Coll c a => a -> a -> c -> a
+lookupWithDefaultUsingLookupM dflt x ys =
+  case lookupM x ys of
     Just y  -> y
     Nothing -> dflt
 

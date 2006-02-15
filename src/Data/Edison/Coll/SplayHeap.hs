@@ -66,10 +66,10 @@ member    :: Ord a => a -> Heap a -> Bool
 count     :: Ord a => a -> Heap a -> Int
 
 toSeq     :: (Ord a, S.Sequence s) => Heap a -> s a
-lookup    :: Ord a => Heap a -> a -> a
-lookupM   :: (Ord a,Monad m) => Heap a -> a -> m a
-lookupAll :: (Ord a,S.Sequence s) => Heap a -> a -> s a
-lookupWithDefault :: Ord a => a -> Heap a -> a -> a
+lookup    :: Ord a => a -> Heap a -> a
+lookupM   :: (Ord a,Monad m) => a -> Heap a -> m a
+lookupAll :: (Ord a,S.Sequence s) => a -> Heap a -> s a
+lookupWithDefault :: Ord a => a -> a -> Heap a -> a
 fold      :: Ord a => (a -> b -> b) -> b -> Heap a -> b
 fold1     :: Ord a => (a -> a -> a) -> Heap a -> a
 filter    :: Ord a => (a -> Bool) -> Heap a -> Heap a
@@ -143,25 +143,25 @@ toSeq xs = tos xs S.empty
   where tos E rest = rest
         tos (T a x b) rest = S.lcons x (tos a (tos b rest))
 
-lookup E x = error "SplayHeap.lookup: empty heap"
-lookup (T a y b) x
-  | x < y     = lookup a x
-  | x > y     = lookup b x
+lookup x E = error "SplayHeap.lookup: empty heap"
+lookup x (T a y b)
+  | x < y     = lookup x a
+  | x > y     = lookup x b
   | otherwise = y
 
-lookupM E x = fail "SplayHeap.lookup: empty heap"
-lookupM (T a y b) x
-  | x < y     = lookupM a x
-  | x > y     = lookupM b x
+lookupM x E = fail "SplayHeap.lookup: empty heap"
+lookupM x (T a y b)
+  | x < y     = lookupM x a
+  | x > y     = lookupM x b
   | otherwise = return y
 
-lookupWithDefault d E x = d
-lookupWithDefault d (T a y b) x
-  | x < y     = lookupWithDefault d a x
-  | x > y     = lookupWithDefault d b x
+lookupWithDefault d x E = d
+lookupWithDefault d x (T a y b)
+  | x < y     = lookupWithDefault d x a
+  | x > y     = lookupWithDefault d x b
   | otherwise = y
 
-lookupAll xs x = look xs x S.empty
+lookupAll x xs = look xs x S.empty
   where look E x rest = rest
         look (T a y b) x rest
           | x < y     = look a x rest

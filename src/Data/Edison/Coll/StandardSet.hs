@@ -62,10 +62,10 @@ member     :: Ord a => a -> Set a -> Bool
 count      :: Ord a => a -> Set a -> Int
 
 toSeq      :: (Ord a,S.Sequence seq) => Set a -> seq a
-lookup     :: Ord a => Set a -> a -> a
-lookupM    :: (Ord a,Monad m) => Set a -> a -> m a
-lookupAll  :: (Ord a,S.Sequence seq) => Set a -> a -> seq a
-lookupWithDefault :: Ord a => a -> Set a -> a -> a
+lookup     :: Ord a => a -> Set a -> a
+lookupM    :: (Ord a,Monad m) => a -> Set a -> m a
+lookupAll  :: (Ord a,S.Sequence seq) => a -> Set a -> seq a
+lookupWithDefault :: Ord a => a -> a -> Set a  -> a
 fold       :: (a -> b -> b) -> b -> Set a -> b
 fold1      :: (a -> a -> a) -> Set a -> a
 filter     :: Ord a => (a -> Bool) -> Set a -> Set a
@@ -130,9 +130,9 @@ member             = DS.member
 count              = countUsingMember
 
 toSeq              = toSeqUsingFold
-lookup set el      = DS.findMin (DS.intersection set (DS.singleton el))
+lookup el set      = DS.findMin (DS.intersection set (DS.singleton el))
 lookupM            = lookupMUsingLookupAll
-lookupAll set el   = toSeqUsingFold (DS.intersection set (DS.singleton el))
+lookupAll el set   = toSeqUsingFold (DS.intersection set (DS.singleton el))
 lookupWithDefault  = lookupWithDefaultUsingLookupAll
 fold               = DS.fold
 fold1 f set        = let (x,s) = DS.deleteFindMin set in DS.fold f x s
@@ -176,7 +176,7 @@ subset             = DS.isProperSubsetOf
 subsetEq           = DS.isSubsetOf
 
 fromSeqWith        = fromSeqWithUsingInsertWith
-insertWith f x set = case lookupM set x of 
+insertWith f x set = case lookupM x set of 
                         Nothing -> DS.insert x set
                         Just x' -> DS.insert (f x x') set
 insertSeqWith      = insertSeqWithUsingInsertWith

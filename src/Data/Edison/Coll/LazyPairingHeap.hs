@@ -317,8 +317,8 @@ partition p (H2 x h xs) =
     where (h',h'') = partition p h
           (xs',xs'') = partition p xs
 
-lookupAll :: (Ord a,S.Sequence seq) => Heap a -> a -> seq a
-lookupAll h y = look h S.empty
+lookupAll :: (Ord a,S.Sequence seq) => a -> Heap a -> seq a
+lookupAll y h = look h S.empty
   where look E rest = rest
         look (H1 x xs) rest =
           case compare x y of
@@ -408,13 +408,13 @@ unsafeFromOrdSeq = unsafeFromOrdSeqUsingUnsafeInsertMin
 deleteMax :: Ord a => Heap a -> Heap a
 deleteMax = deleteMaxUsingMaxView
 
-lookup :: Ord a => Heap a -> a -> a
+lookup :: Ord a => a -> Heap a -> a
 lookup = lookupUsingLookupAll
 
-lookupM :: (Ord a, Monad m) => Heap a -> a -> m a
+lookupM :: (Ord a, Monad m) => a -> Heap a -> m a
 lookupM = lookupMUsingLookupAll
 
-lookupWithDefault :: Ord a => a -> Heap a -> a -> a
+lookupWithDefault :: Ord a => a -> a -> Heap a -> a
 lookupWithDefault = lookupWithDefaultUsingLookupAll
 
 toOrdSeq :: (Ord a,S.Sequence seq) => Heap a -> seq a

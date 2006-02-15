@@ -65,10 +65,10 @@ member     :: Ord a => a -> Set a -> Bool
 count      :: Ord a => a -> Set a -> Int
 
 toSeq      :: (Ord a,S.Sequence seq) => Set a -> seq a
-lookup     :: Ord a => Set a -> a -> a
-lookupM    :: (Ord a,Monad m) => Set a -> a -> m a
-lookupAll  :: (Ord a,S.Sequence seq) => Set a -> a -> seq a
-lookupWithDefault :: Ord a => a -> Set a -> a -> a
+lookup     :: Ord a => a -> Set a -> a
+lookupM    :: (Ord a,Monad m) => a -> Set a -> m a
+lookupAll  :: (Ord a,S.Sequence seq) => a -> Set a -> seq a
+lookupWithDefault :: Ord a => a -> a -> Set a -> a
 fold       :: (a -> b -> b) -> b -> Set a -> b
 fold1      :: (a -> a -> a) -> Set a -> a
 filter     :: Ord a => (a -> Bool) -> Set a -> Set a
@@ -149,12 +149,12 @@ member x (T a y b) =
     EQ -> True
     GT -> member x b
 
-lookupM E x = fail "UnbalancedSet.lookupM: XXX"
-lookupM (T a y b) x =
+lookupM x E = fail "UnbalancedSet.lookupM: XXX"
+lookupM x (T a y b) =
   case compare x y of
-    LT -> lookupM a x
+    LT -> lookupM x a
     EQ -> return y
-    GT -> lookupM b x
+    GT -> lookupM x b
 
 fold f e E = e
 fold f e (T a x b) = f x (fold f (fold f e a) b)

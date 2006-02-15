@@ -292,24 +292,24 @@ class CollX c a => Coll c a | c -> a where
   --   exist in the collection equal to the given element, an error is
   --   signaled.  If multiple copies of the given element exist in the
   --   collection, it is unspecified which is returned.
-  lookup     :: c -> a -> a
+  lookup     :: a -> c -> a
 
   -- | Lookup one element equal to the given element.  If no elements
   --   exist in the collection equal to the given element, 'fail' is called.
   --   If multiple copies of the given element exist in the collection, it
   --   is unspecified which is returned.
-  lookupM    :: (Monad m) => c -> a -> m a
+  lookupM    :: (Monad m) => a -> c -> m a
 
   -- | Return a sequence containing all elements in the collection equal to
   --   the given element in an unspecified order.
-  lookupAll  :: Sequence seq => c -> a -> seq a
+  lookupAll  :: Sequence seq => a -> c -> seq a
 
   -- | Lookup one element equal to the (second) given element in the collection.
   --   If no elements exist in the collection equal to the given element, then
   --   the default element is returned.
   lookupWithDefault  :: a -- ^ deault element
-                     -> c -- ^ collection
                      -> a -- ^ item to lookup
+                     -> c -- ^ collection
                      -> a
 
   -- | Fold over all the elements in a collection in an unspecified order.
@@ -459,7 +459,7 @@ unionList         :: CollX c a => [c] -> c
 deleteList        :: CollX c a => [a] -> c -> c
 unsafeFromOrdList :: OrdCollX c a => [a] -> c
 toList            :: Coll c a => c -> [a]
-lookupList        :: Coll c a => c -> a -> [a]
+lookupList        :: Coll c a => a -> c -> [a]
 toOrdList         :: OrdColl c a => c -> [a]
 fromListWith      :: Set c a => (a -> a -> a) -> [a] -> c
 insertListWith    :: Set c a => (a -> a -> a) -> [a] -> c -> c

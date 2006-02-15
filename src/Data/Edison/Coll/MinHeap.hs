@@ -57,10 +57,10 @@ member    :: (C.CollX h a,Ord a) => a -> Min h a -> Bool
 count     :: (C.CollX h a,Ord a) => a -> Min h a -> Int
 
 toSeq     :: (C.Coll h a,S.Sequence s) => Min h a -> s a
-lookup    :: (C.Coll h a,Ord a) => Min h a -> a -> a
-lookupM   :: (C.Coll h a,Ord a,Monad m) => Min h a -> a -> m a
-lookupAll :: (C.Coll h a,Ord a,S.Sequence s) => Min h a -> a -> s a
-lookupWithDefault :: (C.Coll h a,Ord a) => a -> Min h a -> a -> a
+lookup    :: (C.Coll h a,Ord a) => a -> Min h a -> a
+lookupM   :: (C.Coll h a,Ord a,Monad m) => a -> Min h a -> m a
+lookupAll :: (C.Coll h a,Ord a,S.Sequence s) => a -> Min h a -> s a
+lookupWithDefault :: (C.Coll h a,Ord a) => a -> a -> Min h a -> a
 fold      :: (C.Coll h a) => (a -> b -> b) -> b -> Min h a -> b
 fold1     :: (C.Coll h a) => (a -> a -> a) -> Min h a -> a
 filter    :: (C.OrdColl h a) => (a -> Bool) -> Min h a -> Min h a
@@ -161,23 +161,23 @@ count x (M y ys)
 toSeq E = S.empty
 toSeq (M x xs) = S.lcons x (C.toSeq xs)
 
-lookup (M y ys) x
-  | x > y  = C.lookup ys x
+lookup x (M y ys)
+  | x > y  = C.lookup x ys
   | x == y = y
 lookup _ _ = error "MinHeap.lookup: empty heap"
 
-lookupM (M y ys) x
-  | x > y  = C.lookupM ys x
+lookupM x (M y ys)
+  | x > y  = C.lookupM x ys
   | x == y = return y
 lookupM _ _ = fail "lookupM.lookup: XXX"
 
-lookupAll (M y ys) x
-  | x > y  = C.lookupAll ys x
-  | x == y = S.lcons y (C.lookupAll ys x)
+lookupAll x (M y ys)
+  | x > y  = C.lookupAll x ys
+  | x == y = S.lcons y (C.lookupAll x ys)
 lookupAll _ _ = S.empty
 
-lookupWithDefault d (M y ys) x
-  | x > y  = C.lookupWithDefault d ys x
+lookupWithDefault d x (M y ys)
+  | x > y  = C.lookupWithDefault d x ys
   | x == y = y
 lookupWithDefault d _ _ = d
 
