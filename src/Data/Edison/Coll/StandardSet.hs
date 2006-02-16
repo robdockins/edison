@@ -1,3 +1,6 @@
+-- Copyright (c) 2006 Robert Dockins
+-- See COPYRIGHT file for terms and conditions.
+
 -- | The standard library "Data.Set" repackaged as an Edison collection.
 module Data.Edison.Coll.StandardSet (
     -- * Set type

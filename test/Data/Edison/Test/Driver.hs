@@ -1,3 +1,6 @@
+-- Copyright (c) 2006 Robert Dockins
+-- See COPYRIGHT file for terms and conditions.
+
 module Data.Edison.Test.Driver where
 
 import Test.HUnit (Test(..))

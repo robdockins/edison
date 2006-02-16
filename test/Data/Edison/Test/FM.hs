@@ -1,4 +1,4 @@
--- Copyright (c) 2002 Andrew Bromage.  
+-- Copyright (c) 2002 Andrew Bromage.
 -- See COPYRIGHT file for terms and conditions.
 
 module Data.Edison.Test.FM where
