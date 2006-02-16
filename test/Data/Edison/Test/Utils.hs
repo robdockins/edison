@@ -11,7 +11,7 @@ qcTest :: Testable a => a -> Test
 qcTest x = TestCase $ do
    let testOpts = 
         TestOptions 
-        { no_of_tests = 250
+        { no_of_tests = 100
         , length_of_tests = 20
         , debug_tests = False
         }
