@@ -4,6 +4,7 @@ import Test.HUnit (Test(..))
 
 import Data.Edison.Test.Seq
 import Data.Edison.Test.Bag
+import Data.Edison.Test.Set
 
 edisonTests :: Test
 edisonTests = TestList $

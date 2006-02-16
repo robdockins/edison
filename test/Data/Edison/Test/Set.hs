@@ -6,25 +6,23 @@
 -- values can still be "equal", and the results should be tested to make
 -- sure that the "With" function was called on the right values.
 
-module Data.Edison.Coll.OrdSet_t where
+module Data.Edison.Test.Set where
 
 import Prelude hiding (concat,reverse,map,concatMap,foldr,foldl,foldr1,foldl1,
                        filter,takeWhile,dropWhile,lookup,take,drop,splitAt,
                        zip,zip3,zipWith,zipWith3,unzip,unzip3,null)
 import qualified Prelude
-import EdisonPrelude
-import qualified Collection as C
 import qualified List -- not ListSeq!
-import qualified ListSeq as L
-import Debug.QuickCheck
+import Test.QuickCheck
 
-import UnbalancedSet -- the set module being tested
-import qualified JoinList as S -- the sequence module being tested
-  -- To different modules, simply replace the names above.
-  -- To test a set module that does not name its type constructor "Set",
-  -- you also need to define a type synonym
-  --   type Set a = ...
-  -- You may also need to adjust the Seq type synonym.
+
+import Data.Edison.Prelude
+import qualified Data.Edison.Coll as C
+import qualified Data.Edison.Seq.ListSeq as L
+
+import Data.Edison.Coll.UnbalancedSet -- the set module being tested
+import qualified Data.Edison.Seq.JoinList as S -- the sequence module being tested
+
 
 type Seq a = S.Seq a
 
@@ -57,7 +55,7 @@ prop_fromSeq xs =
 
 prop_insert :: Int -> Set Int -> Bool
 prop_insert x xs =
-    if member xs x then
+    if member x xs then
       tol (insert x xs) == tol xs
     else
       tol (insert x xs) == List.insert x (tol xs)
@@ -92,12 +90,12 @@ prop_null_size xs =
     &&
     size xs == Prelude.length (tol xs)
 
-prop_member_count :: Set Int -> Int -> Bool
-prop_member_count xs x =
+prop_member_count :: Int -> Set Int -> Bool
+prop_member_count x xs =
     mem == not (Prelude.null (Prelude.filter (== x) (tol xs)))
     &&
-    count xs x == (if mem then 1 else 0)
-  where mem = member xs x
+    count x xs == (if mem then 1 else 0)
+  where mem = member x xs
 
 
 -- Coll operations
@@ -108,20 +106,20 @@ prop_toSeq xs =
 
 prop_lookup :: Set Int -> Int -> Bool
 prop_lookup xs x =
-    if member xs x then
-      lookup xs x == x
+    if member x xs then
+      lookup x xs == x
       &&
-      lookupM xs x == Just x
+      lookupM x xs == Just x
       &&
-      lookupWithDefault 999 xs x == x
+      lookupWithDefault 999 x xs == x
       &&
-      lookupAll xs x == Prelude.take (count xs x) (repeat x)
+      lookupAll x xs == Prelude.take (count x xs) (repeat x)
     else
-      lookupM xs x == Nothing
+      lookupM x xs == Nothing
       &&
-      lookupWithDefault 999 xs x == 999
+      lookupWithDefault 999 x xs == 999
       &&
-      lookupAll xs x == []
+      lookupAll x xs == []
 
 prop_fold :: Set Int -> Bool
 prop_fold xs =
@@ -150,11 +148,11 @@ prop_unsafeInsertMin_Max i xs =
     if null xs then
       unsafeInsertMin 0 xs == single 0
       &&
-      unsafeInsertMax xs 0 == single 0
+      unsafeInsertMax 0 xs == single 0
     else
       unsafeInsertMin lo xs == insert lo xs
       &&
-      unsafeInsertMax xs hi == insert hi xs
+      unsafeInsertMax hi xs == insert hi xs
   where lo = minElem xs - 1
         hi = maxElem xs + 1
     
@@ -201,7 +199,7 @@ prop_minView_maxView xs =
                               else Just (minElem xs, deleteMin xs))
     &&
     maxView xs == (if null xs then Nothing
-                              else Just (deleteMax xs, maxElem xs))
+                              else Just (maxElem xs, deleteMax xs))
 
 prop_minElem_maxElem :: Set Int -> Property
 prop_minElem_maxElem xs =
@@ -232,9 +230,9 @@ prop_toOrdSeq xs =
 -- SetX operations
 prop_intersect_difference :: Set Int -> Set Int -> Bool
 prop_intersect_difference xs ys =
-    intersect xs ys == filter (member xs) ys
+    intersect xs ys == filter (\x -> member x xs) ys
     &&
-    difference xs ys == filter (not . member ys) xs
+    difference xs ys == filter (\x -> not (member x ys)) xs
 
 prop_subset_subsetEq :: Set Int -> Set Int -> Bool
 prop_subset_subsetEq xs ys =
@@ -277,9 +275,3 @@ prop_intersectWith xs ys =
 prop_unsafeMapMonotonic :: Set Int -> Bool
 prop_unsafeMapMonotonic xs =
     tol (unsafeMapMonotonic (2*) xs) == Prelude.map (2*) (tol xs)
-
-
-
-
-
-
