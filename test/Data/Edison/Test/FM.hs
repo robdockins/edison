@@ -18,6 +18,8 @@ import Data.Edison.Test.Utils
 import Data.Edison.Assoc
 import qualified Data.Edison.Assoc.TernaryTrie as TT
 import qualified Data.Edison.Assoc.StandardMap as SM
+import qualified Data.Edison.Assoc.AssocList as AL
+import qualified Data.Edison.Assoc.PatriciaLoMap as PLM
 
 ----------------------------------------------------------------
 -- A utility class to propigate class contexts down
@@ -36,6 +38,14 @@ instance (Ord a, Show a, Arbitrary a,
           Ord k, Show k, Arbitrary k) => FMTest k a (SM.FM k)
   where structInv = const True
 
+instance (Ord a, Show a, Arbitrary a,
+          Ord k, Show k, Arbitrary k) => FMTest k a (AL.FM k)
+  where structInv = const True
+
+instance (Ord a, Show a, Arbitrary a) => FMTest Int a PLM.FM
+  where structInv = const True
+
+
 ---------------------------------------------------------------
 -- List of all permutations of bag types to test
 
@@ -43,6 +53,8 @@ allFMTests :: Test
 allFMTests = TestList
    [ fmTests (empty :: (Ord a) => TT.FM [Int] a)
    , fmTests (empty :: (Ord a) => SM.FM Int a)
+   , fmTests (empty :: (Ord a) => AL.FM Int a)
+   , fmTests (empty :: (Ord a) => PLM.FM a)
    ]
 
 ----------------------------------------------------------------
@@ -117,8 +129,9 @@ prop_DeleteStructure fm xs ys
 prop_ToSeq :: FMTest k Int fm => fm Int -> [(k,Int)] -> Property
 prop_ToSeq fm xs
   = (L.null cleaned) `trivial`
-        (structInv fm1 && toSeq fm1 == L.sort cleaned
-                && keys fm1 == L.sort (L.map fst cleaned))
+        (structInv fm1 
+            && toSeq fm1 == L.sort cleaned
+            && keys fm1 == L.sort (L.map fst cleaned))
     where
         cleaned = removeDups xs
         fm1 = fromSeq cleaned `asTypeOf` fm
