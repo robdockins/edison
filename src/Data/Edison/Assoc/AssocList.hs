@@ -104,7 +104,7 @@ intersectWithKey :: Eq k => (k -> a -> b -> c) -> FM k a -> FM k b -> FM k c
 moduleName = "Data.Edison.Assoc.AssocList"
 
 
-data FM k a = E | I k a (FM k a)
+data FM k a = E | I k a (FM k a) deriving (Show)
 
 -- uncurried insert.  not exported.
 uinsert (k,x) = I k x

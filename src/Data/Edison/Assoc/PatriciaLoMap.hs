@@ -51,6 +51,7 @@ data FM a
   = E
   | L Int a
   | B Int Int !(FM a) !(FM a)
+ deriving (Show)
 
 -- auxiliary functions
 
