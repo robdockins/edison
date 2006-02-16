@@ -96,7 +96,7 @@ prop_Structure fm xs
 prop_Single :: FMTest k Int fm => fm Int -> [(k,Int)] -> Property
 prop_Single fm xs
   = L.null xs `trivial`
-        (structInv fm1 && (L.sort (toList fm1)) == (L.sort (toList fm2)))
+        (structInv fm1 && (L.sort (keys fm1)) == (L.sort (keys fm2)))
     where
         fm1 = unionSeq [ single k v | (k,v) <- xs ] `asTypeOf` fm
         fm2 = fromSeq xs `asTypeOf` fm
