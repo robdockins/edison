@@ -13,21 +13,51 @@ import Prelude hiding (concat,reverse,map,concatMap,foldr,foldl,foldr1,foldl1,
                        zip,zip3,zipWith,zipWith3,unzip,unzip3,null)
 import qualified Prelude
 import qualified List -- not ListSeq!
-import Test.QuickCheck
 
+import Test.QuickCheck
+import Test.HUnit (Test(..))
 
 import Data.Edison.Prelude
-import qualified Data.Edison.Coll as C
+import Data.Edison.Coll
+import Data.Edison.Test.Utils
 import qualified Data.Edison.Seq.ListSeq as L
 
-import Data.Edison.Coll.UnbalancedSet -- the set module being tested
-import qualified Data.Edison.Seq.JoinList as S -- the sequence module being tested
+import Data.Edison.Seq.JoinList (Seq)
+import qualified Data.Edison.Seq.JoinList as S
+
+----------------------------------------------------
+-- Set implementations to test
+
+import qualified Data.Edison.Coll.UnbalancedSet as US
+
+-------------------------------------------------------
+-- A utility class to propigate class contexts down
+-- to the quick check properites
+
+class (Eq (set a), Arbitrary (set a), Show (set a),
+       OrdSet (set a) a) => SetTest a set
+
+instance (Ord a, Show a, Arbitrary a) => SetTest a US.Set
 
 
-type Seq a = S.Seq a
+--------------------------------------------------------
+-- List all permutations of set types to test
 
-tol :: Set Int -> [Int]
-tol = C.toOrdList
+allSetTests :: Test
+allSetTests = TestList
+   [ setTests (empty :: Ord a => US.Set a)
+   ]
+
+---------------------------------------------------------
+-- List all the tests to run for each type
+
+setTests set = TestLabel ("Set Test "++(instanceName set)) . TestList $
+   [ qcTest $ prop_single set
+   ]
+
+-----------------------------------------------------
+-- Utility operations
+
 
 lmerge :: [Int] -> [Int] -> [Int]
 lmerge xs [] = xs
@@ -37,18 +67,21 @@ lmerge xs@(x:xs') ys@(y:ys')
   | y < x     = y : lmerge xs ys'
   | otherwise = x : lmerge xs' ys'
 
+
 nub :: [Int] -> [Int]
 nub (x : xs@(x' : _)) = if x==x' then nub xs else x : nub xs
 nub xs = xs
 
 sort = nub . List.sort
 
+---------------------------------------------------------------
 -- CollX operations
 
-prop_single :: Int -> Bool
-prop_single x =
-    tol (single x) == [x]
+prop_single :: SetTest Int set => set Int -> Int -> Bool
+prop_single set x =
+    toOrdList (single x `asTypeOf` set) == [x]
 
+{-
 prop_fromSeq :: Seq Int -> Bool
 prop_fromSeq xs =
     tol (fromSeq xs) == sort (S.toList xs)
@@ -275,3 +308,4 @@ prop_intersectWith xs ys =
 prop_unsafeMapMonotonic :: Set Int -> Bool
 prop_unsafeMapMonotonic xs =
     tol (unsafeMapMonotonic (2*) xs) == Prelude.map (2*) (tol xs)
+-}
