@@ -73,8 +73,8 @@ bagTests bag = TestLabel ("Bag test "++(instanceName bag)) . TestList $
    , qcTest $ prop_delete bag
    , qcTest $ prop_deleteAll bag
    , qcTest $ prop_deleteSeq bag
-   , qcTest $ prop_null_size bag
-   , qcTest $ prop_member_count bag      -- 10
+   , qcTest $ prop_null_size bag         -- 10
+   , qcTest $ prop_member_count bag
    , qcTest $ prop_toSeq bag
    , qcTest $ prop_lookup bag
    , qcTest $ prop_fold bag
@@ -83,8 +83,8 @@ bagTests bag = TestLabel ("Bag test "++(instanceName bag)) . TestList $
    , qcTest $ prop_unsafeInsertMin_Max bag
    , qcTest $ prop_unsafeFromOrdSeq bag
    , qcTest $ prop_filter bag
-   , qcTest $ prop_partition bag
-   , qcTest $ prop_minView_maxView bag   -- 20
+   , qcTest $ prop_partition bag         -- 20
+   , qcTest $ prop_minView_maxView bag
    , qcTest $ prop_minElem_maxElem bag
    , qcTest $ prop_foldr_foldl bag
    , qcTest $ prop_foldr1_foldl1 bag
@@ -95,6 +95,7 @@ bagTests bag = TestLabel ("Bag test "++(instanceName bag)) . TestList $
 
 ----------------------------------------------------
 -- utility operations
+
 lmerge :: [Int] -> [Int] -> [Int]
 lmerge xs [] = xs
 lmerge [] ys = ys

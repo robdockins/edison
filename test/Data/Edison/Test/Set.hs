@@ -66,8 +66,8 @@ setTests set = TestLabel ("Set Test "++(instanceName set)) . TestList $
    , qcTest $ prop_unionSeq set
    , qcTest $ prop_delete set
    , qcTest $ prop_deleteAll set
-   , qcTest $ prop_deleteSeq set
-   , qcTest $ prop_null_size set            -- 10
+   , qcTest $ prop_deleteSeq set            -- 10
+   , qcTest $ prop_null_size set
    , qcTest $ prop_member_count set
    , qcTest $ prop_toSeq set
    , qcTest $ prop_lookup set
@@ -76,8 +76,8 @@ setTests set = TestLabel ("Set Test "++(instanceName set)) . TestList $
    , qcTest $ prop_deleteMin_Max set
    , qcTest $ prop_unsafeInsertMin_Max set
    , qcTest $ prop_unsafeFromOrdSeq set
-   , qcTest $ prop_unsafeAppend set
-   , qcTest $ prop_filter set               -- 20
+   , qcTest $ prop_unsafeAppend set         -- 20
+   , qcTest $ prop_filter set
    , qcTest $ prop_partition set
    , qcTest $ prop_minView_maxView set
    , qcTest $ prop_minElem_maxElem set
@@ -86,8 +86,8 @@ setTests set = TestLabel ("Set Test "++(instanceName set)) . TestList $
    , qcTest $ prop_toOrdSeq set
    , qcTest $ prop_intersect_difference set
    , qcTest $ prop_subset_subsetEq set
-   , qcTest $ prop_fromSeqWith set
-   , qcTest $ prop_insertWith set          -- 30
+   , qcTest $ prop_fromSeqWith set         -- 30
+   , qcTest $ prop_insertWith set
    , qcTest $ prop_insertSeqWith set
    , qcTest $ prop_unionl_unionr_unionWith set
    , qcTest $ prop_unionSeqWith set
