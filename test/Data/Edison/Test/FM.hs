@@ -7,12 +7,10 @@ import Prelude hiding (concat,reverse,map,concatMap,foldr,foldl,foldr1,foldl1,
                        filter,takeWhile,dropWhile,lookup,take,drop,splitAt,
                        zip,zip3,zipWith,zipWith3,unzip,unzip3,null)
 import qualified Prelude
-
 import qualified List as L
 
 import Test.QuickCheck hiding (elements)
 import Test.HUnit (Test(..))
-
 
 import Data.Edison.Test.Utils
 import Data.Edison.Assoc
@@ -34,6 +32,9 @@ instance (Ord a, Show a, Arbitrary a,
           Ord k, Show k, Arbitrary k) => FMTest [k] a (TT.FM k)
   where structInv = TT.structuralInvariantFM
 
+instance (Ord a, Show a, Arbitrary a) => FMTest Int a PLM.FM
+  where structInv = const True
+
 instance (Ord a, Show a, Arbitrary a,
           Ord k, Show k, Arbitrary k) => FMTest k a (SM.FM k)
   where structInv = const True
@@ -42,19 +43,16 @@ instance (Ord a, Show a, Arbitrary a,
           Ord k, Show k, Arbitrary k) => FMTest k a (AL.FM k)
   where structInv = const True
 
-instance (Ord a, Show a, Arbitrary a) => FMTest Int a PLM.FM
-  where structInv = const True
-
 
 ---------------------------------------------------------------
 -- List of all permutations of bag types to test
 
 allFMTests :: Test
 allFMTests = TestList
-   [ fmTests (empty :: (Ord a) => TT.FM [Int] a)
-   , fmTests (empty :: (Ord a) => SM.FM Int a)
+   [ fmTests (empty :: (Ord a) => SM.FM Int a)
    , fmTests (empty :: (Ord a) => AL.FM Int a)
    , fmTests (empty :: (Ord a) => PLM.FM a)
+   , fmTests (empty :: (Ord a) => TT.FM [Int] a)
    ]
 
 ----------------------------------------------------------------
@@ -98,7 +96,7 @@ prop_Structure fm xs
 prop_Single :: FMTest k Int fm => fm Int -> [(k,Int)] -> Property
 prop_Single fm xs
   = L.null xs `trivial`
-        (structInv fm1 && toList fm1 == toList fm2)
+        (structInv fm1 && (L.sort (toList fm1)) == (L.sort (toList fm2)))
     where
         fm1 = unionSeq [ single k v | (k,v) <- xs ] `asTypeOf` fm
         fm2 = fromSeq xs `asTypeOf` fm
@@ -130,8 +128,8 @@ prop_ToSeq :: FMTest k Int fm => fm Int -> [(k,Int)] -> Property
 prop_ToSeq fm xs
   = (L.null cleaned) `trivial`
         (structInv fm1 
-            && toSeq fm1 == L.sort cleaned
-            && keys fm1 == L.sort (L.map fst cleaned))
+            && L.sort (toList fm1) == L.sort cleaned
+            && L.sort (keys fm1)   == L.sort (L.map fst cleaned))
     where
         cleaned = removeDups xs
         fm1 = fromSeq cleaned `asTypeOf` fm
@@ -142,9 +140,9 @@ prop_ToFromSeq fm xs
         (structInv fm1 && structInv fm2 && s1 == s2)
     where
         fm1 = fromSeq xs `asTypeOf` fm
-        s1 = toList fm1
+        s1 = L.sort (toList fm1)
         fm2 = fromSeq s1 `asTypeOf` fm
-        s2 = toList fm2
+        s2 = L.sort (toList fm2)
 
 prop_Member :: FMTest k Int fm => fm Int -> [k] -> Property
 prop_Member fm xs
