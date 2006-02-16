@@ -49,7 +49,7 @@ import Control.Monad.Identity
 import Data.Edison.Prelude
 import qualified Data.Edison.Assoc as A
 import qualified Data.Edison.Seq as S
-import qualified Data.Edison.Seq.RandList as RL
+import qualified Data.Edison.Seq.BinaryRandList as RL
 import Data.Edison.Assoc.Defaults
 import Test.QuickCheck (Arbitrary(..), variant)
 
@@ -149,11 +149,14 @@ moduleName = "Data.Edison.Assoc.AssocList"
 
 data FM k a = E | I k a (FM k a) deriving (Show)
 
--- uncurried insert.  not exported.
+---------------------------------------
+-- some unexported utility functions
+
+-- uncurried insert.
 uinsert (k,x) = I k x
 
 
--- left biased merge, not exported
+-- left biased merge.
 mergeFM E m = m
 mergeFM m E = m
 mergeFM o1@(I k1 a1 m1) o2@(I k2 a2 m2) =
@@ -200,6 +203,10 @@ spanFM p E = (E,E)
 spanFM p o@(I k a m)
    | p k       = let (x,y) = spanFM p m in (I k a x,y)
    | otherwise = (E,o)
+
+
+---------------------------------------------------
+-- interface functions
 
 empty = E
 single k x = I k x E
