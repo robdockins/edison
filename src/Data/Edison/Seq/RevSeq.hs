@@ -28,6 +28,9 @@ module Data.Edison.Seq.RevSeq (
     take,drop,splitAt,subseq,filter,partition,takeWhile,dropWhile,splitWhile,
     zip,zip3,zipWith,zipWith3,unzip,unzip3,unzipWith,unzipWith3,
 
+    -- * Unit testing
+    structuralInvariant,
+
     -- * Documentation
     moduleName,instanceName
 ) where
@@ -105,6 +108,7 @@ unzip          :: S.Sequence s => Rev s (a,b) -> (Rev s a, Rev s b)
 unzip3         :: S.Sequence s => Rev s (a,b,c) -> (Rev s a, Rev s b, Rev s c)
 unzipWith      :: S.Sequence s => (a -> b) -> (a -> c) -> Rev s a -> (Rev s b, Rev s c)
 unzipWith3     :: S.Sequence s => (a -> b) -> (a -> c) -> (a -> d) -> Rev s a -> (Rev s b, Rev s c, Rev s d)
+structuralInvariant :: S.Sequence s => Rev s a -> Bool
 
 moduleName = "Data.Edison.Seq.RevSeq"
 instanceName (N m s) = "RevSeq(" ++ S.instanceName s ++ ")"
@@ -252,6 +256,9 @@ unzipWith f g (N m xys) = (N m xs, N m ys)
 unzipWith3 f g h (N m xyzs) = (N m xs, N m ys, N m zs)
   where (xs,ys,zs) = S.unzipWith3 f g h xyzs
 
+-- FIXME what are the structural invariants?
+structuralInvariant = const True
+
 -- instances
 
 instance S.Sequence s => S.Sequence (Rev s) where
@@ -273,7 +280,7 @@ instance S.Sequence s => S.Sequence (Rev s) where
    dropWhile = dropWhile; splitWhile = splitWhile; zip = zip;
    zip3 = zip3; zipWith = zipWith; zipWith3 = zipWith3; unzip = unzip;
    unzip3 = unzip3; unzipWith = unzipWith; unzipWith3 = unzipWith3;
-   instanceName = instanceName}
+   structuralInvariant = structuralInvariant; instanceName = instanceName}
 
 instance S.Sequence s => Functor (Rev s) where
   fmap = map

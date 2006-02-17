@@ -29,6 +29,9 @@ module Data.Edison.Seq.BankersQueue (
     take,drop,splitAt,subseq,filter,partition,takeWhile,dropWhile,splitWhile,
     zip,zip3,zipWith,zipWith3,unzip,unzip3,unzipWith,unzipWith3,
 
+    -- * Unit testing
+    structuralInvariant,
+
     -- * Documentation
     moduleName
 
@@ -106,6 +109,7 @@ unzip          :: Seq (a,b) -> (Seq a, Seq b)
 unzip3         :: Seq (a,b,c) -> (Seq a, Seq b, Seq c)
 unzipWith      :: (a -> b) -> (a -> c) -> Seq a -> (Seq b, Seq c)
 unzipWith3     :: (a -> b) -> (a -> c) -> (a -> d) -> Seq a -> (Seq b, Seq c, Seq d)
+structuralInvariant :: Seq a -> Bool
 
 moduleName = "Data.Edison.Seq.BankersQueue"
 
@@ -264,6 +268,9 @@ splitAt idx q@(Q i xs ys j) =
          in (Q i xs ys'' idx', Q (j - idx') (L.reverse ys') [] 0)
       -- could do splitAt followed by reverse more efficiently...
   
+structuralInvariant (Q x f r y) =
+    length f == x && length r == y && x >= y
+
 
 -- the remaining functions all use defaults
 
@@ -312,7 +319,7 @@ instance S.Sequence Seq where
    dropWhile = dropWhile; splitWhile = splitWhile; zip = zip;
    zip3 = zip3; zipWith = zipWith; zipWith3 = zipWith3; unzip = unzip;
    unzip3 = unzip3; unzipWith = unzipWith; unzipWith3 = unzipWith3;
-   instanceName s = moduleName}
+   structuralInvariant = structuralInvariant; instanceName s = moduleName}
 
 instance Functor Seq where
   fmap = map

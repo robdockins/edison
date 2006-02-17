@@ -27,6 +27,9 @@ module Data.Edison.Seq.BinaryRandList (
     take,drop,splitAt,subseq,filter,partition,takeWhile,dropWhile,splitWhile,
     zip,zip3,zipWith,zipWith3,unzip,unzip3,unzipWith,unzipWith3,
 
+    -- * Unit testing
+    structuralInvariant,
+
     -- * Documentation
     moduleName
 ) where
@@ -104,6 +107,7 @@ unzip          :: Seq (a,b) -> (Seq a, Seq b)
 unzip3         :: Seq (a,b,c) -> (Seq a, Seq b, Seq c)
 unzipWith      :: (a -> b) -> (a -> c) -> Seq a -> (Seq b, Seq c)
 unzipWith3     :: (a -> b) -> (a -> c) -> (a -> d) -> Seq a -> (Seq b, Seq c, Seq d)
+structuralInvariant :: Seq a -> Bool
 
 moduleName = "Data.Edison.Seq.BinaryRandList"
 
@@ -271,6 +275,9 @@ drop n xs = if n <= 0 then xs else drp n xs
           | odd i = mkEven (drp (half (i-1)) ps)
           | otherwise = fromMaybe empty (ltailM (mkEven (drp (half (i-1)) ps)))
 
+-- FIXME what are the structural invariants?
+structuralInvariant = const True
+
 -- the remaining functions all use defaults
 
 rcons = rconsUsingFoldr
@@ -332,7 +339,7 @@ instance S.Sequence Seq where
    dropWhile = dropWhile; splitWhile = splitWhile; zip = zip;
    zip3 = zip3; zipWith = zipWith; zipWith3 = zipWith3; unzip = unzip;
    unzip3 = unzip3; unzipWith = unzipWith; unzipWith3 = unzipWith3;
-   instanceName s = moduleName}
+   structuralInvariant = structuralInvariant; instanceName s = moduleName}
 
 instance Functor Seq where
   fmap = map

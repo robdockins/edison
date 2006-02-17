@@ -20,6 +20,9 @@ module Data.Edison.Seq.ListSeq (
     take,drop,splitAt,subseq,filter,partition,takeWhile,dropWhile,splitWhile,
     zip,zip3,zipWith,zipWith3,unzip,unzip3,unzipWith,unzipWith3,
 
+    -- * Unit testing
+    structuralInvariant,
+
     -- * Documentation
     moduleName
 ) where
@@ -93,6 +96,7 @@ unzip          :: [(a,b)] -> ([a], [b])
 unzip3         :: [(a,b,c)] -> ([a], [b], [c])
 unzipWith      :: (a -> b) -> (a -> c) -> [a] -> ([b], [c])
 unzipWith3     :: (a -> b) -> (a -> c) -> (a -> d) -> [a] -> ([b], [c], [d])
+structuralInvariant :: [a] -> Bool
 
 moduleName = "Data.Edison.Seq.ListSeq"
 
@@ -260,6 +264,9 @@ unzipWith3 f g h = foldr consfgh ([], [], [])
   where consfgh a (bs, cs, ds) = (f a : bs, g a : cs, h a : ds)
   -- could put ~ on tuple
 
+-- no invariants
+structuralInvariant = const True
+
 -- declare the instance
 
 instance S.Sequence [] where
@@ -284,5 +291,5 @@ instance S.Sequence [] where
    dropWhile = dropWhile; splitWhile = splitWhile; zip = zip;
    zip3 = zip3; zipWith = zipWith; zipWith3 = zipWith3; unzip = unzip;
    unzip3 = unzip3; unzipWith = unzipWith; unzipWith3 = unzipWith3;
-   instanceName s = moduleName}
+   structuralInvariant = structuralInvariant; instanceName s = moduleName}
 

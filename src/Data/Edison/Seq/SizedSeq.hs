@@ -21,6 +21,9 @@ module Data.Edison.Seq.SizedSeq (
     take,drop,splitAt,subseq,filter,partition,takeWhile,dropWhile,splitWhile,
     zip,zip3,zipWith,zipWith3,unzip,unzip3,unzipWith,unzipWith3,
 
+    -- * Unit testing
+    structuralInvariant,
+
     -- * Documentation
     moduleName,instanceName,
 
@@ -100,6 +103,7 @@ unzip          :: S.Sequence s => Sized s (a,b) -> (Sized s a, Sized s b)
 unzip3         :: S.Sequence s => Sized s (a,b,c) -> (Sized s a, Sized s b, Sized s c)
 unzipWith      :: S.Sequence s => (a -> b) -> (a -> c) -> Sized s a -> (Sized s b, Sized s c)
 unzipWith3     :: S.Sequence s => (a -> b) -> (a -> c) -> (a -> d) -> Sized s a -> (Sized s b, Sized s c, Sized s d)
+structuralInvariant :: S.Sequence s => Sized s a -> Bool
 
 -- bonus functions, not in Sequence signature
 fromSeq        :: S.Sequence s => s a -> Sized s a
@@ -235,6 +239,9 @@ unzipWith f g (N n xys) = (N n xs, N n ys)
 unzipWith3 f g h (N n xyzs) = (N n xs, N n ys, N n zs)
   where (xs,ys,zs) = S.unzipWith3 f g h xyzs
 
+-- FIXME what are the structural invariants?
+structuralInvariant = const True
+
 -- instances
 
 instance S.Sequence s => S.Sequence (Sized s) where
@@ -256,7 +263,7 @@ instance S.Sequence s => S.Sequence (Sized s) where
    dropWhile = dropWhile; splitWhile = splitWhile; zip = zip;
    zip3 = zip3; zipWith = zipWith; zipWith3 = zipWith3; unzip = unzip;
    unzip3 = unzip3; unzipWith = unzipWith; unzipWith3 = unzipWith3;
-   instanceName = instanceName}
+   structuralInvariant = structuralInvariant; instanceName = instanceName}
 
 instance S.Sequence s => Functor (Sized s) where
   fmap = map

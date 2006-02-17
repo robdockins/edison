@@ -30,6 +30,9 @@ module Data.Edison.Seq.RandList (
     take,drop,splitAt,subseq,filter,partition,takeWhile,dropWhile,splitWhile,
     zip,zip3,zipWith,zipWith3,unzip,unzip3,unzipWith,unzipWith3,
 
+    -- * Unit testing
+    structuralInvariant,
+
     -- * Documentation
     moduleName
 ) where
@@ -330,6 +333,9 @@ unzip3 = unzip3UsingLists
 unzipWith = unzipWithUsingLists
 unzipWith3 = unzipWith3UsingLists
 
+-- FIXME what are the structural invariants?
+structuralInvariant = const True
+
 -- instances
 
 instance S.Sequence Seq where
@@ -351,7 +357,7 @@ instance S.Sequence Seq where
    dropWhile = dropWhile; splitWhile = splitWhile; zip = zip;
    zip3 = zip3; zipWith = zipWith; zipWith3 = zipWith3; unzip = unzip;
    unzip3 = unzip3; unzipWith = unzipWith; unzipWith3 = unzipWith3;
-   instanceName s = moduleName}
+   structuralInvariant = structuralInvariant; instanceName s = moduleName}
 
 instance Functor Seq where
   fmap = map

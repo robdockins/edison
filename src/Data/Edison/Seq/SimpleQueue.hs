@@ -32,6 +32,9 @@ module Data.Edison.Seq.SimpleQueue (
     take,drop,splitAt,subseq,filter,partition,takeWhile,dropWhile,splitWhile,
     zip,zip3,zipWith,zipWith3,unzip,unzip3,unzipWith,unzipWith3,
 
+    -- * Unit testing
+    structuralInvariant,
+
     -- * Documentation
     moduleName
 ) where
@@ -107,6 +110,7 @@ unzip          :: Seq (a,b) -> (Seq a, Seq b)
 unzip3         :: Seq (a,b,c) -> (Seq a, Seq b, Seq c)
 unzipWith      :: (a -> b) -> (a -> c) -> Seq a -> (Seq b, Seq c)
 unzipWith3     :: (a -> b) -> (a -> c) -> (a -> d) -> Seq a -> (Seq b, Seq c, Seq d)
+structuralInvariant :: Seq a -> Bool
 
 moduleName = "Data.Edison.Seq.SimpleQueue"
 
@@ -246,6 +250,9 @@ unzip3 = unzip3UsingLists
 unzipWith = unzipWithUsingLists
 unzipWith3 = unzipWith3UsingLists
 
+-- FIXME what are the structural invariant?
+structuralInvariant = const True
+
 -- instances
 
 instance S.Sequence Seq where
@@ -268,7 +275,7 @@ instance S.Sequence Seq where
    dropWhile = dropWhile; splitWhile = splitWhile; zip = zip;
    zip3 = zip3; zipWith = zipWith; zipWith3 = zipWith3; unzip = unzip;
    unzip3 = unzip3; unzipWith = unzipWith; unzipWith3 = unzipWith3;
-   instanceName s = moduleName}
+   structuralInvariant = structuralInvariant; instanceName s = moduleName}
 
 instance Functor Seq where
   fmap = map
