@@ -113,8 +113,7 @@ moduleName = "Data.Edison.Seq.RandList"
 
 
 data Tree a = L a | T a (Tree a) (Tree a)   deriving (Eq)
-data Seq a = E | C !Int (Tree a) (Seq a)    --deriving (Eq)
-  -- want to derive Eq but can't because of GHC bug
+data Seq a = E | C !Int (Tree a) (Seq a)    deriving (Eq)
 
 half :: Int -> Int
 half n = n `quot` 2  -- use a shift?
@@ -369,12 +368,6 @@ instance Monad Seq where
 instance MonadPlus Seq where
   mplus = append
   mzero = empty
-
--- want to derive the following instance but can't because of GHC bug
-instance Eq a => Eq (Seq a) where
-  C i tx xs == C j ty ys = (i == j) && (tx == ty) && (xs == ys)
-  E == E = True
-  _ == _ = False
 
 instance Show a => Show (Seq a) where
   show xs = show (toList xs)
