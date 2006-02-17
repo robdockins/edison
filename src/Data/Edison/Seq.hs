@@ -925,9 +925,11 @@ class (Functor s, MonadPlus s) => Sequence s where
   --     of @f@, @g@, and @h@
   unzipWith3  :: (a -> b) -> (a -> c) -> (a -> d) -> s a -> (s b, s c, s d)
 
-  -- | A method to faciliate unit testing.  Returns true if the structural
+  -- | A method to faciliate unit testing.  Returns 'True' if the structural
   --   invariants of the implementation hold for the given sequence.  If
-  --   this function returns 'False', it represents a bug.
+  --   this function returns 'False', it represents a bug.   Generally, either
+  --   the implementation itself is flawed, or an unsafe operation has been
+  --   used while violating the preconditions.
   structuralInvariant :: s a -> Bool
 
   -- | The name of the module implementing s.
