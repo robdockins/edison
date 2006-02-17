@@ -17,6 +17,7 @@ module Data.Edison.Assoc.PatriciaLoMap (
     empty,single,fromSeq,insert,insertSeq,union,unionSeq,delete,deleteAll,
     deleteSeq,null,size,member,count,lookup,lookupM,lookupAll,
     lookupWithDefault,adjust,adjustAll,map,fold,fold1,filter,partition,elements,
+    structuralInvariant,
 
     -- * Assoc operations
     toSeq,keys,mapWithKey,foldWithKey,filterWithKey,partitionWithKey,
@@ -52,6 +53,11 @@ data FM a
   | L Int a
   | B Int Int !(FM a) !(FM a)
  deriving (Show)
+
+-- FIXME what are the invariants?
+structuralInvariant :: FM a -> Bool
+structuralInvariant = const True
+
 
 -- auxiliary functions
 
@@ -486,7 +492,7 @@ instance A.AssocX FM Int where
    lookupWithDefault = lookupWithDefault; adjust = adjust; 
    adjustAll = adjustAll; map = map; fold = fold; fold1 = fold1; 
    filter = filter; partition = partition; elements = elements;
-   instanceName m = moduleName}
+   structuralInvariant = structuralInvariant; instanceName m = moduleName}
 
 instance A.Assoc FM Int where
   {toSeq = toSeq; keys = keys; mapWithKey = mapWithKey; 

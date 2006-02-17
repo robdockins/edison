@@ -17,6 +17,7 @@ module Data.Edison.Assoc.AssocList (
     empty,single,fromSeq,insert,insertSeq,union,unionSeq,delete,deleteAll,
     deleteSeq,null,size,member,count,lookup,lookupM,lookupAll,
     lookupWithDefault,adjust,adjustAll,map,fold,fold1,filter,partition,elements,
+    structuralInvariant,
 
     -- * OrdAssocX operations
     minView, minElem, deleteMin, unsafeInsertMin, maxView, maxElem, deleteMax,
@@ -148,6 +149,10 @@ moduleName = "Data.Edison.Assoc.AssocList"
 
 
 data FM k a = E | I k a (FM k a) deriving (Show)
+
+-- no invariants
+structuralInvariant :: Eq k => FM k a -> Bool
+structuralInvariant = const True
 
 ---------------------------------------
 -- some unexported utility functions
@@ -412,7 +417,7 @@ instance Eq k  => A.AssocX (FM k) k where
    lookupWithDefault = lookupWithDefault; adjust = adjust; 
    adjustAll = adjustAll; map = map; fold = fold; fold1 = fold1; 
    filter = filter; partition = partition; elements = elements;
-   instanceName m = moduleName}
+   structuralInvariant = structuralInvariant; instanceName m = moduleName}
 
 instance Ord k => A.OrdAssocX (FM k) k where
   {minView = minView; minElem = minElem; deleteMin = deleteMin;

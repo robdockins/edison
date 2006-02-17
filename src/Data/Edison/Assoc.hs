@@ -166,8 +166,16 @@ class (Eq k,Functor m) => AssocX m k | m -> k where
   --   order.
   elements       :: Sequence seq => m a -> seq a
 
+  -- | A method to facilitate unit testing.  Returns 'True' if the structural
+  --   invariants of the implementation hold for the given associative
+  --   collection.  If this function returns 'False', it represents a bug.
+  --   Generally, either the implementation itself is flawed, or an unsafe
+  --   operation has been used while violating the preconditions.
+  structuralInvariant :: m a -> Bool
+
   -- | Returns the name of the module implementing this associative collection.
   instanceName   :: m a -> String
+
 
 -- | An associative collection where the keys additionally have an ordering
 --   relation.

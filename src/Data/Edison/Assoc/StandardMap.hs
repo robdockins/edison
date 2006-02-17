@@ -12,6 +12,7 @@ module Data.Edison.Assoc.StandardMap (
     empty,single,fromSeq,insert,insertSeq,union,unionSeq,delete,deleteAll,
     deleteSeq,null,size,member,count,lookup,lookupM,lookupAll,
     lookupWithDefault,adjust,adjustAll,map,fold,fold1,filter,partition,elements,
+    structuralInvariant,
 
     -- * FiniteMapX operations
     fromSeqWith,fromSeqWithKey,insertWith,insertWithKey,insertSeqWith,
@@ -148,6 +149,9 @@ unionSeqWithKey   :: (Ord k,S.Sequence seq) => (k -> a -> a -> a)
                         -> seq (FM k a) -> FM k a
 intersectWithKey  :: Ord k => (k -> a -> b -> c) -> FM k a -> FM k b -> FM k c
 
+structuralInvariant :: Ord k => FM k a -> Bool
+structuralInvariant = DM.valid
+
 
 empty              = DM.empty
 single             = DM.singleton
@@ -254,7 +258,7 @@ instance Ord k => A.AssocX (FM k) k where
    lookupWithDefault = lookupWithDefault; adjust = adjust;
    adjustAll = adjustAll; map = map; fold = fold; fold1 = fold1;
    filter = filter; partition = partition; elements = elements;
-   instanceName m = moduleName}
+   structuralInvariant = structuralInvariant; instanceName m = moduleName}
 
 instance Ord k => A.OrdAssocX (FM k) k where
   {minView = minView; minElem = minElem; deleteMin = deleteMin;

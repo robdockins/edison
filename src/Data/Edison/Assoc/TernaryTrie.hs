@@ -11,6 +11,7 @@ module Data.Edison.Assoc.TernaryTrie (
     empty,single,fromSeq,insert,insertSeq,union,unionSeq,delete,deleteAll,
     deleteSeq,null,size,member,count,lookup,lookupM,lookupAll,
     lookupWithDefault,adjust,adjustAll,map,fold,fold1,filter,partition,elements,
+    structuralInvariant,
 
     -- * Assoc operations
     toSeq,keys,mapWithKey,foldWithKey,filterWithKey,partitionWithKey,
@@ -27,10 +28,7 @@ module Data.Edison.Assoc.TernaryTrie (
     mergeKVFM,
 
     -- * Documentation
-    moduleName,
-
-    -- * Unit testing
-    structuralInvariantFM
+    moduleName
 ) where
 
 import Prelude hiding (null,map,lookup,foldr,foldl,foldr1,foldl1,filter)
@@ -649,7 +647,7 @@ instance Ord k  => A.AssocX (FM k) [k] where
    lookupWithDefault = lookupWithDefault; adjust = adjust; 
    adjustAll = adjustAll; map = map; fold = fold; fold1 = fold1; 
    filter = filter; partition = partition; elements = elements;
-   instanceName m = moduleName}
+   structuralInvariant = structuralInvariant; instanceName m = moduleName}
 
 instance Ord k  => A.Assoc (FM k) [k] where
   {toSeq = toSeq; keys = keys; mapWithKey = mapWithKey; 
@@ -675,7 +673,7 @@ instance Ord k => Functor (FM k) where
 -- Test code follows
 --
 
-keyInvariantFMB :: (Show k, Ord k) => (k -> Bool) -> FMB k a -> Bool
+keyInvariantFMB :: Ord k => (k -> Bool) -> FMB k a -> Bool
 keyInvariantFMB p E = True
 keyInvariantFMB p (I _ k _ l _ r)
   =    p k
@@ -686,7 +684,7 @@ actualSizeFMB :: FMB k a -> Int
 actualSizeFMB E = 0
 actualSizeFMB (I _ _ _ l _ r) = 1 + actualSizeFMB l + actualSizeFMB r
 
-structuralInvariantFMB :: (Show k, Ord k) => FMB k a -> Bool
+structuralInvariantFMB :: Ord k => FMB k a -> Bool
 structuralInvariantFMB E = True
 structuralInvariantFMB fmb@(I size k _ l (FMB' m) r)
   =    structuralInvariantFMB l
@@ -701,8 +699,8 @@ structuralInvariantFMB fmb@(I size k _ l (FMB' m) r)
       sizel = sizeFMB l
       sizer = sizeFMB r
 
-structuralInvariantFM :: (Show k, Ord k) => FM k a -> Bool
-structuralInvariantFM (FM k fmb) = structuralInvariantFMB fmb
+structuralInvariant :: Ord k => FM k a -> Bool
+structuralInvariant (FM k fmb) = structuralInvariantFMB fmb
 
 
 instance (Ord k,Arbitrary k,Arbitrary a) => Arbitrary (FM k a) where
