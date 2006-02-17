@@ -114,48 +114,73 @@ nub xs = xs
 
 sort = nub . List.sort
 
+(===) :: (Eq (set a),CollX (set a) a) => set a -> set a -> Bool
+(===) s1 s2 = 
+    structuralInvariant s1
+    &&
+    structuralInvariant s2
+    &&
+    s1 == s2
+
+si :: CollX (set a) a => set a -> Bool
+si = structuralInvariant
+
 ---------------------------------------------------------------
 -- CollX operations
 
 prop_single :: SetTest Int set => set Int -> Int -> Bool
 prop_single set x =
-    toOrdList (single x `asTypeOf` set) == [x]
-
+    let xs = single x `asTypeOf` set
+     in si xs
+        &&
+        toOrdList xs == [x]
 
 prop_fromSeq :: SetTest Int set => set Int -> Seq Int -> Bool
 prop_fromSeq set xs =
-    toOrdList (fromSeq xs `asTypeOf` set) == sort (S.toList xs)
+    let s = fromSeq xs `asTypeOf` set
+     in si s
+        &&
+        toOrdList s == sort (S.toList xs)
 
 prop_insert :: SetTest Int set => set Int -> Int -> set Int -> Bool
 prop_insert set x xs =
-    if member x xs then
-      toOrdList (insert x xs) == toOrdList xs
-    else
-      toOrdList (insert x xs) == List.insert x (toOrdList xs)
+    let insert_x_xs = insert x xs
+     in si insert_x_xs
+        &&
+        if member x xs then
+           toOrdList insert_x_xs == toOrdList xs
+        else
+           toOrdList insert_x_xs == List.insert x (toOrdList xs)
 
 prop_insertSeq :: SetTest Int set => set Int -> Seq Int -> set Int -> Bool
 prop_insertSeq set xs ys =
-    insertSeq xs ys == union (fromSeq xs) ys
+    insertSeq xs ys === union (fromSeq xs) ys
 
 prop_union :: SetTest Int set => set Int -> set Int -> set Int -> Bool
 prop_union set xs ys =
-    toOrdList (union xs ys) == lmerge (toOrdList xs) (toOrdList ys)
+    let xys = union xs ys
+     in si xys
+        &&
+        toOrdList xys == lmerge (toOrdList xs) (toOrdList ys)
 
 prop_unionSeq :: SetTest Int set => set Int -> Seq (set Int) -> Bool
 prop_unionSeq set xss =
-    unionSeq xss == S.foldr union empty xss
+    unionSeq xss === S.foldr union empty xss
 
 prop_delete :: SetTest Int set => set Int -> Int -> set Int -> Bool
 prop_delete set x xs =
-    toOrdList (delete x xs) == List.delete x (toOrdList xs)
+    let delete_x_xs = delete x xs
+     in si delete_x_xs
+        &&
+        toOrdList delete_x_xs == List.delete x (toOrdList xs)
 
 prop_deleteAll :: SetTest Int set => set Int -> Int -> set Int -> Bool
 prop_deleteAll set x xs =
-    deleteAll x xs == delete x xs
+    deleteAll x xs === delete x xs
 
 prop_deleteSeq :: SetTest Int set => set Int -> Seq Int -> set Int -> Bool
 prop_deleteSeq set xs ys =
-    deleteSeq xs ys == S.foldr delete ys xs
+    deleteSeq xs ys === S.foldr delete ys xs
 
 prop_null_size :: SetTest Int set => set Int -> set Int -> Bool
 prop_null_size set xs =
@@ -202,9 +227,15 @@ prop_fold set xs =
 
 prop_filter_partition :: SetTest Int set => set Int -> set Int -> Bool
 prop_filter_partition set xs =
-    toOrdList (filter p xs) == Prelude.filter p (toOrdList xs)
-    &&
-    partition p xs == (filter p xs, filter (not . p) xs)
+    let filter_p_xs = filter p xs
+        filter_not_p_xs = filter (not . p) xs
+     in si filter_p_xs
+        &&
+        si filter_not_p_xs
+        &&
+        toOrdList filter_p_xs == Prelude.filter p (toOrdList xs)
+        &&
+        partition p xs == (filter_p_xs, filter_not_p_xs)
   where p x = x `mod` 3 == 2
 
 ------------------------------------------------------------------
@@ -212,38 +243,46 @@ prop_filter_partition set xs =
 
 prop_deleteMin_Max :: SetTest Int set => set Int -> set Int -> Bool
 prop_deleteMin_Max set xs =
-    toOrdList (deleteMin xs) == (let l = toOrdList xs 
-                                 in if L.null l then L.empty else L.ltail l)
-    &&
-    toOrdList (deleteMax xs) == (let l = toOrdList xs
-                                 in if L.null l then L.empty else L.rtail l)
+    let deleteMin_xs = deleteMin xs
+        deleteMax_xs = deleteMax xs
+     in si deleteMin_xs
+        &&
+        si deleteMax_xs
+        &&
+        toOrdList (deleteMin xs) == 
+                 (let l = toOrdList xs 
+                   in if L.null l then L.empty else L.ltail l)
+        &&
+        toOrdList (deleteMax xs) ==
+                 (let l = toOrdList xs
+                   in if L.null l then L.empty else L.rtail l)
 
 
 prop_unsafeInsertMin_Max :: SetTest Int set => 
 	set Int -> Int -> set Int -> Bool
 prop_unsafeInsertMin_Max set i xs =
     if null xs then
-      unsafeInsertMin 0 xs == single 0
+      unsafeInsertMin 0 xs === single 0
       &&
-      unsafeInsertMax 0 xs == single 0
+      unsafeInsertMax 0 xs === single 0
     else
-      unsafeInsertMin lo xs == insert lo xs
+      unsafeInsertMin lo xs === insert lo xs
       &&
-      unsafeInsertMax hi xs == insert hi xs
+      unsafeInsertMax hi xs === insert hi xs
   where lo = minElem xs - 1
         hi = maxElem xs + 1
     
 prop_unsafeFromOrdSeq :: SetTest Int set => set Int -> [Int] -> Bool
 prop_unsafeFromOrdSeq set xs =
-    unsafeFromOrdSeq (sort xs) == fromSeq xs `asTypeOf` set
+    unsafeFromOrdSeq (sort xs) === (fromSeq xs `asTypeOf` set)
 
 prop_unsafeAppend :: SetTest Int set => 
 	set Int -> Int -> set Int -> set Int -> Bool
 prop_unsafeAppend set i xs ys =
     if null xs || null ys then
-      unsafeAppend xs ys == union xs ys
+      unsafeAppend xs ys === union xs ys
     else
-      unsafeAppend xs ys' == union xs ys'
+      unsafeAppend xs ys' === union xs ys'
   where delta = maxElem xs - minElem ys + 1
         ys' = unsafeMapMonotonic (+delta) ys
   -- if unsafeMapMonotonic does any reorganizing in addition
@@ -252,13 +291,20 @@ prop_unsafeAppend set i xs ys =
 
 prop_filter :: SetTest Int set => set Int -> Int -> set Int -> Bool
 prop_filter set x xs =
-    toOrdList (filterLT x xs) == Prelude.filter (< x) (toOrdList xs)
+    si setLT && si setLE && si setGT && si setGE
     &&
-    toOrdList (filterLE x xs) == Prelude.filter (<= x) (toOrdList xs)
+    toOrdList setLT == Prelude.filter (< x) (toOrdList xs)
     &&
-    toOrdList (filterGT x xs) == Prelude.filter (> x) (toOrdList xs)
+    toOrdList setLE == Prelude.filter (<= x) (toOrdList xs)
     &&
-    toOrdList (filterGE x xs) == Prelude.filter (>= x) (toOrdList xs)
+    toOrdList setGT == Prelude.filter (> x) (toOrdList xs)
+    &&
+    toOrdList setGE == Prelude.filter (>= x) (toOrdList xs)
+
+ where setLT = filterLT x xs
+       setLE = filterLE x xs
+       setGT = filterGT x xs
+       setGE = filterGE x xs
 
 prop_partition :: SetTest Int set => set Int -> Int -> set Int -> Bool
 prop_partition set x xs =
@@ -310,9 +356,9 @@ prop_toOrdSeq set xs =
 prop_intersect_difference :: SetTest Int set => 
 	set Int -> set Int -> set Int -> Bool
 prop_intersect_difference set xs ys =
-    intersect xs ys == filter (\x -> member x xs) ys
+    intersect xs ys === filter (\x -> member x xs) ys
     &&
-    difference xs ys == filter (\x -> not (member x ys)) xs
+    difference xs ys === filter (\x -> not (member x ys)) xs
 
 prop_subset_subsetEq :: SetTest Int set => 
 	set Int -> set Int -> set Int -> Bool
@@ -327,33 +373,33 @@ prop_subset_subsetEq set xs ys =
 
 prop_fromSeqWith :: SetTest Int set => set Int -> Seq Int -> Bool
 prop_fromSeqWith set xs =
-    fromSeqWith const xs == fromSeq xs `asTypeOf` set
+    fromSeqWith const xs === (fromSeq xs `asTypeOf` set)
 
 prop_insertWith :: SetTest Int set => set Int -> Int -> set Int -> Bool
 prop_insertWith set x xs =
-    insertWith const x xs == insert x xs
+    insertWith const x xs === insert x xs
 
 prop_insertSeqWith :: SetTest Int set => set Int -> Seq Int -> set Int -> Bool
 prop_insertSeqWith set xs ys =
-    insertSeqWith const xs ys == insertSeq xs ys
+    insertSeqWith const xs ys === insertSeq xs ys
 
 prop_unionl_unionr_unionWith :: SetTest Int set => 
 	set Int -> set Int -> set Int -> Bool
 prop_unionl_unionr_unionWith set xs ys =
-    unionl xs ys == u
+    unionl xs ys === u
     &&
-    unionr xs ys == u
+    unionr xs ys === u
     &&
-    unionWith const xs ys == u
+    unionWith const xs ys === u
   where u = union xs ys
 
 prop_unionSeqWith :: SetTest Int set => set Int -> Seq (set Int) -> Bool
 prop_unionSeqWith set xss =
-    unionSeqWith const xss == unionSeq xss
+    unionSeqWith const xss === unionSeq xss
 
 prop_intersectWith :: SetTest Int set => set Int -> set Int -> set Int -> Bool
 prop_intersectWith set xs ys =
-    intersectWith const xs ys == intersect xs ys
+    intersectWith const xs ys === intersect xs ys
 
 prop_unsafeMapMonotonic :: SetTest Int set => set Int -> set Int -> Bool
 prop_unsafeMapMonotonic set xs =
