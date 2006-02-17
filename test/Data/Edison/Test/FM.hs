@@ -26,22 +26,17 @@ import qualified Data.Edison.Assoc.PatriciaLoMap as PLM
 class (Ord k, Show k,Arbitrary k,
        Arbitrary (fm a), Show (fm a),FiniteMap fm k) 
         => FMTest k a fm | fm -> k 
-  where structInv :: fm a -> Bool
 
 instance (Ord a, Show a, Arbitrary a,
           Ord k, Show k, Arbitrary k) => FMTest [k] a (TT.FM k)
-  where structInv = TT.structuralInvariantFM
 
 instance (Ord a, Show a, Arbitrary a) => FMTest Int a PLM.FM
-  where structInv = const True
 
 instance (Ord a, Show a, Arbitrary a,
           Ord k, Show k, Arbitrary k) => FMTest k a (SM.FM k)
-  where structInv = const True
 
 instance (Ord a, Show a, Arbitrary a,
           Ord k, Show k, Arbitrary k) => FMTest k a (AL.FM k)
-  where structInv = const True
 
 
 ---------------------------------------------------------------
@@ -83,6 +78,8 @@ removeDups :: (Eq k) => [(k, v)] -> [(k, v)]
 removeDups [] = []
 removeDups ((k,v):kvs) = (k,v) : removeDups (L.filter ((/= k) . fst) kvs)
 
+si :: AssocX fm k => fm a -> Bool
+si = structuralInvariant
 
 -----------------------------------------------------------------
 -- AssocX operations
@@ -90,13 +87,13 @@ removeDups ((k,v):kvs) = (k,v) : removeDups (L.filter ((/= k) . fst) kvs)
 prop_Structure :: FMTest k Int fm => fm Int -> [(k,Int)] -> Property
 prop_Structure fm xs
   = L.null xs `trivial`
-        structInv (fromSeq xs `asTypeOf` fm)
+        si (fromSeq xs `asTypeOf` fm)
 
 
 prop_Single :: FMTest k Int fm => fm Int -> [(k,Int)] -> Property
 prop_Single fm xs
   = L.null xs `trivial`
-        (structInv fm1 && (L.sort (keys fm1)) == (L.sort (keys fm2)))
+        (si fm1 && (L.sort (keys fm1)) == (L.sort (keys fm2)))
     where
         fm1 = unionSeq [ single k v | (k,v) <- xs ] `asTypeOf` fm
         fm2 = fromSeq xs `asTypeOf` fm
@@ -104,30 +101,30 @@ prop_Single fm xs
 prop_SortedStructure :: FMTest k Int fm => fm Int -> [(k,Int)] -> Property
 prop_SortedStructure fm xs
   = L.null xs `trivial`
-        structInv (fromSeq (L.sort xs) `asTypeOf` fm)
+        si (fromSeq (L.sort xs) `asTypeOf` fm)
 
 prop_UnionStructure :: FMTest k Int fm => 
         fm Int -> [(k,Int)] -> [(k,Int)] -> Property
 prop_UnionStructure fm xs ys
   = (L.null xs || L.null ys) `trivial`
-        structInv (union (fromSeq xs) (fromSeq ys) `asTypeOf` fm)
+        si (union (fromSeq xs) (fromSeq ys) `asTypeOf` fm)
 
 prop_UnionSeqStructure  :: FMTest k Int fm => 
         fm Int -> [[(k,Int)]] -> Property
 prop_UnionSeqStructure fm xs
   = (L.null xs) `trivial`
-        structInv (unionSeq (L.map fromSeq xs) `asTypeOf` fm)
+        si (unionSeq (L.map fromSeq xs) `asTypeOf` fm)
 
 prop_DeleteStructure :: FMTest k Int fm =>
         fm Int -> [k] -> [(k,Int)] -> Property
 prop_DeleteStructure fm xs ys
   = (L.null xs) `trivial`
-        structInv (deleteSeq xs (fromSeq ys `asTypeOf` fm))
+        si (deleteSeq xs (fromSeq ys `asTypeOf` fm))
 
 prop_ToSeq :: FMTest k Int fm => fm Int -> [(k,Int)] -> Property
 prop_ToSeq fm xs
   = (L.null cleaned) `trivial`
-        (structInv fm1 
+        (si fm1 
             && L.sort (toList fm1) == L.sort cleaned
             && L.sort (keys fm1)   == L.sort (L.map fst cleaned))
     where
@@ -137,7 +134,7 @@ prop_ToSeq fm xs
 prop_ToFromSeq :: FMTest k Int fm => fm Int -> [(k,Int)] -> Property
 prop_ToFromSeq fm xs
   = (L.null xs) `trivial`
-        (structInv fm1 && structInv fm2 && s1 == s2)
+        (si fm1 && si fm2 && s1 == s2)
     where
         fm1 = fromSeq xs `asTypeOf` fm
         s1 = L.sort (toList fm1)
@@ -147,7 +144,7 @@ prop_ToFromSeq fm xs
 prop_Member :: FMTest k Int fm => fm Int -> [k] -> Property
 prop_Member fm xs
   = (L.null xs) `trivial`
-        (structInv fm1 
+        (si fm1 
             && all (\x -> member x fm1) xs
             && all (\k -> lookupM k fm1 == Just 0) xs)
     where
@@ -157,7 +154,7 @@ prop_Member fm xs
 prop_Elements :: FMTest k Int fm => fm Int -> [(k,Int)] -> Property
 prop_Elements fm xs
   = (L.null xs) `trivial`
-  	(structInv fm1 &&
+  	(si fm1 &&
            L.sort (elements fm1) == L.sort (L.map snd cleaned))
     where
     	cleaned = removeDups xs
@@ -167,7 +164,7 @@ prop_Elements fm xs
 prop_PartitionKey :: FMTest k Int fm => fm Int -> k -> [(k,Int)] -> Property
 prop_PartitionKey fm key xs
   = (L.null xs) `trivial`
-  	(structInv fm1 && structInv fm2 &&
+  	(si fm1 && si fm2 &&
 		L.sort (toSeq fm1) ==
 			L.sort [ el | el@(k,v) <- cleaned, p k v ] &&
 		L.sort (toSeq fm2) ==
@@ -182,7 +179,7 @@ prop_PartitionKey fm key xs
 prop_Partition :: FMTest k Int fm => fm Int -> Int -> [(k,Int)] -> Property
 prop_Partition fm val xs
   = (L.null xs) `trivial`
-  	(structInv fm1 && structInv fm2 &&
+  	(si fm1 && si fm2 &&
 		L.sort (toSeq fm1) ==
 			L.sort [ el | el@(k,v) <- cleaned, p v ] &&
 		L.sort (toSeq fm2) ==
@@ -197,7 +194,7 @@ prop_Difference :: FMTest k Int fm =>
 	fm Int -> [(k,Int)] -> [(k,Int)] -> Property
 prop_Difference fm xs ys
   = (L.null xs || L.null ys) `trivial`
-  	(structInv fm1 && structInv fm2 && structInv fm3 &&
+  	(si fm1 && si fm2 && si fm3 &&
   	  check s1 s2 s3 && (not (L.null s3) || null fm3))
     where
 	fm1 = fromSeq xs `asTypeOf` fm
