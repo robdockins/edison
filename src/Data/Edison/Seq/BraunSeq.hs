@@ -51,13 +51,16 @@ import Prelude hiding (concat,reverse,map,concatMap,foldr,foldl,foldr1,foldl1,
                        filter,takeWhile,dropWhile,lookup,take,drop,splitAt,
                        zip,zip3,zipWith,zipWith3,unzip,unzip3,null)
 
+import Control.Monad
+import Control.Monad.Identity
+import Data.Maybe
+import Test.QuickCheck
+
 import Data.Edison.Prelude
 import qualified Data.Edison.Seq as S ( Sequence(..) )
 import Data.Edison.Seq.Defaults
 import qualified Data.Edison.Seq.ListSeq as L
-import Control.Monad
-import Control.Monad.Identity
-import Test.QuickCheck
+
 
 -- signatures for exported functions
 moduleName     :: String
@@ -390,8 +393,25 @@ unzipWith3 f g h (B x a b) = (B (f x) a1 b1, B (g x) a2 b2, B (h x) a3 b3)
   where (a1,a2,a3) = unzipWith3 f g h a
         (b1,b2,b3) = unzipWith3 f g h b
 
--- FIXME what are the structural invariants?
-structuralInvariant = const True
+
+
+-- invariants:
+--   * Left subtree is exactily the same size as the right
+--     subtree, or one element larger
+
+structuralInvariant E         = True
+structuralInvariant (B _ l r) = isJust (check l r)
+
+  where check E           E           = Just 1
+        check (B _ E E)   E           = Just 2
+	check (B _ l1 l2) (B _ r1 r2) = do
+           x <- check l1 l2
+           y <- check r1 r2
+           if (x == y) || (x == y + 1)
+              then return (x+y+1)
+              else fail "unbalanced tree"
+        check _ _ = fail "unbalanced tree"
+
 
 -- the remaining functions all use defaults
 
