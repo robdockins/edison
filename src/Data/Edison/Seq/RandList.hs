@@ -134,6 +134,7 @@ copy n x = if n <= 0 then E else buildTrees (1::Int) (L x)
           | otherwise = xs
 
         child (T x s t) = t
+        child _ = error "RandList.copy: bug!"
 
 lview E = fail "RandList.lview: empty sequence"
 lview (C _ (L x) xs) = return (x, xs)

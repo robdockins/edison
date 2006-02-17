@@ -145,6 +145,7 @@ copy n x
 lview E = fail "BinaryRandList.lview: empty sequence"
 lview (Even ps) = case lview ps of
                     Just ((x,y), ps') -> return (x, Odd y ps')
+                    Nothing -> error "BinaryRandList.lview: bug!"
 lview (Odd x ps) = return (x, mkEven ps)
 
 lhead E = error "BinaryRandList.lhead: empty sequence"
@@ -158,11 +159,13 @@ lheadM (Odd x ps) = return (x)
 ltail E = error "BinaryRandList.ltail: empty sequence"
 ltail (Even ps) = case lview ps of
                     Just ((x,y), ps') -> Odd y ps'
+                    Nothing -> error "BinaryRandList.ltail: bug!"
 ltail (Odd x ps) = mkEven ps
 
 ltailM E = fail "BinaryRandList.ltailM: empty sequence"
 ltailM (Even ps) = case lview ps of
                       Just ((x,y), ps') -> return (Odd y ps')
+                      Nothing -> error "BinaryRandList.ltailM: bug!"
 ltailM (Odd x ps) = return (mkEven ps)
 
 rhead E = error "BinaryRandList.rhead: empty sequence"

@@ -146,6 +146,7 @@ append xs ys = app (size xs) xs ys
             | odd n     = B x (app m a (lcons y d)) (app m b c)
             | otherwise = B x (app m a c) (app (m-1) b (lcons y d))
           where m = half n
+        app _ _ _ = error "BraunSeq.append: bug!"
   -- how does it compare to converting to/from lists?
 
 lview E = fail "BraunSeq.lview: empty sequence"
@@ -215,6 +216,7 @@ reverse xs = rev00 (size xs) xs
       | otherwise = let (x',a') = rev01 m a
                         b'      = rev10 (m-1) x b  in B x' b' a'
       where m = half n
+    rev00 _ _ = error "BraunSeq.reverse: bug!"
 
     rev11 n x E = (x,E)
     rev11 n x (B y a b)
@@ -266,13 +268,18 @@ toList t = tol [t]
                 children (B x a E : ts) = (a : leftChildren ts, [])
                 children (B x a b : ts) = (a : ts1, b : ts2)
                   where (ts1, ts2) = children ts
+                children _ = error "BraunSeq.toList: bug!"
 
                 leftChildren [] = []
                 leftChildren (B x E _ : ts) = []
                 leftChildren (B x a b : ts) = a : leftChildren ts
+                leftChildren _ = error "BraunSeq.toList: bug!"
 
                 root (B x a b) = x
+                root _ = error "BraunSeq.toList: bug!"
+
                 left (B x a b) = a
+                left _ = error "BraunSeq.toList: bug!"
 
 map f E = E
 map f (B x a b) = B (f x) (map f a) (map f b)

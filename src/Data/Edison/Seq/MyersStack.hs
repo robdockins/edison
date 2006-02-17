@@ -109,6 +109,7 @@ data Seq a = E | C !Int a (Seq a) (Seq a)
 
 -- auxiliary function
 jump (C _ _ _ (C _ _ _ xs')) = xs'
+jump _ = error "MyersStack.jump: bug!"
 
 empty = E
 single x = C 1 x E E

@@ -354,6 +354,7 @@ maxView' (H2 x a xs) =
     if y > z then (makeH2 x a' xs, y) else (H2 x a xs', z)
   where (a', y) = maxView' a
         (xs', z) = maxView' xs
+maxView' E = error "LazyPairingHeap.maxView': bug!"
 
 maxElem :: Ord a => Heap a -> a
 maxElem E = error "LazyPairingHeap.maxElem: empty heap"
@@ -478,6 +479,7 @@ instance (Ord a, Arbitrary a) => Arbitrary (Heap a) where
 
           siftInto x (H1 _ a) = sift1 x a
           siftInto x (H2 _ a b) = sift x a b
+          siftInto x E = error "LazyPairingHeap.arbitrary: bug!"
 
   coarbitrary E = variant 0
   coarbitrary (H1 x a) = variant 1 . coarbitrary x . coarbitrary a

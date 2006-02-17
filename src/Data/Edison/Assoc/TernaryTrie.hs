@@ -147,6 +147,7 @@ lookupFMB nk@(x:xs) (I _ k v l m@(FMB' fmbm) r)
 listToFMB :: [k] -> (Maybe v -> Maybe v) -> FMB k v
 listToFMB [x]    fv = mkFMB x (fv Nothing) E (FMB' E)                 E
 listToFMB (x:xs) fv = mkFMB x Nothing      E (FMB' $ listToFMB xs fv) E
+listToFMB _ _ = error "TernaryTrie.listToFMB: bug!"
 
 addToFMB :: (Ord k) => [k] -> (Maybe v -> Maybe v) -> FMB k v -> FMB k v
 addToFMB xs combiner E
@@ -158,6 +159,7 @@ addToFMB nk@(x:xs) combiner (I size k v l m@(FMB' fmbm) r)
         EQ -> case xs of
                 [] -> I size k (combiner v) l m r
                 _  -> I size k v l (FMB' $ addToFMB xs combiner fmbm) r
+addToFMB _ _ _ = error "TernaryTrie.addToFMB: bug!"
 
 addToFM :: (Ord k) => [k] -> (Maybe v -> Maybe v) -> FM k v -> FM k v
 addToFM [] combiner (FM n fmb)
@@ -178,6 +180,7 @@ delFromFMB nk@(x:xs) (I size k v l m@(FMB' fmbm) r)
                         E -> appendFMB l r
                         _ -> I size k Nothing l m r
                 _  -> I size k v l (FMB' $ delFromFMB xs fmbm) r
+delFromFMB _ _ = error "TernaryTrie.delFromFMB: bug!"
 
 
 delFromFM :: (Ord k) => [k] -> FM k v -> FM k v
@@ -198,6 +201,8 @@ mkBalancedFMB k v l m r
                 -> single_L l m r
             | otherwise
                 -> double_L l m r
+        _ -> error "TernaryTrie.mkBalancedFMB: bug!"
+
   | size_l > balance * size_r   -- Left tree too big
     = case l of
         I _ _ _ ll _ lr
@@ -205,6 +210,8 @@ mkBalancedFMB k v l m r
                 -> single_R l m r
             | otherwise
                 -> double_R l m r
+        _ -> error "TernaryTrie.mkBalancedFMB: bug!"
+
   | otherwise                           -- No imbalance
     = mkFMB k v l m r
   where
@@ -213,15 +220,19 @@ mkBalancedFMB k v l m r
 
         single_L l m (I _ k_r v_r rl rm rr)
           = mkFMB k_r v_r (mkFMB k v l m rl) rm rr
+        single_L _ _ _ = error "TernaryTrie:mkBalancedFMB: bug!"
 
         double_L l m (I _ k_r v_r (I _ k_rl v_rl rll rlm rlr) rm rr)
           = mkFMB k_rl v_rl (mkFMB k v l m rll) rlm (mkFMB k_r v_r rlr rm rr)
+        double_L _ _ _ = error "TernaryTrie:mkBalancedFMB: bug!"
 
         single_R (I _ k_l v_l ll lm lr) m r
           = mkFMB k_l v_l ll lm (mkFMB k v lr m r)
+        single_R _ _ _ = error "TernaryTrie:mkBalancedFMB: bug!"
 
         double_R (I _ k_l v_l ll lm (I _ k_lr v_lr lrl lrm lrr)) m r
           = mkFMB k_lr v_lr (mkFMB k_l v_l ll lm lrl) lrm (mkFMB k v lrr m r)
+        double_R _ _ _ = error "TernaryTrie:mkBalancedFMB: bug!"
 
 
 mkVBalancedFMB :: k -> Maybe v -> FMB k v -> FMB' k v -> FMB k v -> FMB k v

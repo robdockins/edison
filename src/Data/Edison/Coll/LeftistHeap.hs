@@ -403,6 +403,7 @@ instance (Ord a, Arbitrary a) => Arbitrary (Heap a) where
                 L r y (sift (L r' x a b)) c
           sift (L r x a (L r' y b c)) =
                 L r y a (sift (L r' x b c))
+          sift _ = error "LeftistHeap.arbitrary: bug!"
 
   coarbitrary E = variant 0
   coarbitrary (L _ x a b) = 
