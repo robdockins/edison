@@ -239,8 +239,7 @@ unzipWith f g (N n xys) = (N n xs, N n ys)
 unzipWith3 f g h (N n xyzs) = (N n xs, N n ys, N n zs)
   where (xs,ys,zs) = S.unzipWith3 f g h xyzs
 
--- FIXME what are the structural invariants?
-structuralInvariant = const True
+structuralInvariant (N i s) = i == S.size s
 
 -- instances
 

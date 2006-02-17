@@ -250,8 +250,10 @@ unzip3 = unzip3UsingLists
 unzipWith = unzipWithUsingLists
 unzipWith3 = unzipWith3UsingLists
 
--- FIXME what are the structural invariant?
-structuralInvariant = const True
+-- invariant: 
+--   * front empty only if rear also empty
+
+structuralInvariant (Q x y) = not (L.null x) || L.null y
 
 -- instances
 

@@ -245,8 +245,15 @@ copy n x
           | otherwise = let xs = cpy (half n) x
                         in A (L x) (A xs xs)
 
--- FIXME what are the structural invariants ?
-structuralInvariant = const True
+-- invariants:
+--   * 'E' is never a child of 'A'
+
+structuralInvariant E = True
+structuralInvariant s = check s
+  where check E = False
+        check (L _) = True
+        check (A s1 s2) = check s1 && check s2
+
 
 concat = concatUsingFoldr
 reverseOnto = reverseOntoUsingReverse

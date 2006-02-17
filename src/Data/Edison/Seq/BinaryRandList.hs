@@ -275,7 +275,7 @@ drop n xs = if n <= 0 then xs else drp n xs
           | odd i = mkEven (drp (half (i-1)) ps)
           | otherwise = fromMaybe empty (ltailM (mkEven (drp (half (i-1)) ps)))
 
--- FIXME what are the structural invariants?
+-- structural invariants are enforced by the type system
 structuralInvariant = const True
 
 -- the remaining functions all use defaults

@@ -332,8 +332,25 @@ unzip3 = unzip3UsingLists
 unzipWith = unzipWithUsingLists
 unzipWith3 = unzipWith3UsingLists
 
--- FIXME what are the structural invariants?
-structuralInvariant = const True
+-- invariants: 
+--   * list of complete binary trees in non-decreasing
+--     order by size
+--   * first argument to 'C' is the number
+--     of nodes in the tree
+
+structuralInvariant E = True
+structuralInvariant (C x t s) = x > 0 && checkTree x t && checkSeq x s
+
+   where checkTree 1 (L _) = True
+         checkTree w (T _ l r) = 
+             let w' = (w - 1) `div` 2 
+             in w' > 0 && checkTree w' l && checkTree w' r
+         checkTree _ _ = False
+
+         checkSeq x E = True
+         checkSeq x (C y t s) = 
+	     x <= y && checkTree y t && checkSeq y s
+
 
 -- instances
 
