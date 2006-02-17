@@ -12,8 +12,8 @@ import Data.Edison.Test.FM
 
 edisonTests :: Test
 edisonTests = TestList $
-  [ TestLabel "finite map tests" allFMTests
-  , TestLabel "set tests"        allSetTests
+  [ TestLabel "sequence tests"   allSequenceTests
   , TestLabel "bag tests"        allBagTests
-  , TestLabel "sequence tests"   allSequenceTests
+  , TestLabel "set tests"        allSetTests
+  , TestLabel "finite map tests" allFMTests
   ]
