@@ -123,17 +123,28 @@ seqTests seq = TestLabel ("Sequence test "++(instanceName seq)) . TestList $
   , qcTest $ prop_concatMap seq
   ]
 
+(===) :: (Eq (seq a),Sequence seq) => seq a -> seq a -> Bool
+(===) s1 s2 = 
+    structuralInvariant s1 
+    &&
+    structuralInvariant s2
+    &&
+    s1 == s2
+
+si :: Sequence seq => seq a -> Bool
+si = structuralInvariant
+
 
 ---------------------------------------------------
 -- Properties to check
 
 prop_equals :: SeqTest Int seq => seq Int -> seq Int -> seq Int -> Bool
 prop_equals seq xs ys =
-    (xs == ys) == (toList xs == toList ys)
+    si xs && si ys && (xs == ys) == (toList xs == toList ys)
 
 prop_fromList :: SeqTest Int seq => seq Int -> [Int] -> Bool
 prop_fromList seq xs =
-    fromList xs == (Prelude.foldr lcons empty xs `asTypeOf` seq)
+    fromList xs === (Prelude.foldr lcons empty xs `asTypeOf` seq)
     &&
     toList (fromList xs `asTypeOf` seq) == xs
 
@@ -141,19 +152,19 @@ prop_toList :: SeqTest Int seq => seq Int -> seq Int -> Bool
 prop_toList seq xs =
     toList xs == foldr (:) [] xs
     &&
-    fromList (toList xs) == xs
+    fromList (toList xs) === xs
 
 
 prop_single :: SeqTest Int seq => seq Int -> Int -> Bool
 prop_single seq x =
-    toList (single x `asTypeOf` seq) == [x]
-
+    let xs = single x `asTypeOf` seq
+     in si xs && toList xs == [x]
 
 prop_lcons_rcons :: SeqTest Int seq => seq Int -> Int -> seq Int -> Bool
 prop_lcons_rcons seq x xs =
-    lcons x xs == append (single x) xs
+    lcons x xs === append (single x) xs
     &&
-    rcons xs x == append xs (single x)
+    rcons xs x === append xs (single x)
 
 
 prop_lview_rview :: SeqTest Int seq => seq Int -> seq Int -> Bool
@@ -172,32 +183,49 @@ prop_lhead_rhead seq xs =
 prop_ltail_rtail :: SeqTest Int seq => seq Int -> seq Int -> Property
 prop_ltail_rtail seq xs =
     not (null xs) ==>
-      toList (ltail xs) == Prelude.tail (toList xs)
-      &&
-      toList (rtail xs) == Prelude.init (toList xs)
+      let xs_ltail = ltail xs
+          xs_rtail = rtail xs
+       in si xs_ltail 
+          &&
+          si xs_rtail
+          &&
+          toList xs_ltail == Prelude.tail (toList xs)
+          &&
+          toList xs_rtail == Prelude.init (toList xs)
 
 prop_append :: SeqTest Int seq => seq Int -> seq Int -> seq Int -> Bool
 prop_append seq xs ys =
-    toList (append xs ys) == toList xs ++ toList ys
+    let xys = append xs ys
+     in si xys
+        &&
+        toList (append xs ys) == toList xs ++ toList ys
 
 prop_null_size :: SeqTest Int seq => seq Int -> seq Int -> Bool
 prop_null_size seq xs =
+    si xs
+    &&
     null xs == (size xs == 0)
     &&
     size xs == Prelude.length (toList xs)
 
 prop_reverse :: SeqTest Int seq => seq Int -> seq Int -> Bool
 prop_reverse seq xs =
-    toList (reverse xs) == Prelude.reverse (toList xs)
+    let rev_xs = reverse xs
+     in si rev_xs
+        &&
+        toList (rev_xs) == Prelude.reverse (toList xs)
 
 prop_reverseOnto :: SeqTest Int seq => seq Int -> seq Int -> seq Int -> Bool
 prop_reverseOnto seq xs ys =
-    reverseOnto xs ys == append (reverse xs) ys
+    reverseOnto xs ys === append (reverse xs) ys
 
 
 prop_map :: SeqTest Int seq => seq Int -> seq Int -> Bool
 prop_map seq xs =
-    toList (map (+1) xs) == Prelude.map (+1) (toList xs)
+    let succ_xs = map (+1) xs
+     in si succ_xs
+        &&
+       toList succ_xs == Prelude.map (+1) (toList xs)
 
 prop_fold :: SeqTest Int seq => seq Int -> seq Int -> Bool
 prop_fold seq xs =
@@ -215,14 +243,14 @@ prop_fold1 seq xs =
 
 prop_reduce :: SeqTest Int seq => seq Int -> seq Int -> Bool
 prop_reduce seq xs =
-    reducel append (single 93) (map single xs) == append (single 93) xs
+    reducel append (single 93) (map single xs) === append (single 93) xs
     &&
-    reducer append (single 93) (map single xs) == append xs (single 93)
+    reducer append (single 93) (map single xs) === append xs (single 93)
 
 prop_reduce1 :: SeqTest Int seq => seq Int -> seq Int -> Property
 prop_reduce1 seq xs =
     not (null xs) ==>
-      reduce1 append (map single xs) == xs
+      reduce1 append (map single xs) === xs
 
 
 prop_inBounds_lookup :: SeqTest Int seq => seq Int -> Int -> seq Int -> Bool
@@ -248,13 +276,17 @@ prop_update_adjust seq i xs =
           zs = drop (i+1) xs
           x = lookup xs i
       in
+        si ys 
+        &&
+        si zs
+        &&
         update i 99 xs == append ys (lcons 99 zs)
         &&
         adjust (+1) i xs == append ys (lcons (x+1) zs)
     else
-      update i 99 xs == xs
+      update i 99 xs === xs
       &&
-      adjust (+1) i xs == xs
+      adjust (+1) i xs === xs
 
 prop_withIndex :: SeqTest Int seq => seq Int -> seq Int -> Bool
 prop_withIndex seq xs =
@@ -271,13 +303,13 @@ prop_take_drop_splitAt :: SeqTest Int seq => seq Int -> Int -> seq Int -> Bool
 prop_take_drop_splitAt seq n xs =
     size (take n xs) == max 0 (min n (size xs))
     &&
-    append (take n xs) (drop n xs) == xs
+    append (take n xs) (drop n xs) === xs
     &&
     splitAt n xs == (take n xs, drop n xs)
 
 prop_subseq :: SeqTest Int seq => seq Int -> Int -> Int -> seq Int -> Bool
 prop_subseq seq i len xs =
-    subseq i len xs == take len (drop i xs)
+    subseq i len xs === take len (drop i xs)
 
 prop_filter_takeWhile_dropWhile :: SeqTest Int seq =>
 	seq Int -> Int -> seq Int -> Bool
@@ -321,6 +353,10 @@ prop_unzip_unzipWith :: (SeqTest Int seq,SeqTest (Int,Int) seq) =>
 	seq Int -> seq (Int,Int) -> Bool
 
 prop_unzip_unzipWith seq xys =
+    si xs
+    &&
+    si ys
+    &&
     unzip xys == (xs, ys)
     &&
     unzipWith fst snd xys == (xs, ys)
@@ -332,6 +368,12 @@ prop_unzip3_unzipWith3 :: (SeqTest Int seq,SeqTest (Int,Int,Int) seq) =>
 	seq Int -> seq (Int,Int,Int) -> Bool
 
 prop_unzip3_unzipWith3 seq xyzs =
+    si xs
+    &&
+    si ys
+    &&
+    si zs
+    &&
     unzip3 xyzs == (xs, ys, zs)
     &&
     unzipWith3 fst3 snd3 thd3 xyzs == (xs, ys, zs)
@@ -346,7 +388,7 @@ prop_unzip3_unzipWith3 seq xyzs =
 
 prop_concat :: (SeqTest (seq Int) seq,SeqTest Int seq) => seq Int -> Property
 prop_concat seq = forAll (genss seq) $
-	\xss -> concat xss == foldr append empty xss
+	\xss -> concat xss === foldr append empty xss
 
 
 genss :: (SeqTest (seq Int) seq,SeqTest Int seq) =>
@@ -360,5 +402,5 @@ prop_concatMap :: (SeqTest (seq Int) seq, SeqTest Int seq) =>
 	seq Int -> seq Int -> Property
 
 prop_concatMap seq xs = forAll (genss seq) check
-  where check xss = concatMap f xs == concat (map f xs)
+  where check xss = concatMap f xs === concat (map f xs)
             where f = lookupWithDefault empty xss
