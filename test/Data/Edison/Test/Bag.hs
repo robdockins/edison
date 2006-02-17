@@ -104,44 +104,70 @@ lmerge xs@(x:xs') ys@(y:ys')
   | otherwise = y : lmerge xs ys'
 
 
+(===) :: (Eq (bag a),CollX (bag a) a) => bag a -> bag a -> Bool
+(===) b1 b2 = 
+    structuralInvariant b1
+    &&
+    structuralInvariant b2
+    &&
+    b1 == b2
+
+si :: CollX (bag a) a => bag a -> Bool
+si = structuralInvariant
+
 -----------------------------------------------------
 -- CollX operations
 
 prop_single :: BagTest Int bag => bag Int -> Int -> Bool
 prop_single bag x =
-    toOrdList (single x `asTypeOf` bag) == [x]
+    let xs = single x `asTypeOf` bag
+     in si xs
+        &&
+        toOrdList xs == [x]
 
 prop_fromSeq :: BagTest Int bag => bag Int -> Seq Int -> Bool
 prop_fromSeq bag xs =
-    fromSeq xs `asTypeOf` bag == S.foldr insert empty xs
+    fromSeq xs `asTypeOf` bag === S.foldr insert empty xs
 
 prop_insert :: BagTest Int bag => bag Int -> Int -> bag Int -> Bool
 prop_insert bag x xs =
-    toOrdList (insert x xs) == List.insert x (toOrdList xs)
+    let x_xs = insert x xs
+     in si x_xs
+        &&
+        toOrdList x_xs == List.insert x (toOrdList xs)
 
 prop_insertSeq :: BagTest Int bag => bag Int -> Seq Int -> bag Int -> Bool
 prop_insertSeq bag xs ys =
-    insertSeq xs ys == union (fromSeq xs) ys
+    insertSeq xs ys === union (fromSeq xs) ys
 
 prop_union :: BagTest Int bag => bag Int -> bag Int -> bag Int -> Bool
 prop_union bag xs ys =
-    toOrdList (union xs ys) == lmerge (toOrdList xs) (toOrdList ys)
+    let xys = union xs ys
+     in si xys
+        &&
+        toOrdList xys == lmerge (toOrdList xs) (toOrdList ys)
 
 prop_unionSeq :: BagTest Int bag => bag Int -> Seq (bag Int) -> Bool
 prop_unionSeq bag xss =
-    unionSeq xss == S.foldr union empty xss
+    unionSeq xss === S.foldr union empty xss
 
 prop_delete :: BagTest Int bag => bag Int -> Int -> bag Int -> Bool
 prop_delete bag x xs =
-    toOrdList (delete x xs) == List.delete x (toOrdList xs)
+    let del_x_xs = delete x xs
+     in si del_x_xs
+        &&
+        toOrdList del_x_xs == List.delete x (toOrdList xs)
 
 prop_deleteAll :: BagTest Int bag => bag Int -> Int -> bag Int -> Bool
 prop_deleteAll bag x xs =
-    toOrdList (deleteAll x xs) == Prelude.filter (/= x) (toOrdList xs)
+    let del_x_xs = deleteAll x xs
+     in si del_x_xs
+        &&
+        toOrdList del_x_xs == Prelude.filter (/= x) (toOrdList xs)
 
 prop_deleteSeq :: BagTest Int bag => bag Int -> Seq Int -> bag Int -> Bool
 prop_deleteSeq bag xs ys =
-    deleteSeq xs ys == S.foldr delete ys xs
+    deleteSeq xs ys === S.foldr delete ys xs
 
 prop_null_size :: BagTest Int bag => bag Int -> bag Int -> Bool
 prop_null_size bag xs =
@@ -188,9 +214,15 @@ prop_fold bag xs =
 
 prop_filter_partition :: BagTest Int bag => bag Int -> bag Int -> Bool
 prop_filter_partition bag xs =
-    toOrdList (filter p xs) == Prelude.filter p (toOrdList xs)
-    &&
-    partition p xs == (filter p xs, filter (not . p) xs)
+    let filter_p_xs = filter p xs
+        filter_not_p_xs = filter (not . p) xs
+     in si filter_p_xs
+        &&
+        si filter_not_p_xs
+        &&
+        toOrdList filter_p_xs == Prelude.filter p (toOrdList xs)
+        &&
+        partition p xs == (filter_p_xs, filter_not_p_xs)
   where p x = x `mod` 3 == 2
 
 
@@ -199,40 +231,60 @@ prop_filter_partition bag xs =
 
 prop_deleteMin_Max :: BagTest Int bag => bag Int -> bag Int -> Bool
 prop_deleteMin_Max bag xs =
-    toOrdList (deleteMin xs) == (let l = toOrdList xs 
-                                 in if L.null l then L.empty else L.ltail l)
-    &&
-    toOrdList (deleteMax xs) == (let l = toOrdList xs
-                                 in if L.null l then L.empty else L.rtail l)
+    let deleteMin_xs = deleteMin xs
+        deleteMax_xs = deleteMax xs
+     in si deleteMin_xs
+        &&
+        si deleteMax_xs
+        &&
+        toOrdList (deleteMin xs) == 
+                (let l = toOrdList xs 
+                  in if L.null l then L.empty else L.ltail l)
+        &&
+        toOrdList (deleteMax xs) == 
+                (let l = toOrdList xs
+                  in if L.null l then L.empty else L.rtail l)
 
 prop_unsafeInsertMin_Max :: BagTest Int bag => 
 	bag Int -> Int -> bag Int -> Bool
 prop_unsafeInsertMin_Max bag i xs =
     if null xs then
-      unsafeInsertMin 0 xs == single 0
+      unsafeInsertMin 0 xs === single 0
       &&
-      unsafeInsertMax 0 xs == single 0
+      unsafeInsertMax 0 xs === single 0
     else
-      unsafeInsertMin lo xs == insert lo xs
+      unsafeInsertMin lo xs === insert lo xs
       &&
-      unsafeInsertMax hi xs == insert hi xs
+      unsafeInsertMax hi xs === insert hi xs
   where lo = minElem xs - (if odd i then 1 else 0)
         hi = maxElem xs + (if odd i then 1 else 0)
     
 prop_unsafeFromOrdSeq :: BagTest Int bag => bag Int -> [Int] -> Bool
 prop_unsafeFromOrdSeq bag xs =
-    toOrdList (unsafeFromOrdSeq xs' `asTypeOf` bag) == xs'
+    si bag1
+    &&
+    toOrdList bag1 == xs'
+
   where xs' = List.sort xs
+        bag1 = unsafeFromOrdSeq xs' `asTypeOf` bag
 
 prop_filter :: BagTest Int bag => bag Int -> Int -> bag Int -> Bool
 prop_filter bag x xs =
-    toOrdList (filterLT x xs) == Prelude.filter (< x) (toOrdList xs)
+    si bagLT && si bagLE && si bagGT && si bagGE
     &&
-    toOrdList (filterLE x xs) == Prelude.filter (<= x) (toOrdList xs)
+    toOrdList bagLT == Prelude.filter (< x) (toOrdList xs)
     &&
-    toOrdList (filterGT x xs) == Prelude.filter (> x) (toOrdList xs)
+    toOrdList bagLE == Prelude.filter (<= x) (toOrdList xs)
     &&
-    toOrdList (filterGE x xs) == Prelude.filter (>= x) (toOrdList xs)
+    toOrdList bagGT == Prelude.filter (> x) (toOrdList xs)
+    &&
+    toOrdList bagGE == Prelude.filter (>= x) (toOrdList xs)
+
+  where bagLT = filterLT x xs
+        bagLE = filterLE x xs
+        bagGT = filterGT x xs
+        bagGE = filterGE x xs
+
 
 prop_partition :: BagTest Int bag => bag Int -> Int -> bag Int -> Bool
 prop_partition bag x xs =
@@ -284,9 +336,9 @@ prop_unsafeAppend :: BagTest Int bag =>
 	bag Int -> Int -> bag Int -> bag Int -> Bool
 prop_unsafeAppend bag i xs ys =
     if null xs || null ys then
-      unsafeAppend xs ys == union xs ys
+      unsafeAppend xs ys === union xs ys
     else
-      unsafeAppend xs ys' == union xs ys'
+      unsafeAppend xs ys' === union xs ys'
   where delta = maxElem xs - minElem ys + (if odd i then 1 else 0)
         ys' = unsafeMapMonotonic (+delta) ys
   -- if unsafeMapMonotonic does any reorganizing in addition
