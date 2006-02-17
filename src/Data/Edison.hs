@@ -81,7 +81,8 @@
 --
 --   Note, however, that the various sequence implementations are always lazy
 --   in their elements.  Similarly, associative collections are always lazy in
---   their elements (but usually strict in their keys).
+--   their elements (but usually strict in their keys).  Non-associative 
+--   collections are usually strict in their elements.
 
 module Data.Edison (
 

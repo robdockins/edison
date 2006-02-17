@@ -12,11 +12,10 @@
 --
 --   All sequences are also instances of 'Functor', 'Monad', and 'MonadPlus'.
 --   In addition, all sequences are expected to be instances of 'Eq' and 'Show',
---   although this is not enforced (in fact, is not enforceable in any 
---   reasonable way).
+--   although this is not enforced.
 --
 --   We follow the naming convention that every module implementing sequences
---   defines a type constructor named Seq.
+--   defines a type constructor named @Seq@.
 --
 --   For each method the \"default\" complexity is listed.  Individual
 --   implementations may differ for some methods.  The documentation for
@@ -37,7 +36,7 @@ import Data.Edison.Prelude
 
 
 -- | The 'Sequence' class defines an interface for datatypes which
---   implement sequences.  A discription for each function is
+--   implement sequences.  A description for each function is
 --   given below.  In most cases psudeocode is also provided.
 --   Obviously, the psudeocode is illustrative only.
 --   
@@ -50,9 +49,6 @@ import Data.Edison.Prelude
 
 
 class (Functor s, MonadPlus s) => Sequence s where
-
-----------------------------------------------------------------------
--- Constructors
 
   -- | The empty sequence
   -- 
@@ -131,10 +127,8 @@ class (Functor s, MonadPlus s) => Sequence s where
   --   Default running time: @O( n )@
   copy      :: Int -> a -> s a          -- returns empty if size is negative
 
-----------------------------------------------------------------------
--- Destructors
 
-  -- | Separate a sequence into its first (leftomst) element and the
+  -- | Separate a sequence into its first (leftmost) element and the
   --   remaining sequence.  Calls 'fail' if the sequence is empty.
   --
   -- /Axioms:/
@@ -147,7 +141,7 @@ class (Functor s, MonadPlus s) => Sequence s where
   lview     :: (Monad m) => s a -> m (a, s a)
 
   -- | Return the first element of a sequence.
-  --   Signals an error if thesequence is empty.
+  --   Signals an error if the sequence is empty.
   --
   -- /Axioms:/
   --
@@ -260,9 +254,6 @@ class (Functor s, MonadPlus s) => Sequence s where
   rhead = ID.runIdentity . rheadM
   rtail = ID.runIdentity . rtailM
 
-----------------------------------------------------------------------
--- Observers
-
   -- | Returns 'True' if the sequence is empty and 'False' otherwise.
   -- 
   -- > null <x0,...,xn-1> = (n==0)
@@ -299,9 +290,6 @@ class (Functor s, MonadPlus s) => Sequence s where
   --
   --   Default running time: @O( n )@
   toList    :: s a -> [a]
-
-----------------------------------------------------------------------
--- Concat and revers
 
   -- | Flatten a sequence of sequences into a simple sequence.
   --
@@ -340,9 +328,6 @@ class (Functor s, MonadPlus s) => Sequence s where
   --   Default running time: @O( n )@
   reverseOnto  :: s a -> s a -> s a
 
-----------------------------------------------------------------------
--- Maps and folds
-
   -- | Return the result of applying a function to
   --   every element of a sequence.
   --
@@ -375,8 +360,8 @@ class (Functor s, MonadPlus s) => Sequence s where
   concatMap  :: (a -> s b) -> s a -> s b
 
   -- | Combine all the elements of a sequence into a single value,
-  --   given a right-associative combining function and an intial
-  --   value.
+  --   given a combining function and an intial value.  The function
+  --   is applied with right nesting.
   -- 
   -- > foldr (+) c <x0,...,xn-1> = x0 + (x1 + ... + (xn-1 + c))
   --
@@ -391,8 +376,8 @@ class (Functor s, MonadPlus s) => Sequence s where
   foldr     :: (a -> b -> b) -> b -> s a -> b
 
   -- | Combine all the elements of a sequence into a single value,
-  --   given a left-associative combining function and an initial
-  --   value.
+  --   given a combining function and an initial value.  The function
+  --   is applied with left nesting.
   --
   -- > foldl (+) c <x0,...,xn-1> = ((c + x0) + x1) + ... + xn-1
   --
@@ -407,8 +392,9 @@ class (Functor s, MonadPlus s) => Sequence s where
   foldl     :: (b -> a -> b) -> b -> s a -> b
 
   -- | Combine all the elements of a non-empty sequence into a
-  --   single value, given a right-associative combining function.
-  --   Signals an error if the sequence is empty.
+  --   single value, given a combining function.  The function
+  --   is applied with right nesting. Signals an error if the
+  --   sequence is empty.
   -- 
   -- > foldr1 (+) <x0,...,xn-1>
   -- >   | n==0 = error "ModuleName.foldr1: empty sequence"
@@ -425,8 +411,9 @@ class (Functor s, MonadPlus s) => Sequence s where
   foldr1    :: (a -> a -> a) -> s a -> a  
 
   -- | Combine all the elements of a non-empty sequence into
-  --   a single value, given a left-associative combining function.
-  --   Signals error if sequence is empty.
+  --   a single value, given a combining function.  The function
+  --   is applied with left nesting. Signals an error if the
+  --   sequence is empty.
   --
   -- > foldl1 (+) <x0,...,xn-1>
   -- >  | n==0 = error "ModuleName.foldl1: empty sequence"
@@ -508,9 +495,6 @@ class (Functor s, MonadPlus s) => Sequence s where
   --     where @t@ is the running time of @f@
   reduce1   :: (a -> a -> a) -> s a -> a  
 
-----------------------------------------------------------------------
--- Subsequences
-
   -- | Extract a prefix of length @i@ from the sequence.  Return
   --   'empty' if @i@ is negative, or the entire sequence if @i@
   --   is too large.
@@ -577,9 +561,6 @@ class (Functor s, MonadPlus s) => Sequence s where
   --
   --   Default running time: @O( i + len )@
   subseq      :: Int -> Int -> s a -> s a
-
-----------------------------------------------------------------------
--- Predicate-based operations
 
   -- | Extract the elements of a sequence that satify the
   --   given predicate, retaining the relative ordering of
@@ -663,11 +644,8 @@ class (Functor s, MonadPlus s) => Sequence s where
   --     where @t@ is the running time of @p@
   splitWhile  :: (a -> Bool) -> s a -> (s a, s a)
 
-
-----------------------------------------------------------------------
--- Index-based operations (zero-based)
-
-  -- | Test whether an index is valid for the given sequence.
+  -- | Test whether an index is valid for the given sequence. All indexes
+  --   are 0 based.
   --
   -- > inBounds <x0,...,xn-1> i = (0 <= i && i < n)
   --
@@ -678,8 +656,8 @@ class (Functor s, MonadPlus s) => Sequence s where
   --   Default running time: @O( i )@
   inBounds  :: s a -> Int -> Bool
 
-  -- | Return the element at the given index.  
-  --   Signals error if the index out of bounds
+  -- | Return the element at the given index.  All indexes are 0 based.
+  --   Signals error if the index out of bounds.
   --
   -- > lookup xs@<x0,...,xn-1> i 
   -- >   | inBounds xs = xi
@@ -694,7 +672,7 @@ class (Functor s, MonadPlus s) => Sequence s where
   --   Default running time: @O( i )@
   lookup    :: s a -> Int -> a
 
-  -- | Return the element at the given index.
+  -- | Return the element at the given index.  All indexes are 0 based.
   --   Calls 'fail' if the index is out of bounds.
   --
   -- > lookupM xs@<x0,...,xn-1> i 
@@ -711,7 +689,8 @@ class (Functor s, MonadPlus s) => Sequence s where
   lookupM   :: (Monad m) => s a -> Int -> m a
 
   -- | Return the element at the given index, or the
-  --   default argument if the index is out of bounds.
+  --   default argument if the index is out of bounds.  All indexes are
+  --   0 based.
   --
   -- > lookupWithDefault d xs@<x0,...,xn-1> i 
   -- >   | inBounds xs = xi
@@ -730,6 +709,7 @@ class (Functor s, MonadPlus s) => Sequence s where
 
   -- | Replace the element at the given index, or return
   --   the original sequence if the index is out of bounds.
+  --   All indexes are 0 based.
   -- 
   -- > update i y xs@<x0,...,xn-1>
   -- >   | inBounds xs = <x0,...xi-1,y,xi+1,...,xn-1>
@@ -747,6 +727,7 @@ class (Functor s, MonadPlus s) => Sequence s where
 
   -- | Apply a function to the element at the given index, or
   --   return the original sequence if the index is out of bounds.
+  --   All indexes are 0 based.
   -- 
   -- > adjust f i xs@<x0,...,xn-1>
   -- >   | inBounds xs = <x0,...xi-1,f xi,xi+1,...,xn-1>
@@ -764,6 +745,7 @@ class (Functor s, MonadPlus s) => Sequence s where
   adjust    :: (a -> a) -> Int -> s a -> s a -- map a single element
 
   -- | Like 'map', but include the index with each element.
+  --   All indexes are 0 based.
   --
   -- > mapWithIndex f <x0,...,xn-1> = <f 0 x0,...,f (n-1) xn-1>
   --
@@ -778,6 +760,7 @@ class (Functor s, MonadPlus s) => Sequence s where
   mapWithIndex    :: (Int -> a -> b) -> s a -> s b
 
   -- | Like 'foldr', but include the index with each element.
+  --   All indexes are 0 based.
   --
   -- > foldrWithIndex f c <x0,...,xn-1> = 
   -- >     f 0 x0 (f 1 x1 (... (f (n-1) xn-1 c)))
@@ -794,6 +777,7 @@ class (Functor s, MonadPlus s) => Sequence s where
   foldrWithIndex  :: (Int -> a -> b -> b) -> b -> s a -> b
 
   -- | Like 'foldl', but include the index with each element.
+  --   All indexes are 0 based.
   --
   -- > foldlWithIndex f c <x0,...,xn-1> =
   -- >     f (...(f (f c 0 x0) 1 x1)...) (n-1) xn-1)
@@ -927,9 +911,7 @@ class (Functor s, MonadPlus s) => Sequence s where
 
   -- | A method to faciliate unit testing.  Returns 'True' if the structural
   --   invariants of the implementation hold for the given sequence.  If
-  --   this function returns 'False', it represents a bug.   Generally, either
-  --   the implementation itself is flawed, or an unsafe operation has been
-  --   used while violating the preconditions.
+  --   this function returns 'False', it represents a bug in the implementation.
   structuralInvariant :: s a -> Bool
 
   -- | The name of the module implementing s.
@@ -969,3 +951,4 @@ class AsSequence t s | t -> s where
 instance (Sequence s) => AsSequence s s where
     asSequence = id
 -}
+

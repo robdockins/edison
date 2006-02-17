@@ -4,18 +4,20 @@
 -- | The /associative collection/ abstraction includes finite maps, finite
 --   relations, and priority queues where the priority is separate from the
 --   element.  Associative collections are defined in Edison as a set of eight
---   classes, organized in the hierarchy shown here FIXME.  Notice that this
+--   classes, organized in the hierarchy shown here FIXME.
+--
+--   Note that this
 --   hierarchy mirrors the hierarchy for collections, but with the addition
 --   of 'Functor' as a superclass of every associative collection.
 
-module Data.Edison.Assoc ( -- associative collections
-    -- * Non-observable classes
+module Data.Edison.Assoc (
+    -- * Non-observable associative collections
     AssocX(..),
     OrdAssocX(..),
     FiniteMapX(..),
     OrdFiniteMapX,
 
-    -- * Observable classes
+    -- * Observable associative collections
     Assoc(..),
     OrdAssoc(..),
     FiniteMap(..),
@@ -48,6 +50,7 @@ import Data.Edison.Prelude
 import Data.Edison.Seq(Sequence)
 import Data.Edison.Seq.ListSeq()
 
+-- | The root class of the associative collection hierarchy.
 class (Eq k,Functor m) => AssocX m k | m -> k where
 
   -- | The empty associative collection.
@@ -87,8 +90,8 @@ class (Eq k,Functor m) => AssocX m k | m -> k where
   deleteAll      :: k -> m a -> m a
 
   -- | Delete a single occurance of each of the given keys from an associative
-  --   collection.  For bag-like associtive collections, it is unspecified which
-  --   binding will be removed.
+  --   collection.  For bag-like associative collections containing duplicate keys,
+  --   it is unspecified which bindings will be removed.
   deleteSeq      :: Sequence seq => seq k -> m a -> m a
 
   -- | Test whether the associative collection is empty.
@@ -104,8 +107,8 @@ class (Eq k,Functor m) => AssocX m k | m -> k where
   -- | Test whether the given key is bound in the associative collection.
   member         :: k -> m a -> Bool
  
-  -- | Returns the number of bindings with the given key.  For set-like 
-  --   associative collections, this will always return 0 or 1.
+  -- | Returns the number of bindings with the given key.  For finite maps
+  --   this will always return 0 or 1.
   count          :: k -> m a -> Int
 
   -- | Find the element associated with the given key.  Signals an error if
@@ -155,7 +158,7 @@ class (Eq k,Functor m) => AssocX m k | m -> k where
   --   ignores the keys.
   fold1          :: (a -> a -> a) -> m a -> a
 
-  -- | Extract all bindings whose elements satify the given predicate.
+  -- | Extract all bindings whose elements satisfy the given predicate.
   filter         :: (a -> Bool) -> m a -> m a
  
   -- | Split an associative collection into those bindings which satisfy the
@@ -168,8 +171,8 @@ class (Eq k,Functor m) => AssocX m k | m -> k where
 
   -- | A method to facilitate unit testing.  Returns 'True' if the structural
   --   invariants of the implementation hold for the given associative
-  --   collection.  If this function returns 'False', it represents a bug.
-  --   Generally, either the implementation itself is flawed, or an unsafe
+  --   collection.  If this function returns 'False', it represents a bug;
+  --   generally, either the implementation itself is flawed, or an unsafe
   --   operation has been used while violating the preconditions.
   structuralInvariant :: m a -> Bool
 
@@ -200,10 +203,10 @@ class (AssocX m k, Ord k) => OrdAssocX m k | m -> k where
   --   For finite maps, this precondition is strengthened to @\<@.
   unsafeInsertMin    :: k -> a -> m a -> m a
 
-  -- | Remove the biniding with the maximum key, and return its element together
+  -- | Remove the binding with the maximum key, and return its element together
   --   with the remaining associative collection.  Calls 'fail' if the
   --   associative collection is empty.  Which binding is removed if there
-  --   is more than one maxmimum is unspecified.
+  --   is more than one maximum is unspecified.
   maxView            :: (Monad rm) => m a -> rm (a, m a)
 
   -- | Find the binding with the maximum key and return its element.  Signals
@@ -216,7 +219,7 @@ class (AssocX m k, Ord k) => OrdAssocX m k | m -> k where
   deleteMax          :: m a -> m a
 
   -- | Insert a binding into an associative collection with the precondition
-  --   that the given key is @>=@ any existing keys alread in the collection.
+  --   that the given key is @>=@ any existing keys already in the collection.
   --   For finite maps, this precondition is strengthened to @>@.
   unsafeInsertMax    :: k -> a -> m a -> m a
 
@@ -236,9 +239,9 @@ class (AssocX m k, Ord k) => OrdAssocX m k | m -> k where
   --   increasing.
   foldr1             :: (a -> a -> a) -> m a -> a
 
-  -- | Fold across the elements of an associative collction in non-decreasing
+  -- | Fold across the elements of an associative collection in non-decreasing
   --   order by key with left associativity.  Signals an error if the 
-  --   associative collction is empty.  For finite maps, the order is
+  --   associative collection is empty.  For finite maps, the order is
   --   increasing.
   foldl1             :: (a -> a -> a) -> m a -> a
 
@@ -250,7 +253,7 @@ class (AssocX m k, Ord k) => OrdAssocX m k | m -> k where
 
   -- | Merge two associative collections with the precondition that every key
   --   in the first associative collection is @\<=@ every key in the second
-  --   associative collction.  For finite maps, this precondition is
+  --   associative collection.  For finite maps, this precondition is
   --   strengthened to @\<@.
   unsafeAppend       :: m a -> m a -> m a
 
@@ -266,15 +269,15 @@ class (AssocX m k, Ord k) => OrdAssocX m k | m -> k where
   -- | Extract all bindings whose keys are @>=@ the given key.
   filterGE           :: k -> m a -> m a
 
-  -- | Split an associative collection into two subcollections, containing
+  -- | Split an associative collection into two sub-collections, containing
   --   those bindings whose keys are @\<@ the given key and those which are @>=@.  
   partitionLT_GE     :: k -> m a -> (m a, m a)
 
-  -- | Split an associative collection into two subcollections, containing
+  -- | Split an associative collection into two sub-collections, containing
   --   those bindings whose keys are @\<=@ the given key and those which are @>@.
   partitionLE_GT     :: k -> m a -> (m a, m a)
 
-  -- | Split an associative collection into two subcollections, containing
+  -- | Split an associative collection into two sub-collections, containing
   --   those bindings whose keys are @\<@ the given key and those which are @>@.
   --   All bindings with keys equal to the given key are discarded.
   partitionLT_GT     :: k -> m a -> (m a, m a)
@@ -284,7 +287,7 @@ class (AssocX m k, Ord k) => OrdAssocX m k | m -> k where
 --
 --   /WARNING: each of the following \"with\" functions is unsafe/.
 --   The passed in combining functions are used to choose which element is kept
---   in the case of duplicates.  They are required to satify the precondition
+--   in the case of duplicates.  They are required to satisfy the precondition
 --   that, given two equal elements, they return a third element equal to the
 --   other two.  Usually, the combining function just returns its first or second
 --   argument, but it can combine elements in non-trivial ways.
@@ -338,7 +341,11 @@ class AssocX m k => FiniteMapX m k | m -> k where
   -- | Same as 'unionSeq', but with a combining function to resolve duplicates.
   unionSeqWith       :: Sequence seq => (a -> a -> a) -> seq (m a) -> m a
 
-  -- | Same as 'intersect', but with a combining function to resolve duplicates.
+  -- | Compute the intersection of two finite maps.  The resulting finite map
+  --   will contain bindings where the keys are the set intersection of the
+  --   keys in the argument finite maps.  The combining function computes
+  --   the value of the element given the bound elements from the argument
+  --   finite maps.
   intersectWith      :: (a -> b -> c) -> m a -> m b -> m c
 
   -- | Computes the difference of two finite maps; that is, all bindings
@@ -352,7 +359,7 @@ class AssocX m k => FiniteMapX m k | m -> k where
   --   in the first.
   subset             :: m a -> m b -> Bool    
 
-  -- | Test whether the set of keys in nthe first finite mape is a subset of
+  -- | Test whether the set of keys in the first finite map is a subset of
   --   the set of keys of the second; that is, if every key present in the first
   --   finite map is also present in the second.
   subsetEq           :: m a -> m b -> Bool    
@@ -385,7 +392,7 @@ class AssocX m k => Assoc m k | m -> k where
   --   given predicate.
   filterWithKey     :: (k -> a -> Bool) -> m a -> m a
 
-  -- | Split an associative collection into two subcollections containing those
+  -- | Split an associative collection into two sub-collections containing those
   --   bindings which satisfy the given predicate and those which do not.
   partitionWithKey  :: (k -> a -> Bool) -> m a -> (m a, m a)
 
@@ -409,7 +416,7 @@ class (Assoc m k, OrdAssocX m k) => OrdAssoc m k | m -> k where
   -- | Delete the binding with the maximum key from an associative
   --   collection and return the key, the element and the remaining
   --   associative collection.  Calls 'fail' if the associative collection 
-  --   is empty.  Which binding is chosen if there are multiple maximumkeys
+  --   is empty.  Which binding is chosen if there are multiple maximum keys
   --   is unspecified.
   maxViewWithKey  :: (Monad rm) => m a -> rm ((k, a), m a)
 
@@ -438,15 +445,18 @@ class (Assoc m k, OrdAssocX m k) => OrdAssoc m k | m -> k where
 --   notes about the unsafe \"With\" functions.
 class (Assoc m k, FiniteMapX m k) => FiniteMap m k | m -> k where
   -- | Same as 'union', but with a combining function to resolve duplicates.
-  --   The combining function additionally takes the key.
+  --   The combining function additionally takes the key.  Which key is kept
+  --   and passed into the combining function is unspecified.
   unionWithKey      :: (k -> a -> a -> a) -> m a -> m a -> m a
 
   -- | Same as 'unionSeq', but with a combining function to resolve duplicates.
-  --   The combining function additionally takes the key.
+  --   The combining function additionally takes the key.  Which key is
+  --   kept and passed into the combining function is unspecified.
   unionSeqWithKey   :: Sequence seq => (k -> a -> a -> a) -> seq (m a) -> m a
 
-  -- | Same as 'intersect', but with a combining function to resolve duplicates.
-  --   The combining function additionally takes the key.
+  -- | Same as 'intersectWith', except that the combining function
+  --   additionally takes the key value for each binding.  Which key is
+  --   kept and passed into the combining function is unspecified.
   intersectWithKey  :: (k -> a -> b -> c) -> m a -> m b -> m c
 
 -- | Finite maps with observable keys where the keys additionally

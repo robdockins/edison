@@ -60,13 +60,13 @@
 --   require the elements themselves, rather than the hashed values.
 
 module Data.Edison.Coll (
-    -- * Non-Observable Classes
+    -- * Non-observable collections
     CollX(..),
     OrdCollX(..),
     SetX(..),
     OrdSetX,
 
-    -- * Observable Classes
+    -- * Observable collections
     Coll(..),
     OrdColl(..),
     Set(..),
@@ -161,7 +161,7 @@ class Eq a => CollX c a | c -> a where
 
   -- | A method to facilitate unit testing.  Returns 'True' if the structural
   --   invariants of the implementation hold for the given collection.  If
-  --   this function returns 'False', it represents a bug.  Generally, either
+  --   this function returns 'False', it represents a bug; generally, either
   --   the implementation itself is flawed, or an unsafe operation has been
   --   used while violating the preconditions.
   structuralInvariant :: c -> Bool
@@ -260,7 +260,7 @@ class (CollX c a, Ord a) => OrdCollX c a | c -> a where
 class CollX c a => SetX c a | c -> a where
 
   -- | Computes the intersection of two sets.  It is unspecified which 
-  --   element when equal elements appear in each set.
+  --   element is kept when equal elements appear in each set.
   intersect   :: c -> c -> c
 
   -- | Computes the difference of two sets; that is, all elements in
@@ -315,7 +315,7 @@ class CollX c a => Coll c a | c -> a where
   --   If no elements exist in the collection equal to the given element, then
   --   the default element is returned.
   lookupWithDefault  :: a -- ^ deault element
-                     -> a -- ^ item to lookup
+                     -> a -- ^ element to lookup
                      -> c -- ^ collection
                      -> a
 
@@ -396,6 +396,8 @@ class (Coll c a, OrdCollX c a) => OrdColl c a | c -> a where
   -- > forall x y. x < y ==> f x < f y
   unsafeMapMonotonic :: (a -> a) -> c -> c
 
+
+
 -- | Collections with observable elements where the set property is maintained;
 --   that is, a set contains at most one element of the equivalance class
 --   formed by the 'Eq' instance on the elements.
@@ -442,7 +444,6 @@ class (Coll c a, SetX c a) => Set c a | c -> a where
   -- * @unionr = unionWith (\\x y -> y)@
   unionr          :: c -> c -> c
 
-
   -- | Same as 'union', but with a combining function to resolve duplicates.    
   unionWith       :: (a -> a -> a) -> c -> c -> c
 
@@ -451,6 +452,9 @@ class (Coll c a, SetX c a) => Set c a | c -> a where
 
   -- | Same as 'intersect', but with a combining function to resolve duplicates.
   intersectWith   :: (a -> a -> a) -> c -> c -> c
+
+
+
 
 -- | Collections with observable elements where the set property is maintained
 --   and where additinally, there is an ordering relation on the elements.

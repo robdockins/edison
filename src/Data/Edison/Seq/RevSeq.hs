@@ -6,7 +6,7 @@
 --   is a sequence type constructor that is identical to @s@,
 --   except that it is kept in the opposite order.
 --   Also keeps explicit track of the size of the sequence,
---   similar to the Sized adaptor in SizedSeq.hs.
+--   similar to the @Sized@ adaptor in "Data.Edison.Seq.SizedSeq".
 
 --   This module is most useful when s is a sequence type
 --   that offers fast access to the front but slow access
