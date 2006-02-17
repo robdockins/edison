@@ -17,8 +17,14 @@
 --
 --   /References:/
 --
---   * R. R. Hoogerwoord. \"A symmetric set of efficient list operations.\"
+--   * Rob Hoogerwoord. \"A symmetric set of efficient list operations\".
 --     /Journal of Functional Programming/, 2(4):505--513, 1992.
+--
+--   * Rob Hoogerwoord. \"A Logarithmic Implementation of Flexible Arrays\".
+--     /Mathematics of Program Construction/ (MPC'92), pages 191-207.
+--
+--   * Chris Okasaki. "Three algorithms on Braun Trees".  
+--     /Journal of Function Programming/ 7(6):661-666. Novemebr 1997.
 
 module Data.Edison.Seq.BraunSeq (
     -- * Sequence Type
@@ -117,12 +123,6 @@ structuralInvariant :: Seq a -> Bool
 
 moduleName = "Data.Edison.Seq.BraunSeq"
 
--- Adapted from
---   Rob Hoogerwoord.  "A Logarithmic Implementation of Flexible Arrays".
---   Mathematics of Program Construction (MPC'92), pages 191-207.
--- and
---   Chris Okasaki. "Three algorithms on Braun Trees".  
---   JFP 7(6):661-666. Novemebr 1997.
 
 data Seq a = E | B a (Seq a) (Seq a)    deriving (Eq)
 
