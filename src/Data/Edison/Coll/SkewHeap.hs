@@ -14,7 +14,7 @@ module Data.Edison.Coll.SkewHeap (
 
     -- * CollX operations
     empty,single,fromSeq,insert,insertSeq,union,unionSeq,delete,deleteAll,
-    deleteSeq,null,size,member,count,
+    deleteSeq,null,size,member,count,structuralInvariant,
 
     -- * Coll operations
     toSeq, lookup, lookupM, lookupAll, lookupWithDefault, fold, fold1,
@@ -44,6 +44,16 @@ import Test.QuickCheck
 moduleName = "Data.Edison.Coll.SkewHeap"
 
 data Heap a = E | T a (Heap a) (Heap a)
+
+-- invariants:
+--  * Heap order
+--  * FIXME, are there other invariants?
+structuralInvariant :: Ord a => Heap a -> Bool
+structuralInvariant E = True
+structuralInvariant t@(T x l r) = isMin x t
+  where isMin x E = True
+        isMin x (T y l r) = x <= y && isMin y l && isMin y r
+
 
 {-
 For delete,deleteAll,filter,partition: could compute fringe and reduce
@@ -342,7 +352,7 @@ instance Ord a => C.CollX (Heap a) a where
    insertSeq = insertSeq; union = union; unionSeq = unionSeq; 
    delete = delete; deleteAll = deleteAll; deleteSeq = deleteSeq;
    null = null; size = size; member = member; count = count;
-   instanceName c = moduleName}
+   structuralInvariant = structuralInvariant; instanceName c = moduleName}
 
 instance Ord a => C.OrdCollX (Heap a) a where
   {deleteMin = deleteMin; deleteMax = deleteMax; 

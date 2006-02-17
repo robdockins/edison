@@ -8,7 +8,7 @@ module Data.Edison.Coll.MinHeap (
 
     -- * CollX operations
     empty,single,fromSeq,insert,insertSeq,union,unionSeq,delete,deleteAll,
-    deleteSeq,null,size,member,count,
+    deleteSeq,null,size,member,count,structuralInvariant,
 
     -- * Coll operations
     toSeq, lookup, lookupM, lookupAll, lookupWithDefault, fold, fold1,
@@ -41,6 +41,10 @@ moduleName = "Data.Edison.Coll.MinHeap"
 
 instanceName E = "MinHeap(empty)"
 instanceName (M x h) = "MinHeap(" ++ C.instanceName h ++ ")"
+
+structuralInvariant :: (Ord a,C.OrdColl h a) => Min h a -> Bool
+structuralInvariant E = True
+structuralInvariant (M x h) = if C.null h then True else x <= C.minElem h
 
 empty     :: Min h a
 single    :: (C.CollX h a,Ord a) => a -> Min h a
@@ -294,7 +298,7 @@ instance (C.OrdColl h a, Ord a) => C.CollX (Min h a) a where
    insertSeq = insertSeq; union = union; unionSeq = unionSeq; 
    delete = delete; deleteAll = deleteAll; deleteSeq = deleteSeq;
    null = null; size = size; member = member; count = count;
-   instanceName c = moduleName}
+   structuralInvariant = structuralInvariant; instanceName c = moduleName}
 
 instance (C.OrdColl h a, Ord a) => C.OrdCollX (Min h a) a where
   {deleteMin = deleteMin; deleteMax = deleteMax; 

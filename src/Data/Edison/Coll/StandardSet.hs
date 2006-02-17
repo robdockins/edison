@@ -12,7 +12,7 @@ module Data.Edison.Coll.StandardSet (
 
     -- * Coll operations
     toSeq,lookup,lookupM,lookupAll,lookupWithDefault,fold,fold1,
-    filter,partition,
+    filter,partition,structuralInvariant,
 
     -- * OrdCollX operations
     deleteMin,deleteMax,unsafeInsertMin,unsafeInsertMax,unsafeFromOrdSeq,
@@ -115,6 +115,9 @@ moduleName = "Data.Edison.Coll.StandardSet"
 
 type Set = DS.Set
 
+structuralInvariant :: Ord a => Set a -> Bool
+structuralInvariant = DS.valid
+
 empty              = DS.empty
 single             = DS.singleton
 fromSeq            = fromSeqUsingFoldr
@@ -195,7 +198,7 @@ instance Ord a => C.CollX (Set a) a where
    insertSeq = insertSeq; union = union; unionSeq = unionSeq; 
    delete = delete; deleteAll = deleteAll; deleteSeq = deleteSeq;
    null = null; size = size; member = member; count = count;
-   instanceName c = moduleName}
+   structuralInvariant = structuralInvariant; instanceName c = moduleName}
 
 instance Ord a => C.OrdCollX (Set a) a where
   {deleteMin = deleteMin; deleteMax = deleteMax; 

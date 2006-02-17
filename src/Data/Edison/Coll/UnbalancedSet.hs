@@ -115,6 +115,24 @@ moduleName = "Data.Edison.Coll.UnbalancedSet"
 
 data Set a = E | T (Set a) a (Set a)  deriving (Show)
 
+-- invariants:
+--   * Binary Search Tree order
+structuralInvariant :: Ord a => Set a -> Bool
+structuralInvariant t = bounded Nothing Nothing t
+   where bounded _ _ E = True
+         bounded lo hi (T l x r)  = cmp_l lo x 
+                                 && cmp_r x hi
+                                 && bounded lo (Just x) l
+                                 && bounded (Just x) hi r
+
+         cmp_l Nothing  _ = True
+         cmp_l (Just x) y = x < y
+
+         cmp_r _ Nothing  = True
+         cmp_r x (Just y) = x < y
+
+
+
 empty = E
 single x = T E x E
 
@@ -312,7 +330,7 @@ instance Ord a => C.CollX (Set a) a where
    insertSeq = insertSeq; union = union; unionSeq = unionSeq; 
    delete = delete; deleteAll = deleteAll; deleteSeq = deleteSeq;
    null = null; size = size; member = member; count = count;
-   instanceName c = moduleName}
+   structuralInvariant = structuralInvariant; instanceName c = moduleName}
 
 instance Ord a => C.OrdCollX (Set a) a where
   {deleteMin = deleteMin; deleteMax = deleteMax; 

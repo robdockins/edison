@@ -13,7 +13,7 @@ module Data.Edison.Coll.LeftistHeap (
 
     -- * CollX operations
     empty,single,fromSeq,insert,insertSeq,union,unionSeq,delete,deleteAll,
-    deleteSeq,null,size,member,count,
+    deleteSeq,null,size,member,count,structuralInvariant,
 
     -- * Coll operations
     toSeq, lookup, lookupM, lookupAll, lookupWithDefault, fold, fold1,
@@ -43,8 +43,29 @@ import Test.QuickCheck
 
 moduleName = "Data.Edison.Coll.LeftistHeap"
 
-data Heap a = E | L !Int a !(Heap a) !(Heap a)
-  -- want to say !a, but would need Eval a context
+data Heap a = E | L !Int !a !(Heap a) !(Heap a)
+
+-- invariants:
+--   * Heap ordered
+--   * Leftist; the rank of any left node is >= the
+--     rank of its right sibling.  The rank of a node
+--     is the length of its right spine.
+
+structuralInvariant :: Ord a => Heap a -> Bool
+structuralInvariant E = True
+structuralInvariant t@(L i x l r) =
+    i == rank t && isMin x t && checkLeftist t
+
+ where rank E = 0
+       rank (L _ _ _ r) = (rank r) + 1
+
+       isMin x E = True
+       isMin x (L _ y l r) = x <= y && (isMin y l) && (isMin y r)
+
+       checkLeftist E = True
+       checkLeftist t@(L i _ l r) =
+	  rank l >= rank r && checkLeftist l && checkLeftist r
+
 
 node x a E = L 1 x a E
 node x E b = L 1 x b E
@@ -354,7 +375,7 @@ instance Ord a => C.CollX (Heap a) a where
    insertSeq = insertSeq; union = union; unionSeq = unionSeq; 
    delete = delete; deleteAll = deleteAll; deleteSeq = deleteSeq;
    null = null; size = size; member = member; count = count;
-   instanceName c = moduleName}
+   structuralInvariant = structuralInvariant; instanceName c = moduleName}
 
 instance Ord a => C.OrdCollX (Heap a) a where
   {deleteMin = deleteMin; deleteMax = deleteMax; 

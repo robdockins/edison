@@ -14,7 +14,7 @@ module Data.Edison.Coll.LazyPairingHeap (
 
     -- * CollX operations
     empty,single,fromSeq,insert,insertSeq,union,unionSeq,delete,deleteAll,
-    deleteSeq,null,size,member,count,
+    deleteSeq,null,size,member,count,structuralInvariant,
 
     -- * Coll operations
     toSeq, lookup, lookupM, lookupAll, lookupWithDefault, fold, fold1,
@@ -49,7 +49,15 @@ moduleName = "Data.Edison.Coll.LazyPairingHeap"
 data Heap a = E 
             | H1 a (Heap a)
             | H2 a !(Heap a) (Heap a)
-  -- Invariant: left child of H2 not empty
+
+
+-- Invariants: 
+--   * left child of H2 not empty
+structuralInvariant :: Heap a -> Bool
+structuralInvariant E = True
+structuralInvariant (H1 _ h) = structuralInvariant h
+structuralInvariant (H2 _ E _) = False
+structuralInvariant (H2 _ l r) = structuralInvariant l && structuralInvariant r
 
 -- second arg is not empty
 -- not used!
@@ -426,7 +434,7 @@ instance Ord a => C.CollX (Heap a) a where
    insertSeq = insertSeq; union = union; unionSeq = unionSeq; 
    delete = delete; deleteAll = deleteAll; deleteSeq = deleteSeq;
    null = null; size = size; member = member; count = count;
-   instanceName c = moduleName}
+   structuralInvariant = structuralInvariant; instanceName c = moduleName}
 
 instance Ord a => C.OrdCollX (Heap a) a where
   {deleteMin = deleteMin; deleteMax = deleteMax; 

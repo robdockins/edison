@@ -159,6 +159,13 @@ class Eq a => CollX c a | c -> a where
   --   For sets, this will always return 0 or 1.
   count          :: a -> c -> Int
 
+  -- | A method to facilitate unit testing.  Returns 'True' if the structural
+  --   invariants of the implementation hold for the given collection.  If
+  --   this function returns 'False', it represents a bug.  Generally, either
+  --   the implementation itself is flawed, or an unsafe operation has been
+  --   used while violating the preconditions.
+  structuralInvariant :: c -> Bool
+
   -- | The name of the module implementing @c@
   instanceName   :: c -> String
 
