@@ -47,7 +47,6 @@ data Heap a = E | T a (Heap a) (Heap a)
 
 -- invariants:
 --  * Heap order
---  * FIXME, are there other invariants?
 structuralInvariant :: Ord a => Heap a -> Bool
 structuralInvariant E = True
 structuralInvariant t@(T x l r) = isMin x t
