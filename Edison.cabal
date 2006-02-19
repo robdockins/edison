@@ -42,6 +42,7 @@ Exposed-modules:
 Build-Depends:
      base >= 1.0,
      haskell98 >= 1.0,
+     mtl >= 1.0,
      QuickCheck >= 1.0,
      HUnit >= 1.1
 Extensions:
