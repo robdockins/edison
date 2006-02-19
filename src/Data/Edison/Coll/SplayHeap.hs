@@ -48,9 +48,22 @@ moduleName = "Data.Edison.Coll.SplayHeap"
 
 data Heap a = E | T (Heap a) a (Heap a)
 
--- FIXME what are the invariants?
+-- invariants:
+--    * Binary Search Tree order (allowing duplicates)
+
 structuralInvariant :: Ord a => Heap a -> Bool
-structuralInvariant = const True
+structuralInvariant t = bounded Nothing Nothing t
+   where bounded _ _ E = True
+         bounded lo hi (T l x r)  = cmp_l lo x 
+                                 && cmp_r x hi
+                                 && bounded lo (Just x) l
+                                 && bounded (Just x) hi r
+
+         cmp_l Nothing  _ = True
+         cmp_l (Just x) y = x <= y
+
+         cmp_r _ Nothing  = True
+         cmp_r x (Just y) = x <= y
 
 
 empty     :: Heap a
