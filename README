@@ -1,80 +1,109 @@
-Edison: A Library of Efficient Data Structures 
-(Haskell Version 1.1)
-December 20, 1999
-
-This release updates Edison from Haskell 1.4 to Haskell 98,
-and removes most of the GHC specific code.  Edison should now
-run under both GHC and Hugs (at least).  Note that Edison is
-still not fully Haskell 98 compliant because of the use of
-multi-parameter type classes and the occasional use of
-GHC/Hugs libraries such as Bits.
-
-See docs/users.{dvi,ps} for more extensive documentation.  Basic
-instructions for using Edison with GHC or Hugs are included below.
-See the User's Guide for more discussion about portability.
-
-In its current state, Edison is still mostly a framework.  That is, I
-provide signatures, but not yet very many implementations.  I intend
-to populate this framework over time, adding a new module every few
-weeks.  Thus, the library is extremely unstable in the sense that I
-will continually be modifying existing data structures and adding new
-ones.  However, I hope that the signatures will remain fairly stable
-over time, making these changes to the implementations mostly
-transparent to users of the library.
-
-If you wish to request a particular data structure or volunteer to
-provide an implementation, or if you have any other comments or
-suggestions, send me email at cdo@cs.columbia.edu.
-
-Chris Okasaki
+Edison: A Library of Efficient Data Structures
+(Haskell Version 1.2rc1)
+February 20, 2006
 
 
-USING EDISON WITH GHC
----------------------
+About Edison
+-----------------------
 
-To begin using Edison with GHC, first run
-    make depend
-    make all
-I recommend using GHC 4.04 or higher (I used GHC 4.04 for testing).
+Edison is a library of purely function data structures for Haskell
+originally written by Chris Okasaki.  Conceptually, it consists of two
+things:
+  1) A set of type classes defining data the following data structure
+     abstractions: "sequences", "collections" and "associative collections"
+  2) Multiple concrete implementations of each of the abstractions.
 
-To compile a file Foo.hs that uses Edison, type something like
-    ghc -c -fglasgow-exts -iEDHOME/Import Foo.hs
-where EDHOME should be replaced with the correct path
-to the Edison home directory.  To compile and link, type something
-like
-    ghc -fglasgow-exts -iEDHOME/Import -LEDHOME/Lib -ledison Foo.hs
+In theory, either component may be used independently of the other.
+
+This release is an update to (hopefully) make Edison easier to use,
+mostly by updating Edison to use the most current Haskell tools.
+The following major changes have been made since version 1.1, which
+was released in 1999.
+
+  * Typeclasses updated to use fundeps (by Andrew Bromage)
+  * Implementation of ternary search tries (by Andrew Bromage)
+  * Modules renamed to use the hierarchical module extension
+  * Documentation haddockized
+  * Source moved to a darcs repository
+  * Build system cabalized
+  * Unit tests integrated into a single driver program which exercises
+    all the concrete implementations shipped with Edison
 
 
-USING EDISON WITH HUGS
+Hopefully, these changes will make Edison more accessible than it has
+been previously.
+
+
+License
+-----------------------
+
+Edison is released under a BSD3 style license.  See the COPYRIGHT
+file for details.
+
+
+
+Building Edison
+-----------------------
+
+Edison uses a Cabal build system.  The following commands
+assume you have a Haskell interpreter in your system 
+path named 'runhaskell'.  All commands are run from
+this directory.
+
+To install for the whole system:
+
+runhaskell Setup.hs configure
+runhaskell Setup.hs build
+runhaskell Setup.hs install
+
+To install for a single user:
+
+runhaskell Setup.hs configure --prefix=/home/<username>
+runhaskell Setup.hs build
+runhaskell Setup.hs install --user
+
+To build the API docs:
+
+runhaskell Setup.hs haddock
+
+
+
+Notes on portability
 ----------------------
 
-To use Edison under Hugs, simply add the Edison directories
-to the Hugs search path, as in
-    hugs -98 -PEDHOME:EDHOME/Seq:EDHOME/Coll:EDHOME/Assoc: Foo.hs
-where EDHOME should be replaced with the correct path
-to the Edison home directory.  I do this by aliasing "ehugs"
-to "hugs -98 -PEDHOME:EDHOME/Seq:EDHOME/Coll:EDHOME/Assoc:"
-and then typing
-    ehugs Foo.hs
 
-There is a problem with this approach in that the built-in
-Hugs libraries already contain a Sequence module, which is
-now being shadowed by Edison's Sequence module.  It is unlikely
-that any of your code depends on this built-in module directly,
-but it may depend on it indirectly through the HugsLibs module.
-Here is the easiest way to fix the problem.
+Short version:
 
-  1. Go the the .../share/hugs/lib/hugs directory.
-  2. Rename Sequence.hs to HugsSequence.hs.
-  3. Edit HugsSequence.hs, replacing the line
-         module Sequence(
-     with
-         module HugsSequence(
-  4. Edit HugsLibs.hs, replacing the line
-         import Sequence
-     with
-         import HugsSequence
+Edison is expected to work correctly on recent GHC and Hugs (with
+extensions enabled).  Other Haskell implementations may also work, but
+have not been tested.
 
-These directions were tested under the November 1999 release
-of Hugs.  It is likely that the next release of Hugs will
-rename or eliminate the built-in Sequence module.
+
+Longer version:
+
+Edison uses a number of extensions beyond Haskell 98, the current
+official Haskell standard.  These include:
+
+  * Multi-parameter typeclasses
+  * Functional dependencies
+  * Undecidable instances
+
+In all cases, these extensions are used to allow the typeclass
+abstractions to be expressed.  These extensions are fairly popular
+and seem likely to make it in some form into a Haskell standard
+(hopefully in the not too distant future).
+
+Currently, Edison builds and runs correctly under GHC and Hugs.
+More specificly, most development and testing has been done with
+GHC 6.4.1, and the test suite builds and runs to completion with no errors.
+With Hugs (March 2005 release) and the '-98' option, the test suite will
+load typecheck, and begin executing, but fails during execution due to
+high resource usage. I expect that normal usage under Hugs will not
+experience problems.
+
+As the extensions used are not recent developments, I also expect that less
+recent versions of GHC and Hugs will also work.  The up-and-coming Haskell
+implementations (notably YHC and JHC) may also work correctly with Edison,
+but this has not been tested.  I do not believe that NHC or HBC have
+implemented MPTC or fundeps, and thus I do not expect them to work correctly
+with Edison.
