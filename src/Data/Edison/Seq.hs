@@ -363,7 +363,7 @@ class (Functor s, MonadPlus s) => Sequence s where
   --   given a combining function and an intial value.  The function
   --   is applied with right nesting.
   -- 
-  -- > foldr (+) c <x0,...,xn-1> = x0 + (x1 + ... + (xn-1 + c))
+  -- > foldr (%) c <x0,...,xn-1> = x0 % (x1 % ( ... % (xn-1 % c)))
   --
   -- /Axioms:/
   --
@@ -375,11 +375,22 @@ class (Functor s, MonadPlus s) => Sequence s where
   --     where @t@ is the running time of @f@
   foldr     :: (a -> b -> b) -> b -> s a -> b
 
+
+  -- | Strict variant of 'foldr'.  
+  --
+  -- /Axioms:/
+  --
+  -- * forall a. f a _|_ = _|_ ==> foldr f x xs = foldr' f x xs
+  --
+  --   Default running time: @O( t * n)@
+  --     where @t@ is the running time of @f@
+  foldr'    :: (a -> b -> b) -> b -> s a -> b
+
   -- | Combine all the elements of a sequence into a single value,
   --   given a combining function and an initial value.  The function
   --   is applied with left nesting.
   --
-  -- > foldl (+) c <x0,...,xn-1> = ((c + x0) + x1) + ... + xn-1
+  -- > foldl (%) c <x0,...,xn-1> = (((c % x0) % x1) % ... ) % xn-1
   --
   -- /Axioms:/
   --
@@ -390,6 +401,16 @@ class (Functor s, MonadPlus s) => Sequence s where
   --   Default running time: @O( t * n )@
   --     where @t@ is the running time of @f@
   foldl     :: (b -> a -> b) -> b -> s a -> b
+
+  -- | Strict variant of 'foldl'.
+  -- 
+  -- /Axioms:/
+  --
+  -- * forall a. f _|_ a = _|_ ==> foldl f z xs = foldl' f z xs
+  -- 
+  --   Default running time: @O( t * n )@
+  --     where @t@ is the running time of @f@
+  foldl'    :: (b -> a -> b) -> b -> s a -> b
 
   -- | Combine all the elements of a non-empty sequence into a
   --   single value, given a combining function.  The function
@@ -410,6 +431,16 @@ class (Functor s, MonadPlus s) => Sequence s where
   --     where @t@ is the running time of @f@
   foldr1    :: (a -> a -> a) -> s a -> a  
 
+  -- | Strict variant of 'foldr1'.
+  --
+  -- /Axioms:/
+  --
+  -- * forall a. f a _|_ = _|_ ==> foldr1 f xs = foldr1' f xs
+  --
+  --   Default running time: @O( t * n )@
+  --     where @t@ is the running time of @f@
+  foldr1'   :: (a -> a -> a) -> s a -> a
+
   -- | Combine all the elements of a non-empty sequence into
   --   a single value, given a combining function.  The function
   --   is applied with left nesting. Signals an error if the
@@ -429,6 +460,16 @@ class (Functor s, MonadPlus s) => Sequence s where
   --     where @t@ is the running time of @f@
   foldl1    :: (a -> a -> a) -> s a -> a  
 
+  -- | Strict variant of 'foldl1'.
+  -- 
+  -- /Axioms:/
+  --
+  -- * forall a. f _|_ a = _|_ ==> foldl1 f xs = foldl1' f xs
+  -- 
+  --   Default running time: @O( t * n )@
+  --     where @t@ is the running time of @f@
+  foldl1'   :: (a -> a -> a) -> s a -> a
+
   -- | See 'reduce1' for additional notes.
   --
   -- > reducer f x xs = reduce1 f (cons x xs)
@@ -436,14 +477,25 @@ class (Functor s, MonadPlus s) => Sequence s where
   -- /Axioms:/
   --
   -- * @reducer f c xs = foldr f c xs@ for associative @f@
-  --
+  -- 
   --   Default running time: @O( t * n )@
   --     where @t@ is the running time of @f@
   reducer   :: (a -> a -> a) -> a -> s a -> a
 
+  -- | Strict variant of 'reducer'.
+  --
+  -- /Axioms:/
+  --
+  -- * @forall a. f a _|_ = _|_ && forall a. f _|_ a = _|_ ==>
+  --          reducer f x xs = reducer' f x xs@
+  --
+  --   Default running time: @O( t * n )@
+  --     where @t@ is the running time of @f@
+  reducer'  :: (a -> a -> a) -> a -> s a -> a
+
   -- | See 'reduce1' for additional notes.
   --
-  -- > reducel f x xs = reduce1 f (snoc xs x)
+  -- > reducel f x xs = reduce1 f (rcons xs x)
   --
   -- /Axioms:/
   --
@@ -452,6 +504,17 @@ class (Functor s, MonadPlus s) => Sequence s where
   --   Default running time: @O( t * n )@
   --     where @t@ is the running time of @f@
   reducel   :: (a -> a -> a) -> a -> s a -> a
+
+  -- | Strict variant of 'reducel'.
+  --
+  -- /Axioms:/
+  --
+  -- * @forall a. f a _|_ = _|_ && forall a. f _|_ a = _|_ ==>
+  --          reducel f x xs = reducel' f x xs@
+  --
+  --   Default running time: @O( t * n )@
+  --     where @t@ is the running time of @f@
+  reducel'  :: (a -> a -> a) -> a -> s a -> a
 
   -- | reduce is similar to fold, but combines elements in a balanced fashion.
   --   The combining function should usually be associative.  If the combining
@@ -494,6 +557,17 @@ class (Functor s, MonadPlus s) => Sequence s where
   --   Default running time: @O( t * n )@
   --     where @t@ is the running time of @f@
   reduce1   :: (a -> a -> a) -> s a -> a  
+
+  -- | Strict variant of 'reduce1'.
+  --
+  -- /Axioms:/
+  --
+  -- * @forall a. f a _|_ = _|_ && forall a. f _|_ a = _|_ ==>
+  --          reduce1 f xs = reduce1' f xs@
+  --
+  --   Default running time: @O( t * n )@
+  --     where @t@ is the running time of @f@
+  reduce1'  :: (a -> a -> a) -> s a -> a
 
   -- | Extract a prefix of length @i@ from the sequence.  Return
   --   'empty' if @i@ is negative, or the entire sequence if @i@
@@ -776,6 +850,17 @@ class (Functor s, MonadPlus s) => Sequence s where
   --     where @t@ is the running time of @f@
   foldrWithIndex  :: (Int -> a -> b -> b) -> b -> s a -> b
 
+  -- | Strict variant of 'foldrWithIndex'.
+  --
+  -- /Axioms:/
+  --
+  -- * @forall i a. f i a _|_ = _|_ ==> foldrWithIndex f x xs = 
+  --       foldrWithIndex' f x xs@
+  -- 
+  --   Default running time: @O( t * n )@
+  --     where @t@ is the running time of @f@
+  foldrWithIndex' :: (Int -> a -> b -> b) -> b -> s a -> b
+
   -- | Like 'foldl', but include the index with each element.
   --   All indexes are 0 based.
   --
@@ -792,6 +877,18 @@ class (Functor s, MonadPlus s) => Sequence s where
   --   Default running time: @O( t * n )@
   --     where @t@ is the running time of @f@
   foldlWithIndex  :: (b -> Int -> a -> b) -> b -> s a -> b
+
+  -- | Strict variant of 'foldlWithIndex'.
+  --
+  -- /Axioms:/
+  --
+  -- * @forall i a. f _|_ i a = _|_ ==> foldlWithIndex f x xs = 
+  --       foldlWithIndex' f x xs@
+  --
+  --   Default running time: @O( t * n )@
+  --     where @t@ is the running time of @f@
+  foldlWithIndex' :: (b -> Int -> a -> b) -> b -> s a -> b
+
 
 ----------------------------------------------------------------------
 -- Zips and unzips
