@@ -130,8 +130,8 @@ partitionUsingOrdLists :: OrdColl c a => (a -> Bool) -> c -> (c,c)
 partitionUsingOrdLists p xs = (unsafeFromOrdList ys,unsafeFromOrdList zs)
   where (ys,zs) = L.partition p (toOrdList xs)
 
-intersectUsingIntersectWith :: Set c a => c -> c -> c
-intersectUsingIntersectWith = intersectWith (\x y -> x)
+intersectionUsingIntersectionWith :: Set c a => c -> c -> c
+intersectionUsingIntersectionWith = intersectionWith (\x y -> x)
 
 differenceUsingOrdLists :: OrdSet c a => c -> c -> c
 differenceUsingOrdLists xs ys = unsafeFromOrdList (diff (toOrdList xs) (toOrdList ys))
@@ -187,8 +187,8 @@ unionWithUsingOrdLists c xs ys = unsafeFromOrdList (merge (toOrdList xs) (toOrdL
 unionSeqWithUsingReducer :: (Set c a,S.Sequence seq) => (a -> a -> a) -> seq c -> c
 unionSeqWithUsingReducer c = S.reducer (unionWith c) empty
 
-intersectWithUsingOrdLists :: OrdSet c a => (a -> a -> a) -> c -> c -> c
-intersectWithUsingOrdLists c xs ys = unsafeFromOrdList (inter (toOrdList xs) (toOrdList ys))
+intersectionWithUsingOrdLists :: OrdSet c a => (a -> a -> a) -> c -> c -> c
+intersectionWithUsingOrdLists c xs ys = unsafeFromOrdList (inter (toOrdList xs) (toOrdList ys))
   where inter a@(x:xs) b@(y:ys) =
           case compare x y of
             LT -> inter xs b

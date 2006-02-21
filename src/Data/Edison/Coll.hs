@@ -261,7 +261,7 @@ class CollX c a => SetX c a | c -> a where
 
   -- | Computes the intersection of two sets.  It is unspecified which 
   --   element is kept when equal elements appear in each set.
-  intersect   :: c -> c -> c
+  intersection :: c -> c -> c
 
   -- | Computes the difference of two sets; that is, all elements in
   --   the first set which are not in the second set.
@@ -450,8 +450,8 @@ class (Coll c a, SetX c a) => Set c a | c -> a where
   -- | Same as 'unionSeq', but with a combining function to resolve duplicates.
   unionSeqWith    :: Sequence seq => (a -> a -> a) -> seq (c) -> c
 
-  -- | Same as 'intersect', but with a combining function to resolve duplicates.
-  intersectWith   :: (a -> a -> a) -> c -> c -> c
+  -- | Same as 'intersection', but with a combining function to resolve duplicates.
+  intersectionWith   :: (a -> a -> a) -> c -> c -> c
 
 
 

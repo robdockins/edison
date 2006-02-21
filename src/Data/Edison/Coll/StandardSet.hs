@@ -24,11 +24,11 @@ module Data.Edison.Coll.StandardSet (
     unsafeMapMonotonic,
 
     -- * SetX operations
-    intersect,difference,subset,subsetEq,
+    intersection,difference,subset,subsetEq,
 
     -- * Set operations
     fromSeqWith,insertWith,insertSeqWith,unionl,unionr,unionWith,
-    unionSeqWith,intersectWith,
+    unionSeqWith,intersectionWith,
 
     -- * Documentation
     moduleName
@@ -36,6 +36,8 @@ module Data.Edison.Coll.StandardSet (
 
 import Prelude hiding (null,foldr,foldl,foldr1,foldl1,lookup,filter)
 import qualified Prelude
+import qualified Data.List
+
 import Data.Edison.Prelude
 import qualified Data.Edison.Coll as C
 import qualified Data.Edison.Seq as S
@@ -96,7 +98,7 @@ foldr1        :: (a -> a -> a) -> Set a -> a
 foldl1        :: (a -> a -> a) -> Set a -> a
 toOrdSeq      :: (Ord a,S.Sequence seq) => Set a -> seq a
 
-intersect     :: Ord a => Set a -> Set a -> Set a
+intersection  :: Ord a => Set a -> Set a -> Set a
 difference    :: Ord a => Set a -> Set a -> Set a
 subset        :: Ord a => Set a -> Set a -> Bool
 subsetEq      :: Ord a => Set a -> Set a -> Bool
@@ -108,7 +110,7 @@ unionl       :: Ord a => Set a -> Set a -> Set a
 unionr       :: Ord a => Set a -> Set a -> Set a
 unionWith    :: Ord a => (a -> a -> a) -> Set a -> Set a -> Set a
 unionSeqWith :: (Ord a,S.Sequence seq) => (a -> a -> a) -> seq (Set a) -> Set a
-intersectWith :: Ord a => (a -> a -> a) -> Set a -> Set a -> Set a
+intersectionWith :: Ord a => (a -> a -> a) -> Set a -> Set a -> Set a
 unsafeMapMonotonic :: Ord a => (a -> a) -> Set a -> Set a
 
 moduleName = "Data.Edison.Coll.StandardSet"
@@ -167,14 +169,14 @@ maxView set        = if DS.null set
                         else return (DS.deleteFindMax set)
 maxElem            = DS.findMax
 
-foldr  f x set     = Prelude.foldr  f x (DS.toAscList set)
-foldr1 f   set     = Prelude.foldr1 f   (DS.toAscList set)
-foldl  f x set     = Prelude.foldl  f x (DS.toAscList set)
-foldl1 f   set     = Prelude.foldl1 f   (DS.toAscList set)
+foldr  f x set     = Data.List.foldr  f x (DS.toAscList set)
+foldr1 f   set     = Data.List.foldr1 f   (DS.toAscList set)
+foldl  f x set     = Data.List.foldl  f x (DS.toAscList set)
+foldl1 f   set     = Data.List.foldl1 f   (DS.toAscList set)
 
 toOrdSeq           = S.fromList . DS.toAscList
 
-intersect          = DS.intersection
+intersection       = DS.intersection
 difference         = DS.difference
 subset             = DS.isProperSubsetOf
 subsetEq           = DS.isSubsetOf
@@ -188,7 +190,7 @@ unionl             = DS.union
 unionr             = flip DS.union
 unionWith          = unionWithUsingOrdLists
 unionSeqWith       = unionSeqWithUsingReducer
-intersectWith      = intersectWithUsingOrdLists
+intersectionWith   = intersectionWithUsingOrdLists
 unsafeMapMonotonic = DS.mapMonotonic
 
 
@@ -220,14 +222,14 @@ instance Ord a => C.OrdColl (Set a) a where
    unsafeMapMonotonic = unsafeMapMonotonic }
 
 instance Ord a => C.SetX (Set a) a where
-  {intersect = intersect; difference = difference;
+  {intersection = intersection; difference = difference;
    subset = subset; subsetEq = subsetEq}
 
 instance Ord a => C.Set (Set a) a where
   {fromSeqWith = fromSeqWith; insertWith = insertWith; 
    insertSeqWith = insertSeqWith; unionl = unionl; unionr = unionr;
-   unionWith= unionWith; unionSeqWith = unionSeqWith;
-   intersectWith = intersectWith}
+   unionWith = unionWith; unionSeqWith = unionSeqWith;
+   intersectionWith = intersectionWith}
 
 instance Ord a => C.OrdSetX (Set a) a
 

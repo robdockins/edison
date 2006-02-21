@@ -26,11 +26,11 @@ module Data.Edison.Coll.UnbalancedSet (
     unsafeMapMonotonic,
 
     -- * SetX operations
-    intersect,difference,subset,subsetEq,
+    intersection,difference,subset,subsetEq,
 
     -- * Set operations
     fromSeqWith,insertWith,insertSeqWith,unionl,unionr,unionWith,
-    unionSeqWith,intersectWith,
+    unionSeqWith,intersectionWith,
 
     -- * Documentation
     moduleName
@@ -96,7 +96,7 @@ foldr1        :: (a -> a -> a) -> Set a -> a
 foldl1        :: (a -> a -> a) -> Set a -> a
 toOrdSeq      :: (Ord a,S.Sequence seq) => Set a -> seq a
 
-intersect     :: Ord a => Set a -> Set a -> Set a
+intersection  :: Ord a => Set a -> Set a -> Set a
 difference    :: Ord a => Set a -> Set a -> Set a
 subset        :: Ord a => Set a -> Set a -> Bool
 subsetEq      :: Ord a => Set a -> Set a -> Bool
@@ -108,7 +108,7 @@ unionl       :: Ord a => Set a -> Set a -> Set a
 unionr       :: Ord a => Set a -> Set a -> Set a
 unionWith    :: Ord a => (a -> a -> a) -> Set a -> Set a -> Set a
 unionSeqWith :: (Ord a,S.Sequence seq) => (a -> a -> a) -> seq (Set a) -> Set a
-intersectWith :: Ord a => (a -> a -> a) -> Set a -> Set a -> Set a
+intersectionWith :: Ord a => (a -> a -> a) -> Set a -> Set a -> Set a
 unsafeMapMonotonic :: Ord a => (a -> a) -> Set a -> Set a
 
 moduleName = "Data.Edison.Coll.UnbalancedSet"
@@ -311,7 +311,7 @@ filter = filterUsingOrdLists
 partition = partitionUsingOrdLists
 toOrdSeq = toOrdSeqUsingFoldr
 
-intersect = intersectUsingIntersectWith
+intersection = intersectionUsingIntersectionWith
 difference = differenceUsingOrdLists
 subset = subsetUsingOrdLists
 subsetEq = subsetEqUsingOrdLists
@@ -321,7 +321,7 @@ unionl = unionlUsingUnionWith
 unionr = unionrUsingUnionWith
 unionWith = unionWithUsingOrdLists
 unionSeqWith = unionSeqWithUsingReducer
-intersectWith = intersectWithUsingOrdLists
+intersectionWith = intersectionWithUsingOrdLists
 
 -- instance declarations
 
@@ -352,14 +352,14 @@ instance Ord a => C.OrdColl (Set a) a where
    unsafeMapMonotonic = unsafeMapMonotonic}
 
 instance Ord a => C.SetX (Set a) a where
-  {intersect = intersect; difference = difference;
+  {intersection = intersection; difference = difference;
    subset = subset; subsetEq = subsetEq}
 
 instance Ord a => C.Set (Set a) a where
   {fromSeqWith = fromSeqWith; insertWith = insertWith; 
    insertSeqWith = insertSeqWith; unionl = unionl; unionr = unionr;
-   unionWith= unionWith; unionSeqWith = unionSeqWith;
-   intersectWith = intersectWith}
+   unionWith = unionWith; unionSeqWith = unionSeqWith;
+   intersectionWith = intersectionWith}
 
 instance Ord a => C.OrdSetX (Set a) a
 
