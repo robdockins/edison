@@ -34,9 +34,10 @@ module Data.Edison.Seq.BraunSeq (
     empty,single,lcons,rcons,append,lview,lhead,ltail,rview,rhead,rtail,
     lheadM,ltailM,rheadM,rtailM,
     null,size,concat,reverse,reverseOnto,fromList,toList,
-    map,concatMap,foldr,foldl,foldr1,foldl1,reducer,reducel,reduce1,
+    map,concatMap,foldr,foldr',foldl,foldl',foldr1,foldr1',foldl1,foldl1',
+    reducer,reducer',reducel,reducel',reduce1,reduce1',
     copy,inBounds,lookup,lookupM,lookupWithDefault,update,adjust,
-    mapWithIndex,foldrWithIndex,foldlWithIndex,
+    mapWithIndex,foldrWithIndex,foldrWithIndex',foldlWithIndex,foldlWithIndex',
     take,drop,splitAt,subseq,filter,partition,takeWhile,dropWhile,splitWhile,
     zip,zip3,zipWith,zipWith3,unzip,unzip3,unzipWith,unzipWith3,
 
@@ -95,6 +96,13 @@ foldl1         :: (a -> a -> a) -> Seq a -> a
 reducer        :: (a -> a -> a) -> a -> Seq a -> a
 reducel        :: (a -> a -> a) -> a -> Seq a -> a
 reduce1        :: (a -> a -> a) -> Seq a -> a
+foldr'         :: (a -> b -> b) -> b -> Seq a -> b
+foldl'         :: (b -> a -> b) -> b -> Seq a -> b
+foldr1'        :: (a -> a -> a) -> Seq a -> a
+foldl1'        :: (a -> a -> a) -> Seq a -> a
+reducer'       :: (a -> a -> a) -> a -> Seq a -> a
+reducel'       :: (a -> a -> a) -> a -> Seq a -> a
+reduce1'       :: (a -> a -> a) -> Seq a -> a
 copy           :: Int -> a -> Seq a
 inBounds       :: Seq a -> Int -> Bool
 lookup         :: Seq a -> Int -> a
@@ -105,6 +113,8 @@ adjust         :: (a -> a) -> Int -> Seq a -> Seq a
 mapWithIndex   :: (Int -> a -> b) -> Seq a -> Seq b
 foldrWithIndex :: (Int -> a -> b -> b) -> b -> Seq a -> b
 foldlWithIndex :: (b -> Int -> a -> b) -> b -> Seq a -> b
+foldrWithIndex' :: (Int -> a -> b -> b) -> b -> Seq a -> b
+foldlWithIndex' :: (b -> Int -> a -> b) -> b -> Seq a -> b
 take           :: Int -> Seq a -> Seq a
 drop           :: Int -> Seq a -> Seq a
 splitAt        :: Int -> Seq a -> (Seq a, Seq a)
@@ -419,14 +429,23 @@ concat = concatUsingFoldr
 reverseOnto = reverseOntoUsingReverse
 concatMap = concatMapUsingFoldr
 foldr = foldrUsingLists
+foldr' = foldr'UsingLists
 foldl = foldlUsingLists
+foldl' = foldl'UsingLists
 foldr1 = foldr1UsingLists
+foldr1' = foldr1'UsingLists
 foldl1 = foldl1UsingLists
+foldl1' = foldl1UsingLists
 reducer = reducerUsingReduce1
+reducer' = reducer'UsingReduce1'
 reducel = reducelUsingReduce1
+reducel' = reducel'UsingReduce1'
 reduce1 = reduce1UsingLists
-foldrWithIndex = foldrWithIndexUsingLists
-foldlWithIndex = foldlWithIndexUsingLists
+reduce1' = reduce1'UsingLists
+foldrWithIndex  = foldrWithIndexUsingLists
+foldrWithIndex' = foldrWithIndex'UsingLists
+foldlWithIndex  = foldlWithIndexUsingLists
+foldlWithIndex' = foldlWithIndex'UsingLists
 splitAt = splitAtDefault
 subseq = subseqDefault
 filter = filterUsingLists
@@ -445,13 +464,15 @@ instance S.Sequence Seq where
    rview = rview; rhead = rhead; rtail = rtail; null = null;
    size = size; concat = concat; reverse = reverse; 
    reverseOnto = reverseOnto; fromList = fromList; toList = toList;
-   map = map; concatMap = concatMap; foldr = foldr; foldl = foldl;
-   foldr1 = foldr1; foldl1 = foldl1; reducer = reducer; 
-   reducel = reducel; reduce1 = reduce1; copy = copy; 
-   inBounds = inBounds; lookup = lookup;
+   map = map; concatMap = concatMap; foldr = foldr; foldr' = foldr';
+   foldl = foldl; foldl' = foldl';  foldr1 = foldr1; foldr1' = foldr1';
+   foldl1 = foldl1; foldl1' = foldl1'; reducer = reducer; reducer' = reducer';
+   reducel = reducel; reducel' = reducel'; reduce1 = reduce1;
+   reduce1' = reduce1'; copy = copy; inBounds = inBounds; lookup = lookup;
    lookupM = lookupM; lookupWithDefault = lookupWithDefault;
    update = update; adjust = adjust; mapWithIndex = mapWithIndex;
-   foldrWithIndex = foldrWithIndex; foldlWithIndex = foldlWithIndex;
+   foldrWithIndex = foldrWithIndex; foldrWithIndex' = foldrWithIndex';
+   foldlWithIndex = foldlWithIndex; foldlWithIndex' = foldlWithIndex';
    take = take; drop = drop; splitAt = splitAt; subseq = subseq;
    filter = filter; partition = partition; takeWhile = takeWhile;
    dropWhile = dropWhile; splitWhile = splitWhile; zip = zip;

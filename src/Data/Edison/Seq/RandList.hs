@@ -24,9 +24,10 @@ module Data.Edison.Seq.RandList (
     empty,single,lcons,rcons,append,lview,lhead,ltail,rview,rhead,rtail,
     lheadM,ltailM,rheadM,rtailM,
     null,size,concat,reverse,reverseOnto,fromList,toList,
-    map,concatMap,foldr,foldl,foldr1,foldl1,reducer,reducel,reduce1,
+    map,concatMap,foldr,foldr',foldl,foldl',foldr1,foldr1',foldl1,foldl1',
+    reducer,reducer',reducel,reducel',reduce1,reduce1',
     copy,inBounds,lookup,lookupM,lookupWithDefault,update,adjust,
-    mapWithIndex,foldrWithIndex,foldlWithIndex,
+    mapWithIndex,foldrWithIndex,foldrWithIndex',foldlWithIndex,foldlWithIndex',
     take,drop,splitAt,subseq,filter,partition,takeWhile,dropWhile,splitWhile,
     zip,zip3,zipWith,zipWith3,unzip,unzip3,unzipWith,unzipWith3,
 
@@ -81,6 +82,13 @@ foldl1         :: (a -> a -> a) -> Seq a -> a
 reducer        :: (a -> a -> a) -> a -> Seq a -> a
 reducel        :: (a -> a -> a) -> a -> Seq a -> a
 reduce1        :: (a -> a -> a) -> Seq a -> a
+foldr'         :: (a -> b -> b) -> b -> Seq a -> b
+foldl'         :: (b -> a -> b) -> b -> Seq a -> b
+foldr1'        :: (a -> a -> a) -> Seq a -> a
+foldl1'        :: (a -> a -> a) -> Seq a -> a
+reducer'       :: (a -> a -> a) -> a -> Seq a -> a
+reducel'       :: (a -> a -> a) -> a -> Seq a -> a
+reduce1'       :: (a -> a -> a) -> Seq a -> a
 copy           :: Int -> a -> Seq a
 inBounds       :: Seq a -> Int -> Bool
 lookup         :: Seq a -> Int -> a
@@ -91,6 +99,8 @@ adjust         :: (a -> a) -> Int -> Seq a -> Seq a
 mapWithIndex   :: (Int -> a -> b) -> Seq a -> Seq b
 foldrWithIndex :: (Int -> a -> b -> b) -> b -> Seq a -> b
 foldlWithIndex :: (b -> Int -> a -> b) -> b -> Seq a -> b
+foldrWithIndex' :: (Int -> a -> b -> b) -> b -> Seq a -> b
+foldlWithIndex' :: (b -> Int -> a -> b) -> b -> Seq a -> b
 take           :: Int -> Seq a -> Seq a
 drop           :: Int -> Seq a -> Seq a
 splitAt        :: Int -> Seq a -> (Seq a, Seq a)
@@ -196,10 +206,20 @@ foldr f e (C _ t xs) = foldTree t (foldr f e xs)
   where foldTree (L x) e = f x e
         foldTree (T x s t) e = f x (foldTree s (foldTree t e))
 
+foldr' f e E = e
+foldr' f e (C _ t xs) = foldTree t $! (foldr' f e xs)
+  where foldTree (L x) e = f x $! e
+        foldTree (T x s t) e = f x $! (foldTree s $! (foldTree t $! e))
+
 foldl f e E = e
 foldl f e (C _ t xs) = foldl f (foldTree e t) xs
   where foldTree e (L x) = f e x
         foldTree e (T x s t) = foldTree (foldTree (f e x) s) t
+
+foldl' f e E = e
+foldl' f e (C _ t xs) = (foldl f $! (foldTree e t)) xs
+  where foldTree e (L x) = e `seq` f e x
+        foldTree e (T x s t) = e `seq` (foldTree $! (foldTree (f e x) s)) t
 
 reduce1 f xs = case lview xs of
                  Nothing      -> error "RandList.reduce1: empty seq"
@@ -209,6 +229,16 @@ reduce1 f xs = case lview xs of
 
         redTree x (L y) = f x y
         redTree x (T y s t) = redTree (redTree (f x y) s) t
+
+reduce1' f xs = case lview xs of
+                  Nothing      -> error "RandList.reduce1': empty seq"
+                  Just (x, xs) -> red1 x xs
+  where red1 x E = x
+        red1 x (C j t xs) = (red1 $! (redTree x t)) xs
+
+        redTree x (L y) = x `seq` y `seq` f x y
+        redTree x (T y s t) = x `seq` y `seq` (redTree $! (redTree (f x y) s)) t
+
 
 inBounds xs i = inb xs i
   where inb E i = False
@@ -304,13 +334,19 @@ reverse = reverseUsingReverseOnto
 fromList = fromListUsingCons
 toList = toListUsingFoldr
 concatMap = concatMapUsingFoldr
-foldr1 = foldr1UsingLview
-foldl1 = foldl1UsingFoldl
-reducer = reducerUsingReduce1
-reducel = reducelUsingReduce1
+foldr1  = foldr1UsingLview
+foldr1' = foldr1'UsingLview
+foldl1  = foldl1UsingFoldl
+foldl1' = foldl1'UsingFoldl'
+reducer  = reducerUsingReduce1
+reducer' = reducer'UsingReduce1'
+reducel  = reducelUsingReduce1
+reducel' = reducel'UsingReduce1'
 mapWithIndex = mapWithIndexUsingLists
-foldrWithIndex = foldrWithIndexUsingLists
-foldlWithIndex = foldlWithIndexUsingLists
+foldrWithIndex  = foldrWithIndexUsingLists
+foldrWithIndex' = foldrWithIndex'UsingLists
+foldlWithIndex  = foldlWithIndexUsingLists
+foldlWithIndex' = foldlWithIndex'UsingLists
 take = takeUsingLists
 splitAt = splitAtDefault
 filter = filterUsingFoldr
@@ -361,13 +397,15 @@ instance S.Sequence Seq where
    rview = rview; rhead = rhead; rtail = rtail; null = null;
    size = size; concat = concat; reverse = reverse; 
    reverseOnto = reverseOnto; fromList = fromList; toList = toList;
-   map = map; concatMap = concatMap; foldr = foldr; foldl = foldl;
-   foldr1 = foldr1; foldl1 = foldl1; reducer = reducer; 
-   reducel = reducel; reduce1 = reduce1; copy = copy; 
-   inBounds = inBounds; lookup = lookup;
+   map = map; concatMap = concatMap; foldr = foldr; foldr' = foldr';
+   foldl = foldl; foldl' = foldl';  foldr1 = foldr1; foldr1' = foldr1';
+   foldl1 = foldl1; foldl1' = foldl1'; reducer = reducer; reducer' = reducer';
+   reducel = reducel; reducel' = reducel'; reduce1 = reduce1; 
+   reduce1' = reduce1'; copy = copy; inBounds = inBounds; lookup = lookup;
    lookupM = lookupM; lookupWithDefault = lookupWithDefault;
    update = update; adjust = adjust; mapWithIndex = mapWithIndex;
-   foldrWithIndex = foldrWithIndex; foldlWithIndex = foldlWithIndex;
+   foldrWithIndex = foldrWithIndex; foldrWithIndex' = foldrWithIndex';
+   foldlWithIndex = foldlWithIndex; foldlWithIndex' = foldlWithIndex';
    take = take; drop = drop; splitAt = splitAt; subseq = subseq;
    filter = filter; partition = partition; takeWhile = takeWhile;
    dropWhile = dropWhile; splitWhile = splitWhile; zip = zip;

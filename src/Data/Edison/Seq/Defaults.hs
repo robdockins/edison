@@ -85,14 +85,26 @@ concatMapUsingFoldr f = foldr (append . f) empty
 foldrUsingLists :: Sequence s => (a -> b -> b) -> b -> s a -> b
 foldrUsingLists f e xs = L.foldr f e (toList xs)
 
+foldr'UsingLists :: Sequence s => (a -> b -> b) -> b -> s a -> b
+foldr'UsingLists f e xs = L.foldr' f e (toList xs)
+
 foldlUsingLists :: Sequence s => (b -> a -> b) -> b -> s a -> b
 foldlUsingLists f e xs = L.foldl f e (toList xs)
+
+foldl'UsingLists :: Sequence s => (b -> a -> b) -> b -> s a -> b
+foldl'UsingLists f e xs = L.foldl' f e (toList xs)
 
 foldr1UsingLists :: Sequence s => (a -> a -> a) -> s a -> a
 foldr1UsingLists f xs = L.foldr1 f (toList xs)
 
+foldr1'UsingLists :: Sequence s => (a -> a -> a) -> s a -> a
+foldr1'UsingLists f xs = L.foldr1' f (toList xs)
+
 foldl1UsingLists :: Sequence s => (a -> a -> a) -> s a -> a
 foldl1UsingLists f xs = L.foldl1 f (toList xs)
+
+foldl1'UsingLists :: Sequence s => (a -> a -> a) -> s a -> a
+foldl1'UsingLists f xs = L.foldl1' f (toList xs)
 
 foldr1UsingLview :: Sequence s => (a -> a -> a) -> s a -> a
 foldr1UsingLview f xs = 
@@ -104,24 +116,53 @@ foldr1UsingLview f xs =
             Nothing     -> x
             Just (y,ys) -> f x (fr1 y ys)
 
+foldr1'UsingLview :: Sequence s => (a -> a -> a) -> s a -> a
+foldr1'UsingLview f xs =
+     case lview xs of
+        Nothing     -> error $ instanceName xs ++ ".foldr1': empty sequence"
+        Just (x,xs) -> fr1 x xs
+  where fr1 x xs = 
+          case lview xs of
+             Nothing     -> x
+             Just (y,ys) -> f x $! (fr1 y ys)
+
 foldl1UsingFoldl :: Sequence s => (a -> a -> a) -> s a -> a
 foldl1UsingFoldl f xs = 
     case lview xs of
       Nothing     -> error $ instanceName xs ++ ".foldl1: empty sequence"
       Just (x,xs) -> foldl f x xs
 
+foldl1'UsingFoldl' :: Sequence s => (a -> a -> a) -> s a -> a
+foldl1'UsingFoldl' f xs =
+    case lview xs of
+      Nothing     -> error $ instanceName xs ++ ".foldl1': empty sequence"
+      Just (x,xs) -> foldl' f x xs
+
 reducerUsingReduce1 :: Sequence s => (a -> a -> a) -> a -> s a -> a
 reducerUsingReduce1 f e s
   | null s = e
   | otherwise = f (reduce1 f s) e
+
+reducer'UsingReduce1' :: Sequence s => (a -> a -> a) -> a -> s a -> a
+reducer'UsingReduce1' f e s
+  | null s = e
+  | otherwise = f (reduce1' f s) e
 
 reducelUsingReduce1 :: Sequence s => (a -> a -> a) -> a -> s a -> a
 reducelUsingReduce1 f e s
   | null s = e
   | otherwise = f e (reduce1 f s)
 
+reducel'UsingReduce1' :: Sequence s => (a -> a -> a) -> a -> s a -> a
+reducel'UsingReduce1' f e s
+  | null s = e
+  | otherwise = f e (reduce1' f s)
+
 reduce1UsingLists :: Sequence s => (a -> a -> a) -> s a -> a
 reduce1UsingLists f s = L.reduce1 f (toList s)
+
+reduce1'UsingLists :: Sequence s => (a -> a -> a) -> s a -> a
+reduce1'UsingLists f s = L.reduce1' f (toList s)
 
 copyUsingLists :: Sequence s => Int -> a -> s a
 copyUsingLists n x = fromList (L.copy n x)
@@ -238,9 +279,17 @@ foldrWithIndexUsingLists ::
   Sequence s => (Int -> a -> b -> b) -> b -> s a -> b
 foldrWithIndexUsingLists f e xs = L.foldrWithIndex f e (toList xs)
 
+foldrWithIndex'UsingLists :: 
+  Sequence s => (Int -> a -> b -> b) -> b -> s a -> b
+foldrWithIndex'UsingLists f e xs = L.foldrWithIndex' f e (toList xs)
+
 foldlWithIndexUsingLists :: 
   Sequence s => (b -> Int -> a -> b) -> b -> s a -> b
 foldlWithIndexUsingLists f e xs = L.foldlWithIndex f e (toList xs)
+
+foldlWithIndex'UsingLists :: 
+  Sequence s => (b -> Int -> a -> b) -> b -> s a -> b
+foldlWithIndex'UsingLists f e xs = L.foldlWithIndex' f e (toList xs)
 
 takeUsingLists :: Sequence s => Int -> s a -> s a
 takeUsingLists i s = fromList (L.take i (toList s))

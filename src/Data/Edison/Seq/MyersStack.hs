@@ -19,9 +19,10 @@ module Data.Edison.Seq.MyersStack (
     empty,single,lcons,rcons,append,lview,lhead,ltail,rview,rhead,rtail,
     lheadM,ltailM,rheadM,rtailM,
     null,size,concat,reverse,reverseOnto,fromList,toList,
-    map,concatMap,foldr,foldl,foldr1,foldl1,reducer,reducel,reduce1,
+    map,concatMap,foldr,foldr',foldl,foldl',foldr1,foldr1',foldl1,foldl1',
+    reducer,reducer',reducel,reducel',reduce1,reduce1',
     copy,inBounds,lookup,lookupM,lookupWithDefault,update,adjust,
-    mapWithIndex,foldrWithIndex,foldlWithIndex,
+    mapWithIndex,foldrWithIndex,foldrWithIndex',foldlWithIndex,foldlWithIndex',
     take,drop,splitAt,subseq,filter,partition,takeWhile,dropWhile,splitWhile,
     zip,zip3,zipWith,zipWith3,unzip,unzip3,unzipWith,unzipWith3,
 
@@ -76,6 +77,13 @@ foldl1         :: (a -> a -> a) -> Seq a -> a
 reducer        :: (a -> a -> a) -> a -> Seq a -> a
 reducel        :: (a -> a -> a) -> a -> Seq a -> a
 reduce1        :: (a -> a -> a) -> Seq a -> a
+foldr'         :: (a -> b -> b) -> b -> Seq a -> b
+foldl'         :: (b -> a -> b) -> b -> Seq a -> b
+foldr1'        :: (a -> a -> a) -> Seq a -> a
+foldl1'        :: (a -> a -> a) -> Seq a -> a
+reducer'       :: (a -> a -> a) -> a -> Seq a -> a
+reducel'       :: (a -> a -> a) -> a -> Seq a -> a
+reduce1'       :: (a -> a -> a) -> Seq a -> a
 copy           :: Int -> a -> Seq a
 inBounds       :: Seq a -> Int -> Bool
 lookup         :: Seq a -> Int -> a
@@ -86,6 +94,8 @@ adjust         :: (a -> a) -> Int -> Seq a -> Seq a
 mapWithIndex   :: (Int -> a -> b) -> Seq a -> Seq b
 foldrWithIndex :: (Int -> a -> b -> b) -> b -> Seq a -> b
 foldlWithIndex :: (b -> Int -> a -> b) -> b -> Seq a -> b
+foldrWithIndex' :: (Int -> a -> b -> b) -> b -> Seq a -> b
+foldlWithIndex' :: (b -> Int -> a -> b) -> b -> Seq a -> b
 take           :: Int -> Seq a -> Seq a
 drop           :: Int -> Seq a -> Seq a
 splitAt        :: Int -> Seq a -> (Seq a, Seq a)
@@ -181,16 +191,30 @@ map f (C j x xs xs')
 foldr f e E = e
 foldr f e (C _ x xs _) = f x (foldr f e xs)
 
+foldr' f e E = e
+foldr' f e (C _ x xs _) = f x $! (foldr' f e xs)
+
 foldl f e E = e
 foldl f e (C _ x xs _) = foldl f (f e x) xs
+
+foldl' f e E = e
+foldl' f e (C _ x xs _) = e `seq` foldl' f (f e x) xs
 
 foldr1 f E = error "MyersStack.foldr1: empty sequence"
 foldr1 f (C _ x xs _) = fr x xs
   where fr y E = y
         fr y (C _ x xs _) = f y (fr x xs)
 
+foldr1' f E = error "MyersStack.foldr1': empty sequence"
+foldr1' f (C _ x xs _) = fr x xs
+  where fr y E = y
+        fr y (C _ x xs _) = f y $! (fr x xs)
+
 foldl1 f E = error "MyersStack.foldl1: empty sequence"
 foldl1 f (C _ x xs _) = foldl f x xs
+
+foldl1' f E = error "MyersStack.foldl1': empty sequence"
+foldl1' f (C _ x xs _ ) = foldl' f x xs
 
 inBounds xs i = inb xs i
   where inb E i = False
@@ -274,13 +298,18 @@ reverse = reverseUsingReverseOnto
 fromList = fromListUsingCons
 toList = toListUsingFoldr
 concatMap = concatMapUsingFoldr
-reducer = reducerUsingReduce1
-reducel = reducelUsingReduce1
-reduce1 = reduce1UsingLists
+reducer  = reducerUsingReduce1
+reducer' = reducer'UsingReduce1'
+reducel  = reducelUsingReduce1
+reducel' = reducel'UsingReduce1'
+reduce1  = reduce1UsingLists
+reduce1' = reduce1'UsingLists
 copy = copyUsingLists
 mapWithIndex = mapWithIndexUsingLists
-foldrWithIndex = foldrWithIndexUsingLists
-foldlWithIndex = foldlWithIndexUsingLists
+foldrWithIndex  = foldrWithIndexUsingLists
+foldrWithIndex' = foldrWithIndex'UsingLists
+foldlWithIndex  = foldlWithIndexUsingLists
+foldlWithIndex' = foldlWithIndex'UsingLists
 take = takeUsingLists
 splitAt = splitAtDefault
 filter = filterUsingFoldr
@@ -310,13 +339,15 @@ instance S.Sequence Seq where
    rview = rview; rhead = rhead; rtail = rtail; null = null;
    size = size; concat = concat; reverse = reverse; 
    reverseOnto = reverseOnto; fromList = fromList; toList = toList;
-   map = map; concatMap = concatMap; foldr = foldr; foldl = foldl;
-   foldr1 = foldr1; foldl1 = foldl1; reducer = reducer; 
-   reducel = reducel; reduce1 = reduce1; copy = copy; 
-   inBounds = inBounds; lookup = lookup;
+   map = map; concatMap = concatMap; foldr = foldr; foldr' = foldr';
+   foldl = foldl; foldl' = foldl'; foldr1 = foldr1; foldr1' = foldr1';
+   foldl1 = foldl1; foldl1' = foldl1'; reducer = reducer; reducer' = reducer';
+   reducel = reducel; reducel' = reducel';  reduce1 = reduce1; reduce1' = reduce1';
+   copy = copy; inBounds = inBounds; lookup = lookup;
    lookupM = lookupM; lookupWithDefault = lookupWithDefault;
    update = update; adjust = adjust; mapWithIndex = mapWithIndex;
-   foldrWithIndex = foldrWithIndex; foldlWithIndex = foldlWithIndex;
+   foldrWithIndex = foldrWithIndex; foldrWithIndex' = foldrWithIndex';
+   foldlWithIndex = foldlWithIndex; foldlWithIndex' = foldlWithIndex';
    take = take; drop = drop; splitAt = splitAt; subseq = subseq;
    filter = filter; partition = partition; takeWhile = takeWhile;
    dropWhile = dropWhile; splitWhile = splitWhile; zip = zip;

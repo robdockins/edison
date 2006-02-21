@@ -22,9 +22,10 @@ module Data.Edison.Seq.RevSeq (
     empty,single,lcons,rcons,append,lview,lhead,ltail,rview,rhead,rtail,
     lheadM,ltailM,rheadM,rtailM,
     null,size,concat,reverse,reverseOnto,fromList,toList,
-    map,concatMap,foldr,foldl,foldr1,foldl1,reducer,reducel,reduce1,
+    map,concatMap,foldr,foldr',foldl,foldl',foldr1,foldr1',foldl1,foldl1',
+    reducer,reducer',reducel,reducel',reduce1,reduce1',
     copy,inBounds,lookup,lookupM,lookupWithDefault,update,adjust,
-    mapWithIndex,foldrWithIndex,foldlWithIndex,
+    mapWithIndex,foldrWithIndex,foldrWithIndex',foldlWithIndex,foldlWithIndex',
     take,drop,splitAt,subseq,filter,partition,takeWhile,dropWhile,splitWhile,
     zip,zip3,zipWith,zipWith3,unzip,unzip3,unzipWith,unzipWith3,
 
@@ -81,6 +82,13 @@ foldl1         :: S.Sequence s => (a -> a -> a) -> Rev s a -> a
 reducer        :: S.Sequence s => (a -> a -> a) -> a -> Rev s a -> a
 reducel        :: S.Sequence s => (a -> a -> a) -> a -> Rev s a -> a
 reduce1        :: S.Sequence s => (a -> a -> a) -> Rev s a -> a
+foldr'         :: S.Sequence s => (a -> b -> b) -> b -> Rev s a -> b
+foldl'         :: S.Sequence s => (b -> a -> b) -> b -> Rev s a -> b
+foldr1'        :: S.Sequence s => (a -> a -> a) -> Rev s a -> a
+foldl1'        :: S.Sequence s => (a -> a -> a) -> Rev s a -> a
+reducer'       :: S.Sequence s => (a -> a -> a) -> a -> Rev s a -> a
+reducel'       :: S.Sequence s => (a -> a -> a) -> a -> Rev s a -> a
+reduce1'       :: S.Sequence s => (a -> a -> a) -> Rev s a -> a
 copy           :: S.Sequence s => Int -> a -> Rev s a
 inBounds       :: S.Sequence s => Rev s a -> Int -> Bool
 lookup         :: S.Sequence s => Rev s a -> Int -> a
@@ -91,6 +99,8 @@ adjust         :: S.Sequence s => (a -> a) -> Int -> Rev s a -> Rev s a
 mapWithIndex   :: S.Sequence s => (Int -> a -> b) -> Rev s a -> Rev s b
 foldrWithIndex :: S.Sequence s => (Int -> a -> b -> b) -> b -> Rev s a -> b
 foldlWithIndex :: S.Sequence s => (b -> Int -> a -> b) -> b -> Rev s a -> b
+foldrWithIndex' :: S.Sequence s => (Int -> a -> b -> b) -> b -> Rev s a -> b
+foldlWithIndex' :: S.Sequence s => (b -> Int -> a -> b) -> b -> Rev s a -> b
 take           :: S.Sequence s => Int -> Rev s a -> Rev s a
 drop           :: S.Sequence s => Int -> Rev s a -> Rev s a
 splitAt        :: S.Sequence s => Int -> Rev s a -> (Rev s a, Rev s a)
@@ -166,12 +176,19 @@ map f (N m xs) = N m (S.map f xs)
 concatMap = concatMapUsingFoldr -- only function that uses a default
 
 foldr f e (N m xs) = S.foldl (flip f) e xs
+foldr' f e (N m xs) = S.foldl' (flip f) e xs
 foldl f e (N m xs) = S.foldr (flip f) e xs
+foldl' f e (N m xs) = S.foldr' (flip f) e xs
 foldr1 f (N m xs) = S.foldl1 (flip f) xs
+foldr1' f (N m xs) = S.foldl1' (flip f) xs
 foldl1 f (N m xs) = S.foldr1 (flip f) xs
+foldl1' f (N m xs) = S.foldr1' (flip f) xs
 reducer f e (N m xs) = S.reducel (flip f) e xs
+reducer' f e (N m xs) = S.reducel' (flip f) e xs
 reducel f e (N m xs) = S.reducer (flip f) e xs
+reducel' f e (N m xs) = S.reducer' (flip f) e xs
 reduce1 f (N m xs) = S.reduce1 (flip f) xs
+reduce1' f (N m xs) = S.reduce1' (flip f) xs
 
 copy n x 
     | n <= 0 = empty
@@ -184,9 +201,15 @@ lookupWithDefault d (N m xs) i = S.lookupWithDefault d xs (m-i)
 update i x (N m xs) = N m (S.update (m-i) x xs)
 adjust f i (N m xs) = N m (S.adjust f (m-i) xs)
 mapWithIndex f (N m xs) = N m (S.mapWithIndex (f . (m-)) xs)
+
 foldrWithIndex f e (N m xs) = S.foldlWithIndex f' e xs
   where f' xs i x = f (m-i) x xs
+foldrWithIndex' f e (N m xs) = S.foldlWithIndex' f' e xs
+  where f' xs i x = f (m-i) x xs
+
 foldlWithIndex f e (N m xs) = S.foldrWithIndex f' e xs
+  where f' i x xs = f xs (m-i) x
+foldlWithIndex' f e (N m xs) = S.foldrWithIndex' f' e xs
   where f' i x xs = f xs (m-i) x
 
 take i original@(N m xs)
@@ -267,13 +290,15 @@ instance S.Sequence s => S.Sequence (Rev s) where
    rview = rview; rhead = rhead; rtail = rtail; null = null;
    size = size; concat = concat; reverse = reverse; 
    reverseOnto = reverseOnto; fromList = fromList; toList = toList;
-   map = map; concatMap = concatMap; foldr = foldr; foldl = foldl;
-   foldr1 = foldr1; foldl1 = foldl1; reducer = reducer; 
-   reducel = reducel; reduce1 = reduce1; copy = copy; 
-   inBounds = inBounds; lookup = lookup;
+   map = map; concatMap = concatMap; foldr = foldr; foldr' = foldr';
+   foldl = foldl; foldl' = foldl'; foldr1 = foldr1; foldr1' = foldr1';
+   foldl1 = foldl1; foldl1' = foldl1'; reducer = reducer; reducer' = reducer';
+   reducel = reducel; reducel' = reducel'; reduce1 = reduce1; 
+   reduce1' = reduce1'; copy = copy; inBounds = inBounds; lookup = lookup;
    lookupM = lookupM; lookupWithDefault = lookupWithDefault;
    update = update; adjust = adjust; mapWithIndex = mapWithIndex;
-   foldrWithIndex = foldrWithIndex; foldlWithIndex = foldlWithIndex;
+   foldrWithIndex = foldrWithIndex; foldrWithIndex' = foldrWithIndex';
+   foldlWithIndex = foldlWithIndex; foldlWithIndex' = foldlWithIndex';
    take = take; drop = drop; splitAt = splitAt; subseq = subseq;
    filter = filter; partition = partition; takeWhile = takeWhile;
    dropWhile = dropWhile; splitWhile = splitWhile; zip = zip;

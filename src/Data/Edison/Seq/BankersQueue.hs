@@ -23,9 +23,10 @@ module Data.Edison.Seq.BankersQueue (
     empty,single,lcons,rcons,append,lview,lhead,ltail,rview,rhead,rtail,
     lheadM,ltailM,rheadM,rtailM,
     null,size,concat,reverse,reverseOnto,fromList,toList,
-    map,concatMap,foldr,foldl,foldr1,foldl1,reducer,reducel,reduce1,
+    map,concatMap,foldr,foldr',foldl,foldl',foldr1,foldr1',foldl1,foldl1',
+    reducer,reducer',reducel,reducel',reduce1,reduce1',
     copy,inBounds,lookup,lookupM,lookupWithDefault,update,adjust,
-    mapWithIndex,foldrWithIndex,foldlWithIndex,
+    mapWithIndex,foldrWithIndex,foldrWithIndex',foldlWithIndex,foldlWithIndex',
     take,drop,splitAt,subseq,filter,partition,takeWhile,dropWhile,splitWhile,
     zip,zip3,zipWith,zipWith3,unzip,unzip3,unzipWith,unzipWith3,
 
@@ -82,6 +83,13 @@ foldl1         :: (a -> a -> a) -> Seq a -> a
 reducer        :: (a -> a -> a) -> a -> Seq a -> a
 reducel        :: (a -> a -> a) -> a -> Seq a -> a
 reduce1        :: (a -> a -> a) -> Seq a -> a
+foldr'         :: (a -> b -> b) -> b -> Seq a -> b
+foldl'         :: (b -> a -> b) -> b -> Seq a -> b
+foldr1'        :: (a -> a -> a) -> Seq a -> a
+foldl1'        :: (a -> a -> a) -> Seq a -> a
+reducer'       :: (a -> a -> a) -> a -> Seq a -> a
+reducel'       :: (a -> a -> a) -> a -> Seq a -> a
+reduce1'       :: (a -> a -> a) -> Seq a -> a
 copy           :: Int -> a -> Seq a
 inBounds       :: Seq a -> Int -> Bool
 lookup         :: Seq a -> Int -> a
@@ -92,6 +100,8 @@ adjust         :: (a -> a) -> Int -> Seq a -> Seq a
 mapWithIndex   :: (Int -> a -> b) -> Seq a -> Seq b
 foldrWithIndex :: (Int -> a -> b -> b) -> b -> Seq a -> b
 foldlWithIndex :: (b -> Int -> a -> b) -> b -> Seq a -> b
+foldrWithIndex' :: (Int -> a -> b -> b) -> b -> Seq a -> b
+foldlWithIndex' :: (b -> Int -> a -> b) -> b -> Seq a -> b
 take           :: Int -> Seq a -> Seq a
 drop           :: Int -> Seq a -> Seq a
 splitAt        :: Int -> Seq a -> (Seq a, Seq a)
@@ -187,20 +197,36 @@ map f (Q i xs ys j) = Q i (L.map f xs) (L.map f ys) j
 revfoldr f e [] = e
 revfoldr f e (x:xs) = revfoldr f (f x e) xs
 
+revfoldr' f e [] = e
+revfoldr' f e (x:xs) = e `seq` revfoldr' f (f x e) xs
+
 -- local fn on lists
 revfoldl f e [] = e
 revfoldl f e (x:xs) = f (revfoldl f e xs) x
 
-foldr f e (Q i xs ys j) = L.foldr f (revfoldr f e ys) xs
-foldl f e (Q i xs ys j) = revfoldl f (L.foldl f e xs) ys
+revfoldl' f e [] = e
+revfoldl' f e (x:xs) = (\z -> f z x) $! (revfoldl f e xs)
+
+foldr  f e (Q i xs ys j) = L.foldr  f (revfoldr  f e ys) xs
+foldr' f e (Q i xs ys j) = L.foldr' f (revfoldr' f e ys) xs
+foldl  f e (Q i xs ys j) = revfoldl  f (L.foldl  f e xs) ys
+foldl' f e (Q i xs ys j) = revfoldl' f (L.foldl' f e xs) ys
 
 foldr1 f (Q i xs (y:ys) j) = L.foldr f (revfoldr f y ys) xs
 foldr1 f (Q i xs [] _)
   | i == 0 = error "BankersQueue.foldr1: empty sequence"
   | otherwise = L.foldr1 f xs
 
+foldr1' f (Q i xs (y:ys) j) = L.foldr' f (revfoldr' f y ys) xs
+foldr1' f (Q i xs [] _)
+  | i == 0 = error "BankersQueue.foldr1': empty sequence"
+  | otherwise = L.foldr1' f xs
+
 foldl1 f (Q i (x:xs) ys j) = revfoldl f (L.foldl f x xs) ys
 foldl1 f _ = error "BankersQueue.foldl1: empty sequence"
+
+foldl1' f (Q i (x:xs) ys j) = revfoldl' f (L.foldl' f x xs) ys
+foldl1' f _ = error "BankersQueue.foldl1': empty sequence"
 
 copy n x 
   | n < 0     = empty
@@ -279,10 +305,15 @@ concatMap = concatMapUsingFoldr
 reducer = reducerUsingReduce1
 reducel = reducelUsingReduce1
 reduce1 = reduce1UsingLists
+reducer' = reducer'UsingReduce1'
+reducel' = reducel'UsingReduce1'
+reduce1' = reduce1'UsingLists
 inBounds = inBoundsUsingSize
 mapWithIndex = mapWithIndexUsingLists
-foldrWithIndex = foldrWithIndexUsingLists
-foldlWithIndex = foldlWithIndexUsingLists
+foldrWithIndex  = foldrWithIndexUsingLists
+foldrWithIndex' = foldrWithIndex'UsingLists
+foldlWithIndex  = foldlWithIndexUsingLists
+foldlWithIndex' = foldlWithIndex'UsingLists
 subseq = subseqDefault
 filter = filterUsingLists
 partition = partitionUsingLists
@@ -307,13 +338,15 @@ instance S.Sequence Seq where
    rview = rview; rhead = rhead; rtail = rtail; null = null;
    size = size; concat = concat; reverse = reverse; 
    reverseOnto = reverseOnto; fromList = fromList; toList = toList;
-   map = map; concatMap = concatMap; foldr = foldr; foldl = foldl;
-   foldr1 = foldr1; foldl1 = foldl1; reducer = reducer; 
-   reducel = reducel; reduce1 = reduce1; copy = copy; 
-   inBounds = inBounds; lookup = lookup;
+   map = map; concatMap = concatMap; foldr = foldr; foldr' = foldr';
+   foldl = foldl; foldl' = foldl'; foldr1 = foldr1; foldr1' = foldr1';
+   foldl1 = foldl1; foldl1' = foldl1'; reducer = reducer; reducer' = reducer';
+   reducel = reducel; reducel' = reducel'; reduce1 = reduce1; reduce1' = reduce1';
+   copy = copy; inBounds = inBounds; lookup = lookup;
    lookupM = lookupM; lookupWithDefault = lookupWithDefault;
    update = update; adjust = adjust; mapWithIndex = mapWithIndex;
    foldrWithIndex = foldrWithIndex; foldlWithIndex = foldlWithIndex;
+   foldrWithIndex' = foldrWithIndex'; foldlWithIndex' = foldlWithIndex';
    take = take; drop = drop; splitAt = splitAt; subseq = subseq;
    filter = filter; partition = partition; takeWhile = takeWhile;
    dropWhile = dropWhile; splitWhile = splitWhile; zip = zip;

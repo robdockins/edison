@@ -21,9 +21,10 @@ module Data.Edison.Seq.BinaryRandList (
     empty,single,lcons,rcons,append,lview,lhead,ltail,rview,rhead,rtail,
     lheadM,ltailM,rheadM,rtailM,
     null,size,concat,reverse,reverseOnto,fromList,toList,
-    map,concatMap,foldr,foldl,foldr1,foldl1,reducer,reducel,reduce1,
+    map,concatMap,foldr,foldr',foldl,foldl',foldr1,foldr1',foldl1,foldl1',
+    reducer,reducer',reducel,reducel',reduce1,reduce1',
     copy,inBounds,lookup,lookupM,lookupWithDefault,update,adjust,
-    mapWithIndex,foldrWithIndex,foldlWithIndex,
+    mapWithIndex,foldrWithIndex,foldrWithIndex',foldlWithIndex,foldlWithIndex',
     take,drop,splitAt,subseq,filter,partition,takeWhile,dropWhile,splitWhile,
     zip,zip3,zipWith,zipWith3,unzip,unzip3,unzipWith,unzipWith3,
 
@@ -80,6 +81,13 @@ foldl1         :: (a -> a -> a) -> Seq a -> a
 reducer        :: (a -> a -> a) -> a -> Seq a -> a
 reducel        :: (a -> a -> a) -> a -> Seq a -> a
 reduce1        :: (a -> a -> a) -> Seq a -> a
+foldr'         :: (a -> b -> b) -> b -> Seq a -> b
+foldl'         :: (b -> a -> b) -> b -> Seq a -> b
+foldr1'        :: (a -> a -> a) -> Seq a -> a
+foldl1'        :: (a -> a -> a) -> Seq a -> a
+reducer'       :: (a -> a -> a) -> a -> Seq a -> a
+reducel'       :: (a -> a -> a) -> a -> Seq a -> a
+reduce1'       :: (a -> a -> a) -> Seq a -> a
 copy           :: Int -> a -> Seq a
 inBounds       :: Seq a -> Int -> Bool
 lookup         :: Seq a -> Int -> a
@@ -90,6 +98,8 @@ adjust         :: (a -> a) -> Int -> Seq a -> Seq a
 mapWithIndex   :: (Int -> a -> b) -> Seq a -> Seq b
 foldrWithIndex :: (Int -> a -> b -> b) -> b -> Seq a -> b
 foldlWithIndex :: (b -> Int -> a -> b) -> b -> Seq a -> b
+foldrWithIndex' :: (Int -> a -> b -> b) -> b -> Seq a -> b
+foldlWithIndex' :: (b -> Int -> a -> b) -> b -> Seq a -> b
 take           :: Int -> Seq a -> Seq a
 drop           :: Int -> Seq a -> Seq a
 splitAt        :: Int -> Seq a -> (Seq a, Seq a)
@@ -191,21 +201,35 @@ size (Even ps) = 2 * size ps
 size (Odd x ps) = 1 + 2 * size ps
 
 map f E = E
-map f (Even ps) = Even (map (\(x,y) -> (f x,f y)) ps)
+map f (Even ps)  = Even (map (\(x,y) -> (f x,f y)) ps)
 map f (Odd x ps) = Odd (f x) (map (\(x,y) -> (f x,f y)) ps)
 
 foldr f e E = e
-foldr f e (Even ps) = foldr (\(x,y) e -> f x (f y e)) e ps
+foldr f e (Even ps)  = foldr (\(x,y) e -> f x (f y e)) e ps
 foldr f e (Odd x ps) = f x (foldr (\(x,y) e -> f x (f y e)) e ps)
 
+foldr' f e E = e
+foldr' f e (Even ps)  = foldr' (\(x,y) e -> f x $! f y $! e) e ps
+foldr' f e (Odd x ps) = f x $! (foldr' (\(x,y) e -> f x $! f y $! e) e ps)
+
 foldl f e E = e
-foldl f e (Even ps) = foldl (\e (x,y) -> f (f e x) y) e ps
+foldl f e (Even ps)  = foldl (\e (x,y) -> f (f e x) y) e ps
 foldl f e (Odd x ps) = foldl (\e (x,y) -> f (f e x) y) (f e x) ps
 
+foldl' f e E = e
+foldl' f e (Even ps)  = foldl' (\e (x,y) -> f (f e x) y) e ps
+foldl' f e (Odd x ps) = e `seq` foldl' (\e (x,y) -> e `seq` (\z -> f z y) $! (f e x)) (f e x) ps
+
 reduce1 f E = error "BinaryRandList.reduce1: empty seq"
-reduce1 f (Even ps) = reduce1 f (map (uncurry f) ps)
-reduce1 f (Odd x E) = x
+reduce1 f (Even ps)  = reduce1 f (map (uncurry f) ps)
+reduce1 f (Odd x E)  = x
 reduce1 f (Odd x ps) = f x (reduce1 f (map (uncurry f) ps))
+
+reduce1' f E = error "BinaryRandList.reduce1': empty seq"
+reduce1' f (Even ps)  = reduce1' f (map (uncurry f) ps)
+reduce1' f (Odd x E)  = x
+reduce1' f (Odd x ps) = (f $! x) $! (reduce1' f (map (uncurry f) ps))
+
 
 inBounds xs i = (i >= 0) && inb xs i
   where inb :: Seq a -> Int -> Bool
@@ -291,13 +315,19 @@ fromList = fromListUsingCons
 toList = toListUsingFoldr
 concatMap = concatMapUsingFoldr
 foldr1 = foldr1UsingLview
+foldr1' = foldr1'UsingLview
 foldl1 = foldl1UsingFoldl
+foldl1' = foldl1'UsingFoldl'
 reducer = reducerUsingReduce1
 reducel = reducelUsingReduce1
+reducer' = reducer'UsingReduce1'
+reducel' = reducel'UsingReduce1'
 update = updateUsingAdjust
 mapWithIndex = mapWithIndexUsingLists
 foldrWithIndex = foldrWithIndexUsingLists
 foldlWithIndex = foldlWithIndexUsingLists
+foldrWithIndex' = foldrWithIndex'UsingLists
+foldlWithIndex' = foldlWithIndex'UsingLists
 splitAt = splitAtDefault
 filter = filterUsingFoldr
 partition = partitionUsingFoldr
@@ -327,13 +357,16 @@ instance S.Sequence Seq where
    rview = rview; rhead = rhead; rtail = rtail; null = null;
    size = size; concat = concat; reverse = reverse; 
    reverseOnto = reverseOnto; fromList = fromList; toList = toList;
-   map = map; concatMap = concatMap; foldr = foldr; foldl = foldl;
-   foldr1 = foldr1; foldl1 = foldl1; reducer = reducer; 
-   reducel = reducel; reduce1 = reduce1; copy = copy; 
+   map = map; concatMap = concatMap; foldr = foldr; foldr' = foldr';
+   foldl = foldl; foldl' = foldl'; foldr1 = foldr1; foldr1' = foldr1';
+   foldl1 = foldl1; foldl1' = foldl1'; reducer = reducer;
+   reducer' = reducer'; reducel = reducel; reducel' = reducel';
+   reduce1 = reduce1; reduce1' = reduce1'; copy = copy; 
    inBounds = inBounds; lookup = lookup;
    lookupM = lookupM; lookupWithDefault = lookupWithDefault;
    update = update; adjust = adjust; mapWithIndex = mapWithIndex;
-   foldrWithIndex = foldrWithIndex; foldlWithIndex = foldlWithIndex;
+   foldrWithIndex = foldrWithIndex; foldrWithIndex' = foldrWithIndex';
+   foldlWithIndex = foldlWithIndex; foldlWithIndex' = foldlWithIndex';
    take = take; drop = drop; splitAt = splitAt; subseq = subseq;
    filter = filter; partition = partition; takeWhile = takeWhile;
    dropWhile = dropWhile; splitWhile = splitWhile; zip = zip;
