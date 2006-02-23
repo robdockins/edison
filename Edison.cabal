@@ -11,6 +11,7 @@ Hs-Source-Dir:  src
 Exposed-modules:
      Data.Edison
      Data.Edison.Prelude
+     Data.Edison.Sym
      Data.Edison.Assoc
      Data.Edison.Assoc.Defaults
      Data.Edison.Assoc.AssocList
