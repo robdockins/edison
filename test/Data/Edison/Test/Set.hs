@@ -356,7 +356,7 @@ prop_toOrdSeq set xs =
 prop_intersect_difference :: SetTest Int set => 
 	set Int -> set Int -> set Int -> Bool
 prop_intersect_difference set xs ys =
-    intersect xs ys === filter (\x -> member x xs) ys
+    intersection xs ys === filter (\x -> member x xs) ys
     &&
     difference xs ys === filter (\x -> not (member x ys)) xs
 
@@ -365,7 +365,7 @@ prop_subset_subsetEq :: SetTest Int set =>
 prop_subset_subsetEq set xs ys =
     subset xs ys == (subsetEq xs ys && xs /= ys)
     &&
-    subsetEq xs ys == (intersect xs ys == xs)
+    subsetEq xs ys == (intersection xs ys == xs)
 
 
 --------------------------------------------------------------------------
@@ -399,7 +399,7 @@ prop_unionSeqWith set xss =
 
 prop_intersectWith :: SetTest Int set => set Int -> set Int -> set Int -> Bool
 prop_intersectWith set xs ys =
-    intersectWith const xs ys === intersect xs ys
+    intersectionWith const xs ys === intersection xs ys
 
 prop_unsafeMapMonotonic :: SetTest Int set => set Int -> set Int -> Bool
 prop_unsafeMapMonotonic set xs =
