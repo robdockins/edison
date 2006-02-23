@@ -133,17 +133,18 @@ class (Eq k,Functor m) => AssocX m k | m -> k where
 
   -- | Change a single binding for the given key by applying a function to its
   --   element.  If the key binds more than one element, it is unspecified which
-  --   will be modified.
+  --   will be modified.  If the key is not found in the collection, it is returned
+  --   unchanged.
   adjust         :: (a -> a) -> k -> m a -> m a
 
   -- | Change all bindings for the given key by applying a function to its
-  --   elements.
+  --   elements.  If the key is not found in the collection, it is returned 
+  --   unchanged.
   adjustAll      :: (a -> a) -> k -> m a -> m a
 
   -- | Apply a function to the elements of every binding in the associative
-  --   collection.  Defaults to 'fmap' from the Functor instance.
+  --   collection.  It will ordinarily be the same as 'fmap' from the Functor instance.
   map            :: (a -> b) -> m a -> m b
-  map = fmap
 
   -- | Combine all the elements in the associative collection, given a combining
   --   function and an initial value.  The elements are processed in an
