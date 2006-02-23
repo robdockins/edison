@@ -168,42 +168,42 @@ copyUsingLists :: Sequence s => Int -> a -> s a
 copyUsingLists n x = fromList (L.copy n x)
 
 
-inBoundsUsingDrop :: Sequence s => s a -> Int -> Bool
-inBoundsUsingDrop s i = 
+inBoundsUsingDrop :: Sequence s => Int -> s a -> Bool
+inBoundsUsingDrop i s = 
   i >= 0 && not (null (drop i s))
 
-inBoundsUsingLookupM :: Sequence s => s a -> Int -> Bool
-inBoundsUsingLookupM s i =
-  case lookupM s i of
+inBoundsUsingLookupM :: Sequence s => Int -> s a -> Bool
+inBoundsUsingLookupM i s =
+  case lookupM i s of
     Just x  -> True
     Nothing -> False
 
-inBoundsUsingSize :: Sequence s => s a -> Int -> Bool
-inBoundsUsingSize s i = i >= 0 && i < size s
+inBoundsUsingSize :: Sequence s => Int -> s a -> Bool
+inBoundsUsingSize i s = i >= 0 && i < size s
 
-lookupUsingLookupM :: Sequence s => s a -> Int -> a
-lookupUsingLookupM s i = runIdentity (lookupM s i)
+lookupUsingLookupM :: Sequence s => Int -> s a -> a
+lookupUsingLookupM i s = runIdentity (lookupM i s)
 
-lookupUsingDrop :: Sequence s => s a -> Int -> a
-lookupUsingDrop s i
+lookupUsingDrop :: Sequence s => Int -> s a -> a
+lookupUsingDrop i s
   | i < 0 || null s' = error $ instanceName s ++ ".lookup: bad subscript"
   | otherwise = lhead s'
   where s' = drop i s
 
-lookupWithDefaultUsingLookupM :: Sequence s => a -> s a -> Int -> a
-lookupWithDefaultUsingLookupM d s i =
-  case lookupM s i of
+lookupWithDefaultUsingLookupM :: Sequence s => a -> Int -> s a -> a
+lookupWithDefaultUsingLookupM d i s =
+  case lookupM i s of
     Nothing -> d
     Just x  -> x
 
-lookupWithDefaultUsingDrop :: Sequence s => a -> s a -> Int -> a
-lookupWithDefaultUsingDrop d s i
+lookupWithDefaultUsingDrop :: Sequence s => a -> Int -> s a -> a
+lookupWithDefaultUsingDrop d i s
   | i < 0 || null s' = d
   | otherwise = lhead s'
   where s' = drop i s
 
-lookupMUsingDrop :: (Monad m, Sequence s) => s a -> Int -> m a
-lookupMUsingDrop s i
+lookupMUsingDrop :: (Monad m, Sequence s) => Int -> s a -> m a
+lookupMUsingDrop i s
   -- XXX better error message!
   | i < 0 || null s' = fail $ instanceName s
   			++ ".lookupMUsingDrop: empty sequence"

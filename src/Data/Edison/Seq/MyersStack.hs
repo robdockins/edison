@@ -85,10 +85,10 @@ reducer'       :: (a -> a -> a) -> a -> Seq a -> a
 reducel'       :: (a -> a -> a) -> a -> Seq a -> a
 reduce1'       :: (a -> a -> a) -> Seq a -> a
 copy           :: Int -> a -> Seq a
-inBounds       :: Seq a -> Int -> Bool
-lookup         :: Seq a -> Int -> a
-lookupM        :: (Monad m) => Seq a -> Int -> m a
-lookupWithDefault :: a -> Seq a -> Int -> a
+inBounds       :: Int -> Seq a -> Bool
+lookup         :: Int -> Seq a -> a
+lookupM        :: (Monad m) => Int -> Seq a -> m a
+lookupWithDefault :: a -> Int -> Seq a -> a
 update         :: Int -> a -> Seq a -> Seq a
 adjust         :: (a -> a) -> Int -> Seq a -> Seq a
 mapWithIndex   :: (Int -> a -> b) -> Seq a -> Seq b
@@ -216,15 +216,15 @@ foldl1 f (C _ x xs _) = foldl f x xs
 foldl1' f E = error "MyersStack.foldl1': empty sequence"
 foldl1' f (C _ x xs _ ) = foldl' f x xs
 
-inBounds xs i = inb xs i
+inBounds i xs = inb xs i
   where inb E i = False
         inb (C j x xs xs') i
           | i < j     = (i >= 0)
           | otherwise = inb xs' (i - j)
 
-lookup xs i = runIdentity (lookupM xs i)
+lookup i xs = runIdentity (lookupM i xs)
 
-lookupM xs i = look xs i
+lookupM i xs = look xs i
   where look E i = fail "MyersStack.lookup: bad subscript"
         look (C j x xs xs') i
           | i >= j   = look xs' (i - j)
@@ -233,7 +233,7 @@ lookupM xs i = look xs i
           | otherwise = nothing
 	nothing = fail "MyersStack.lookup: not found"
 
-lookupWithDefault d xs i = look xs i
+lookupWithDefault d i xs = look xs i
   where look E i = d
         look (C j x xs xs') i
           | i >= j   = look xs' (i - j)

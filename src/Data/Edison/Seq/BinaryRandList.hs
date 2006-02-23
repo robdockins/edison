@@ -89,10 +89,10 @@ reducer'       :: (a -> a -> a) -> a -> Seq a -> a
 reducel'       :: (a -> a -> a) -> a -> Seq a -> a
 reduce1'       :: (a -> a -> a) -> Seq a -> a
 copy           :: Int -> a -> Seq a
-inBounds       :: Seq a -> Int -> Bool
-lookup         :: Seq a -> Int -> a
-lookupM        :: (Monad m) => Seq a -> Int -> m a
-lookupWithDefault :: a -> Seq a -> Int -> a
+inBounds       :: Int -> Seq a -> Bool
+lookup         :: Int -> Seq a -> a
+lookupM        :: (Monad m) => Int -> Seq a -> m a
+lookupWithDefault :: a -> Int -> Seq a -> a
 update         :: Int -> a -> Seq a -> Seq a
 adjust         :: (a -> a) -> Int -> Seq a -> Seq a
 mapWithIndex   :: (Int -> a -> b) -> Seq a -> Seq b
@@ -231,21 +231,21 @@ reduce1' f (Odd x E)  = x
 reduce1' f (Odd x ps) = (f $! x) $! (reduce1' f (map (uncurry f) ps))
 
 
-inBounds xs i = (i >= 0) && inb xs i
+inBounds i xs = (i >= 0) && inb xs i
   where inb :: Seq a -> Int -> Bool
         inb E i = False
         inb (Even ps) i = inb ps (half i)
         inb (Odd x ps) i = (i == 0) || inb ps (half (i-1))
 
-lookup xs i = runIdentity (lookupM xs i)
+lookup i xs = runIdentity (lookupM i xs)
 
-lookupM xs i
+lookupM i xs
     | i < 0     = fail "BinaryRandList.lookup: bad subscript"
     | otherwise = lookFun nothing xs i return
     where
     	nothing = fail "BinaryRandList.lookup: not found"
 
-lookupWithDefault d xs i
+lookupWithDefault d i xs
     | i < 0 = d
     | otherwise = lookFun d xs i id
 

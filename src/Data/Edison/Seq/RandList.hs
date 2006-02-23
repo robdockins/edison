@@ -90,10 +90,10 @@ reducer'       :: (a -> a -> a) -> a -> Seq a -> a
 reducel'       :: (a -> a -> a) -> a -> Seq a -> a
 reduce1'       :: (a -> a -> a) -> Seq a -> a
 copy           :: Int -> a -> Seq a
-inBounds       :: Seq a -> Int -> Bool
-lookup         :: Seq a -> Int -> a
-lookupM        :: (Monad m) => Seq a -> Int -> m a
-lookupWithDefault :: a -> Seq a -> Int -> a
+inBounds       :: Int -> Seq a -> Bool
+lookup         :: Int -> Seq a -> a
+lookupM        :: (Monad m) => Int -> Seq a -> m a
+lookupWithDefault :: a -> Int -> Seq a -> a
 update         :: Int -> a -> Seq a -> Seq a
 adjust         :: (a -> a) -> Int -> Seq a -> Seq a
 mapWithIndex   :: (Int -> a -> b) -> Seq a -> Seq b
@@ -240,15 +240,15 @@ reduce1' f xs = case lview xs of
         redTree x (T y s t) = x `seq` y `seq` (redTree $! (redTree (f x y) s)) t
 
 
-inBounds xs i = inb xs i
+inBounds i xs = inb xs i
   where inb E i = False
         inb (C j t xs) i
           | i < j     = (i >= 0)
           | otherwise = inb xs (i - j)
 
-lookup xs i = runIdentity (lookupM xs i)
+lookup i xs = runIdentity (lookupM i xs)
 
-lookupM xs i = look xs i
+lookupM i xs = look xs i
   where look E i = fail "RandList.lookup bad subscript"
         look (C j t xs) i
             | i < j     = lookTree j t i
@@ -264,7 +264,7 @@ lookupM xs i = look xs i
           where k = half j
 	nothing = fail "RandList.lookup: not found"
 
-lookupWithDefault d xs i = look xs i
+lookupWithDefault d i xs = look xs i
   where look E i = d
         look (C j t xs) i
             | i < j     = lookTree j t i

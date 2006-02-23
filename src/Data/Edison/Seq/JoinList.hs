@@ -89,10 +89,10 @@ reducer'       :: (a -> a -> a) -> a -> Seq a -> a
 reducel'       :: (a -> a -> a) -> a -> Seq a -> a
 reduce1'       :: (a -> a -> a) -> Seq a -> a
 copy           :: Int -> a -> Seq a
-inBounds       :: Seq a -> Int -> Bool
-lookup         :: Seq a -> Int -> a
-lookupM        :: (Monad m) => Seq a -> Int -> m a
-lookupWithDefault :: a -> Seq a -> Int -> a
+inBounds       :: Int -> Seq a -> Bool
+lookup         :: Int -> Seq a -> a
+lookupM        :: (Monad m) => Int -> Seq a -> m a
+lookupWithDefault :: a -> Int -> Seq a -> a
 update         :: Int -> a -> Seq a -> Seq a
 adjust         :: (a -> a) -> Int -> Seq a -> Seq a
 mapWithIndex   :: (Int -> a -> b) -> Seq a -> Seq b

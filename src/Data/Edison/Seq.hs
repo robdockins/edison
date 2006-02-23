@@ -721,63 +721,63 @@ class (Functor s, MonadPlus s) => Sequence s where
   -- | Test whether an index is valid for the given sequence. All indexes
   --   are 0 based.
   --
-  -- > inBounds <x0,...,xn-1> i = (0 <= i && i < n)
+  -- > inBounds i <x0,...,xn-1> = (0 <= i && i < n)
   --
   -- /Axioms:/
   --
-  -- * @inBounds xs i = (0 \<= i && i \< size xs)@
+  -- * @inBounds i xs = (0 \<= i && i \< size xs)@
   --
   --   Default running time: @O( i )@
-  inBounds  :: s a -> Int -> Bool
+  inBounds  :: Int -> s a -> Bool
 
   -- | Return the element at the given index.  All indexes are 0 based.
   --   Signals error if the index out of bounds.
   --
-  -- > lookup xs@<x0,...,xn-1> i 
-  -- >   | inBounds xs = xi
+  -- > lookup i xs@<x0,...,xn-1>
+  -- >   | inBounds i xs = xi
   -- >   | otherwise = error "ModuleName.lookup: index out of bounds"
   --
   -- /Axioms:/
   --
-  -- * @not (inBounds xs i)  ==> lookup xs i = undefined@
+  -- * @not (inBounds i xs)  ==> lookup i xs = undefined@
   --
-  -- * @size xs == i ==> lookup (append xs (lcons x ys)) i = x@
+  -- * @size xs == i ==> lookup i (append xs (lcons x ys)) = x@
   --
   --   Default running time: @O( i )@
-  lookup    :: s a -> Int -> a
+  lookup    :: Int -> s a -> a
 
   -- | Return the element at the given index.  All indexes are 0 based.
   --   Calls 'fail' if the index is out of bounds.
   --
-  -- > lookupM xs@<x0,...,xn-1> i 
-  -- >   | inBounds xs = Just xi
+  -- > lookupM i xs@<x0,...,xn-1>
+  -- >   | inBounds i xs = Just xi
   -- >   | otherwise = Nothing
   --
   -- /Axioms:/
   --
-  -- * @not (inBounds xs i) ==> lookupM xs i = fail@
+  -- * @not (inBounds i xs) ==> lookupM i xs = fail@
   --
-  -- * @size xs == i ==> lookupM (append xs (lcons x ys)) i = return x@
+  -- * @size xs == i ==> lookupM i (append xs (lcons x ys)) = return x@
   --
   --   Default running time: @O( i )@
-  lookupM   :: (Monad m) => s a -> Int -> m a
+  lookupM   :: (Monad m) => Int -> s a -> m a
 
   -- | Return the element at the given index, or the
   --   default argument if the index is out of bounds.  All indexes are
   --   0 based.
   --
-  -- > lookupWithDefault d xs@<x0,...,xn-1> i 
-  -- >   | inBounds xs = xi
+  -- > lookupWithDefault d i xs@<x0,...,xn-1>
+  -- >   | inBounds i xs = xi
   -- >   | otherwise = d
   --
   -- /Axioms:/
   --
-  -- * @not (inBounds xs i) ==> lookupWithDefault d xs i = d@
+  -- * @not (inBounds i xs) ==> lookupWithDefault d i xs = d@
   --
-  -- * @size xs == i ==> lookupWithDefault d (append xs (lcons x ys)) i = x@
+  -- * @size xs == i ==> lookupWithDefault d i (append xs (lcons x ys)) = x@
   --
   --   Default running time: @O( i )@
-  lookupWithDefault  :: a -> s a -> Int -> a
+  lookupWithDefault  :: a -> Int -> s a -> a
 
   lookup m k = ID.runIdentity (lookupM m k)
 
@@ -786,12 +786,12 @@ class (Functor s, MonadPlus s) => Sequence s where
   --   All indexes are 0 based.
   -- 
   -- > update i y xs@<x0,...,xn-1>
-  -- >   | inBounds xs = <x0,...xi-1,y,xi+1,...,xn-1>
+  -- >   | inBounds i xs = <x0,...xi-1,y,xi+1,...,xn-1>
   -- >   | otherwise = xs
   --
   -- /Axioms:/
   --
-  -- * @not (inBounds xs i) ==> update i y xs = xs@
+  -- * @not (inBounds i xs) ==> update i y xs = xs@
   --
   -- * @size xs == i ==> update i y (append xs (lcons x ys)) =
   --      append xs (lcons y ys)@
@@ -804,12 +804,12 @@ class (Functor s, MonadPlus s) => Sequence s where
   --   All indexes are 0 based.
   -- 
   -- > adjust f i xs@<x0,...,xn-1>
-  -- >   | inBounds xs = <x0,...xi-1,f xi,xi+1,...,xn-1>
+  -- >   | inBounds i xs = <x0,...xi-1,f xi,xi+1,...,xn-1>
   -- >   | otherwise = xs
   --
   -- /Axioms:/
   --
-  -- * @not (inBounds xs i) ==> adjust f i xs = xs@
+  -- * @not (inBounds i xs) ==> adjust f i xs = xs@
   --
   -- * @size xs == i ==> adjust f i (append xs (lcons x ys)) =
   --      append xs (cons (f x) ys)@

@@ -255,26 +255,26 @@ prop_reduce1 seq xs =
 
 prop_inBounds_lookup :: SeqTest Int seq => seq Int -> Int -> seq Int -> Bool
 prop_inBounds_lookup seq i xs =
-    inBounds xs i == (0 <= i && i < size xs)
+    inBounds i xs == (0 <= i && i < size xs)
     &&
-    (if inBounds xs i then
-       lookup xs i == lhead (drop i xs)
+    (if inBounds i xs then
+       lookup i xs == lhead (drop i xs)
        &&
-       lookupM xs i == Just (lookup xs i)
+       lookupM i xs == Just (lookup i xs)
        &&
-       lookupWithDefault 99 xs i == lookup xs i
+       lookupWithDefault 99 i xs == lookup i xs
      else
-       lookupM xs i == Nothing
+       lookupM i xs == Nothing
        &&
-       lookupWithDefault 99 xs i == 99)
+       lookupWithDefault 99 i xs == 99)
 
 
 prop_update_adjust :: SeqTest Int seq => seq Int -> Int -> seq Int -> Bool
 prop_update_adjust seq i xs =
-    if inBounds xs i then
+    if inBounds i xs then
       let ys = take i xs
           zs = drop (i+1) xs
-          x = lookup xs i
+          x = lookup i xs
       in
         si ys 
         &&
@@ -403,4 +403,4 @@ prop_concatMap :: (SeqTest (seq Int) seq, SeqTest Int seq) =>
 
 prop_concatMap seq xs = forAll (genss seq) check
   where check xss = concatMap f xs === concat (map f xs)
-            where f = lookupWithDefault empty xss
+            where f i = lookupWithDefault empty i xss

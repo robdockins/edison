@@ -76,10 +76,10 @@ reducer'       :: (a -> a -> a) -> a -> [a] -> a
 reducel'       :: (a -> a -> a) -> a -> [a] -> a
 reduce1'       :: (a -> a -> a) -> [a] -> a
 copy           :: Int -> a -> [a]
-inBounds       :: [a] -> Int -> Bool
-lookup         :: [a] -> Int -> a
-lookupM        :: (Monad m) => [a] -> Int -> m a
-lookupWithDefault :: a -> [a] -> Int -> a
+inBounds       :: Int -> [a] -> Bool
+lookup         :: Int -> [a] -> a
+lookupM        :: (Monad m) => Int -> [a] -> m a
+lookupWithDefault :: a -> Int -> [a] -> a
 update         :: Int -> a -> [a] -> [a]
 adjust         :: (a -> a) -> Int -> [a] -> [a]
 mapWithIndex   :: (Int -> a -> b) -> [a] -> [b]
@@ -223,19 +223,19 @@ copy n x | n <= 0 = []
          | otherwise = x : copy (n-1) x
   -- depends on n to be unboxed, should test this!
 
-inBounds xs i
+inBounds i xs
   | i >= 0    = not (null (drop i xs))
   | otherwise = False
 
-lookup xs i = ID.runIdentity (lookupM xs i)
+lookup i xs = ID.runIdentity (lookupM i xs)
 
-lookupM xs i
+lookupM i xs
   | i < 0 = fail "ListSeq.lookup: not found"
   | otherwise = case drop i xs of
                   [] -> fail "ListSeq.lookup: not found"
                   (x:_) -> return x
 
-lookupWithDefault d xs i
+lookupWithDefault d i xs
   | i < 0 = d
   | otherwise = case drop i xs of
                   [] -> d

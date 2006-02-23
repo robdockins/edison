@@ -85,10 +85,10 @@ reducer'       :: S.Sequence s => (a -> a -> a) -> a -> Sized s a -> a
 reducel'       :: S.Sequence s => (a -> a -> a) -> a -> Sized s a -> a
 reduce1'       :: S.Sequence s => (a -> a -> a) -> Sized s a -> a
 copy           :: S.Sequence s => Int -> a -> Sized s a
-inBounds       :: S.Sequence s => Sized s a -> Int -> Bool
-lookup         :: S.Sequence s => Sized s a -> Int -> a
-lookupM        :: (S.Sequence s, Monad m) => Sized s a -> Int -> m a
-lookupWithDefault :: S.Sequence s => a -> Sized s a -> Int -> a
+inBounds       :: S.Sequence s => Int -> Sized s a -> Bool
+lookup         :: S.Sequence s => Int -> Sized s a -> a
+lookupM        :: (S.Sequence s, Monad m) => Int -> Sized s a -> m a
+lookupWithDefault :: S.Sequence s => a -> Int -> Sized s a -> a
 update         :: S.Sequence s => Int -> a -> Sized s a -> Sized s a
 adjust         :: S.Sequence s => (a -> a) -> Int -> Sized s a -> Sized s a
 mapWithIndex   :: S.Sequence s => (Int -> a -> b) -> Sized s a -> Sized s b
@@ -193,10 +193,10 @@ copy n x
     | n <= 0 = empty
     | otherwise = N n (S.copy n x)
 
-inBounds (N n xs) i = (i >= 0) && (i < n)
-lookup (N n xs) = S.lookup xs
-lookupM (N n xs) = S.lookupM xs
-lookupWithDefault d (N n xs) = S.lookupWithDefault d xs
+inBounds i (N n xs) = (i >= 0) && (i < n)
+lookup i (N n xs) = S.lookup i xs
+lookupM i (N n xs) = S.lookupM i xs
+lookupWithDefault d i (N n xs) = S.lookupWithDefault d i xs
 update i x (N n xs) = N n (S.update i x xs)
 adjust f i (N n xs) = N n (S.adjust f i xs)
 mapWithIndex f (N n xs) = N n (S.mapWithIndex f xs)

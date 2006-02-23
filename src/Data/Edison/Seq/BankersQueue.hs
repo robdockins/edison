@@ -91,10 +91,10 @@ reducer'       :: (a -> a -> a) -> a -> Seq a -> a
 reducel'       :: (a -> a -> a) -> a -> Seq a -> a
 reduce1'       :: (a -> a -> a) -> Seq a -> a
 copy           :: Int -> a -> Seq a
-inBounds       :: Seq a -> Int -> Bool
-lookup         :: Seq a -> Int -> a
-lookupM        :: (Monad m) => Seq a -> Int -> m a
-lookupWithDefault :: a -> Seq a -> Int -> a
+inBounds       :: Int -> Seq a -> Bool
+lookup         :: Int -> Seq a -> a
+lookupM        :: (Monad m) => Int -> Seq a -> m a
+lookupWithDefault :: a -> Int -> Seq a -> a
 update         :: Int -> a -> Seq a -> Seq a
 adjust         :: (a -> a) -> Int -> Seq a -> Seq a
 mapWithIndex   :: (Int -> a -> b) -> Seq a -> Seq b
@@ -234,15 +234,15 @@ copy n x
 
 -- reduce1: given sizes could do more effective job of dividing evenly!
 
-lookup q idx = runIdentity (lookupM q idx)
+lookup idx q = runIdentity (lookupM idx q)
 
-lookupM (Q i xs ys j) idx
-  | idx < i   = L.lookupM xs idx
-  | otherwise = L.lookupM ys (j - (idx - i) - 1)
+lookupM idx (Q i xs ys j)
+  | idx < i   = L.lookupM idx xs
+  | otherwise = L.lookupM (j - (idx - i) - 1) ys
 
-lookupWithDefault d (Q i xs ys j) idx
-  | idx < i   = L.lookupWithDefault d xs idx
-  | otherwise = L.lookupWithDefault d ys (j - (idx - i) - 1)
+lookupWithDefault d idx (Q i xs ys j)
+  | idx < i   = L.lookupWithDefault d idx xs
+  | otherwise = L.lookupWithDefault d (j - (idx - i) - 1) ys
 
 update idx e q@(Q i xs ys j)
   | idx < i = if idx < 0 then q

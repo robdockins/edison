@@ -104,10 +104,10 @@ reducer'       :: (a -> a -> a) -> a -> Seq a -> a
 reducel'       :: (a -> a -> a) -> a -> Seq a -> a
 reduce1'       :: (a -> a -> a) -> Seq a -> a
 copy           :: Int -> a -> Seq a
-inBounds       :: Seq a -> Int -> Bool
-lookup         :: Seq a -> Int -> a
-lookupM        :: (Monad m) => Seq a -> Int -> m a
-lookupWithDefault :: a -> Seq a -> Int -> a
+inBounds       :: Int -> Seq a -> Bool
+lookup         :: Int -> Seq a -> a
+lookupM        :: (Monad m) => Int -> Seq a -> m a
+lookupWithDefault :: a -> Int -> Seq a -> a
 update         :: Int -> a -> Seq a -> Seq a
 adjust         :: (a -> a) -> Int -> Seq a -> Seq a
 mapWithIndex   :: (Int -> a -> b) -> Seq a -> Seq b
@@ -194,14 +194,14 @@ delAt i (B x a b)
 delAt _ _ = error "BraunSeq.delAt: bug.  Impossible case!"
 
 rview E = fail "BraunSeq.rview: empty sequence"
-rview xs = return (lookup xs m, delAt m xs)
+rview xs = return (lookup m xs, delAt m xs)
   where m = size xs - 1
 
 rhead E = error "BraunSeq.rhead: empty sequence"
-rhead xs = lookup xs (size xs - 1)
+rhead xs = lookup (size xs - 1) xs
 
 rheadM E = fail  "BraunSeq.rheadM: empty sequence"
-rheadM xs = return (lookup xs (size xs - 1))
+rheadM xs = return (lookup (size xs - 1) xs)
 
 rtail E = error "BraunSeq.rtail: empty sequence"
 rtail xs = delAt (size xs - 1) xs
@@ -308,16 +308,16 @@ copy n x = if n <= 0 then empty else fst (copy2 n)
             | otherwise = (B x b a, B x b b)
           where (a, b) = copy2 (half (n-1))
 
-inBounds xs i = (i >= 0) && inb xs i
+inBounds i xs = (i >= 0) && inb xs i
   where inb E i = False
         inb (B x a b) i
           | odd i     = inb a (half i)
           | i == 0    = True
           | otherwise = inb b (half i - 1)
 
-lookup xs i = runIdentity (lookupM xs i)
+lookup i xs = runIdentity (lookupM i xs)
 
-lookupM xs i
+lookupM i xs
   | i < 0     = fail "BraunSeq.lookupM: bad subscript"
   | otherwise = look xs i
   where look E i = nothing
@@ -327,7 +327,7 @@ lookupM xs i
           | otherwise = look b (half i - 1)
         nothing = fail "BraunSeq.lookupM: not found"
 
-lookupWithDefault d xs i = if i < 0 then d
+lookupWithDefault d i xs = if i < 0 then d
                            else look xs i
   where look E i = d
         look (B x a b) i
