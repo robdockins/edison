@@ -156,7 +156,7 @@ ltail q = error "BankersQueue.ltail: empty sequence"
 ltailM (Q i (x:xs) ys j) = return (makeQ (i-1) xs ys j)
 ltailM q = fail "BankersQueue.ltail: empty sequence"
 
-rview (Q i xs (y:ys) j) = return (Q i xs ys (j-1), y)
+rview (Q i xs (y:ys) j) = return (y, Q i xs ys (j-1))
 rview (Q i xs [] _) =
   case L.rview xs of
     Nothing      -> fail "BankersQueue.rview: empty sequence"

@@ -164,14 +164,14 @@ prop_lcons_rcons :: SeqTest Int seq => seq Int -> Int -> seq Int -> Bool
 prop_lcons_rcons seq x xs =
     lcons x xs === append (single x) xs
     &&
-    rcons xs x === append xs (single x)
+    rcons x xs === append xs (single x)
 
 
 prop_lview_rview :: SeqTest Int seq => seq Int -> seq Int -> Bool
 prop_lview_rview seq xs =
     lview xs == (if null xs then Nothing else Just (lhead xs, ltail xs))
     &&
-    rview xs == (if null xs then Nothing else Just (rtail xs, rhead xs))
+    rview xs == (if null xs then Nothing else Just (rhead xs, rtail xs))
 
 prop_lhead_rhead :: SeqTest Int seq => seq Int -> seq Int -> Property
 prop_lhead_rhead seq xs =
