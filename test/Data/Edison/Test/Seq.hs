@@ -105,19 +105,23 @@ seqTests seq = TestLabel ("Sequence test "++(instanceName seq)) . TestList $
   , qcTest $ prop_reverseOnto seq
   , qcTest $ prop_map seq
   , qcTest $ prop_fold seq
+  , qcTest $ prop_strict_fold seq
   , qcTest $ prop_fold1 seq
+  , qcTest $ prop_strict_fold1 seq
   , qcTest $ prop_reduce seq
+  , qcTest $ prop_strict_reduce seq
   , qcTest $ prop_reduce1 seq
+  , qcTest $ prop_strict_reduce1 seq               -- 20
   , qcTest $ prop_inBounds_lookup seq
   , qcTest $ prop_update_adjust seq
   , qcTest $ prop_withIndex seq
-  , qcTest $ prop_take_drop_splitAt seq            -- 20
+  , qcTest $ prop_take_drop_splitAt seq
   , qcTest $ prop_subseq seq
   , qcTest $ prop_filter_takeWhile_dropWhile seq
   , qcTest $ prop_partition_splitWhile seq
   , qcTest $ prop_zip_zipWith seq
   , qcTest $ prop_zip3_zipWith3 seq
-  , qcTest $ prop_unzip_unzipWith seq
+  , qcTest $ prop_unzip_unzipWith seq              -- 30
   , qcTest $ prop_unzip3_unzipWith3 seq
   , qcTest $ prop_concat seq
   , qcTest $ prop_concatMap seq
@@ -233,6 +237,12 @@ prop_fold seq xs =
     &&
     foldl (flip (:)) [99] xs == Prelude.reverse (toList xs) ++ [99]
 
+prop_strict_fold :: SeqTest Int seq => seq Int -> seq Int -> Bool
+prop_strict_fold seq xs =
+    foldr (+) 0 xs == foldr' (+) 0 xs
+    &&
+    foldl (+) 0 xs == foldl' (+) 0 xs
+
 prop_fold1 :: SeqTest Int seq => seq Int -> seq Int -> Property
 prop_fold1 seq xs =
     not (null xs) ==>
@@ -241,16 +251,35 @@ prop_fold1 seq xs =
        foldl1 f xs == Prelude.foldl1 f (toList xs)
   where f x y = 3*x - 2*y
 
+prop_strict_fold1 :: SeqTest Int seq => seq Int -> seq Int -> Property
+prop_strict_fold1 seq xs =
+    not (null xs) ==>
+       foldr1' f xs == foldr1 f xs
+       &&
+       foldl1' f xs == foldl1 f xs
+  where f x y = 3*x - 2*y
+
 prop_reduce :: SeqTest Int seq => seq Int -> seq Int -> Bool
 prop_reduce seq xs =
     reducel append (single 93) (map single xs) === append (single 93) xs
     &&
     reducer append (single 93) (map single xs) === append xs (single 93)
 
+prop_strict_reduce  :: SeqTest Int seq => seq Int -> seq Int -> Bool
+prop_strict_reduce seq xs =
+    reducel' (+) 0 xs == reducel (+) 0 xs
+    &&
+    reducer' (+) 0 xs == reducer (+) 0 xs
+
 prop_reduce1 :: SeqTest Int seq => seq Int -> seq Int -> Property
 prop_reduce1 seq xs =
     not (null xs) ==>
       reduce1 append (map single xs) === xs
+
+prop_strict_reduce1 :: SeqTest Int seq => seq Int -> seq Int -> Property
+prop_strict_reduce1 seq xs =
+    not (null xs) ==>
+      reduce1' (+) xs == reduce1 (+) xs
 
 
 prop_inBounds_lookup :: SeqTest Int seq => seq Int -> Int -> seq Int -> Bool
