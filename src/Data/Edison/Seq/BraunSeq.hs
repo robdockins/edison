@@ -68,14 +68,14 @@ moduleName     :: String
 empty          :: Seq a
 single         :: a -> Seq a
 lcons          :: a -> Seq a -> Seq a
-rcons          :: Seq a -> a -> Seq a
+rcons          :: a -> Seq a -> Seq a
 append         :: Seq a -> Seq a -> Seq a
 lview          :: (Monad m) => Seq a -> m (a, Seq a)
 lhead          :: Seq a -> a
 lheadM         :: (Monad m) => Seq a -> m a
 ltail          :: Seq a -> Seq a
 ltailM         :: (Monad m) => Seq a -> m (Seq a)
-rview          :: (Monad m) => Seq a -> m (Seq a, a)
+rview          :: (Monad m) => Seq a -> m (a, Seq a)
 rhead          :: Seq a -> a
 rheadM         :: (Monad m) => Seq a -> m a
 rtail          :: Seq a -> Seq a
@@ -148,7 +148,7 @@ single x = B x E E
 lcons x E = single x
 lcons x (B y a b) = B x (lcons y b) a
 
-rcons ys y = insAt (size ys) ys
+rcons y ys = insAt (size ys) ys
   where insAt 0 _ = single y
         insAt i (B x a b)
           | odd i     = B x (insAt (half i) a) b
@@ -194,7 +194,7 @@ delAt i (B x a b)
 delAt _ _ = error "BraunSeq.delAt: bug.  Impossible case!"
 
 rview E = fail "BraunSeq.rview: empty sequence"
-rview xs = return (delAt m xs, lookup xs m)
+rview xs = return (lookup xs m, delAt m xs)
   where m = size xs - 1
 
 rhead E = error "BraunSeq.rhead: empty sequence"

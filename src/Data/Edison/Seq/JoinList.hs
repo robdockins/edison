@@ -53,14 +53,14 @@ moduleName     :: String
 empty          :: Seq a
 single         :: a -> Seq a
 lcons          :: a -> Seq a -> Seq a
-rcons          :: Seq a -> a -> Seq a
+rcons          :: a -> Seq a -> Seq a
 append         :: Seq a -> Seq a -> Seq a
 lview          :: (Monad m) => Seq a -> m (a, Seq a)
 lhead          :: Seq a -> a
 lheadM         :: (Monad m) => Seq a -> m a
 ltail          :: Seq a -> Seq a
 ltailM         :: (Monad m) => Seq a -> m (Seq a)
-rview          :: (Monad m) => Seq a -> m (Seq a, a)
+rview          :: (Monad m) => Seq a -> m (a, Seq a)
 rhead          :: Seq a -> a
 rheadM         :: (Monad m) => Seq a -> m a
 rtail          :: Seq a -> Seq a
@@ -133,8 +133,8 @@ single = L
 lcons x E = L x
 lcons x xs = A (L x) xs
 
-rcons E x = L x
-rcons xs x = A xs (L x)
+rcons x E = L x
+rcons x xs = A xs (L x)
 
 append E ys = ys
 append xs E = xs
@@ -178,11 +178,11 @@ ltailM (A xs ys) = return (ltl xs ys)
 -- spine short.
 
 rview E = fail "JoinLis.rview: empty sequence"
-rview (L x) = return (E, x)
+rview (L x) = return (x, E)
 rview (A xs ys) = rvw xs ys
   where rvw xs (A ys (A zs s)) = rvw (A xs (A ys zs)) s
-        rvw xs (A ys (L x)) = return (A xs ys, x)
-        rvw xs (L x) = return (xs, x)
+        rvw xs (A ys (L x)) = return (x, A xs ys)
+        rvw xs (L x) = return (x, xs)
         rvw xs _ = error "JoinList.rvw: bug"
  
 rhead E = error "JoinList.rhead: empty sequence"

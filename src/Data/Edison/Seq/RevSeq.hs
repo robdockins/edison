@@ -54,14 +54,14 @@ instanceName   :: S.Sequence s => Rev s a -> String
 empty          :: S.Sequence s => Rev s a
 single         :: S.Sequence s => a -> Rev s a
 lcons          :: S.Sequence s => a -> Rev s a -> Rev s a
-rcons          :: S.Sequence s => Rev s a -> a -> Rev s a
+rcons          :: S.Sequence s => a -> Rev s a -> Rev s a
 append         :: S.Sequence s => Rev s a -> Rev s a -> Rev s a
 lview          :: (S.Sequence s, Monad m) => Rev s a -> m (a, Rev s a)
 lhead          :: S.Sequence s => Rev s a -> a
 lheadM         :: (S.Sequence s, Monad m) => Rev s a -> m a
 ltail          :: S.Sequence s => Rev s a -> Rev s a
 ltailM         :: (S.Sequence s, Monad m) => Rev s a -> m (Rev s a)
-rview          :: (S.Sequence s, Monad m) => Rev s a -> m (Rev s a, a)
+rview          :: (S.Sequence s, Monad m) => Rev s a -> m (a, Rev s a)
 rhead          :: S.Sequence s => Rev s a -> a
 rheadM         :: (S.Sequence s, Monad m) => Rev s a -> m a
 rtail          :: S.Sequence s => Rev s a -> Rev s a
@@ -132,13 +132,13 @@ toSeq (N m xs) = xs
 
 empty = N (-1) S.empty
 single x = N 0 (S.single x)
-lcons x (N m xs) = N (m+1) (S.rcons xs x)
-rcons (N m xs) x = N (m+1) (S.lcons x xs)
+lcons x (N m xs) = N (m+1) (S.rcons x xs)
+rcons x (N m xs) = N (m+1) (S.lcons x xs)
 append (N m xs) (N n ys) = N (m+n+1) (S.append ys xs)
 
 lview (N m xs) = case S.rview xs of
                    Nothing     -> fail "RevSeq.lview: empty sequence"
-                   Just (xs,x) -> return (x, N (m-1) xs)
+                   Just (x,xs) -> return (x, N (m-1) xs)
 
 lhead (N m xs) = S.rhead xs
 
@@ -152,7 +152,7 @@ ltailM (N m xs) = return (N (m-1) (S.rtail xs))
 
 rview (N m xs) = case S.lview xs of
                    Nothing     -> fail "RevSeq.rview: empty sequence"
-                   Just (x,xs) -> return (N (m-1) xs, x)
+                   Just (x,xs) -> return (x, N (m-1) xs)
  
 rhead (N m xs) = S.lhead xs
 

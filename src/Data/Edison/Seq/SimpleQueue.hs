@@ -56,14 +56,14 @@ moduleName     :: String
 empty          :: Seq a
 single         :: a -> Seq a
 lcons          :: a -> Seq a -> Seq a
-rcons          :: Seq a -> a -> Seq a
+rcons          :: a -> Seq a -> Seq a
 append         :: Seq a -> Seq a -> Seq a
 lview          :: (Monad m) => Seq a -> m (a, Seq a)
 lhead          :: Seq a -> a
 lheadM         :: (Monad m) => Seq a -> m a
 ltail          :: Seq a -> Seq a
 ltailM         :: (Monad m) => Seq a -> m (Seq a)
-rview          :: (Monad m) => Seq a -> m (Seq a, a)
+rview          :: (Monad m) => Seq a -> m (a, Seq a)
 rhead          :: Seq a -> a
 rheadM         :: (Monad m) => Seq a -> m a
 rtail          :: Seq a -> Seq a
@@ -136,8 +136,8 @@ empty = Q [] []
 single x = Q [x] []
 lcons x (Q xs ys) = Q (x:xs) ys
 
-rcons (Q [] _) y = Q [y] []
-rcons (Q xs ys) y = Q xs (y:ys)
+rcons y (Q [] _) = Q [y] []
+rcons y (Q xs ys) = Q xs (y:ys)
 
 append (Q xs1 ys1) (Q xs2 ys2) =
     Q (xs1 ++ L.reverseOnto ys1 xs2) ys2
@@ -160,11 +160,11 @@ ltailM (Q [x] ys) = return (Q (L.reverse ys) [])
 ltailM (Q (x:xs) ys) = return (Q xs ys)
 ltailM q@(Q [] _) = fail "SimpleQueue.ltailM: empty sequence"
 
-rview (Q xs (y:ys)) = return (Q xs ys, y)
+rview (Q xs (y:ys)) = return (y, Q xs ys)
 rview (Q xs []) =
   case L.rview xs of
     Nothing      -> fail "SimpleQueue.rview: empty sequence"
-    Just (xs',x) -> return (Q xs' [], x)
+    Just (x,xs') -> return (x, Q xs' [])
 
 rhead (Q xs (y:ys)) = y
 rhead (Q [] []) = error "SimpleQueue.rhead: empty sequence"

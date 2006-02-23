@@ -55,14 +55,14 @@ moduleName     :: String
 empty          :: Seq a
 single         :: a -> Seq a
 lcons          :: a -> Seq a -> Seq a
-rcons          :: Seq a -> a -> Seq a
+rcons          :: a -> Seq a -> Seq a
 append         :: Seq a -> Seq a -> Seq a
 lview          :: (Monad m) => Seq a -> m (a, Seq a)
 lhead          :: Seq a -> a
 lheadM         :: (Monad m) => Seq a -> m a
 ltail          :: Seq a -> Seq a
 ltailM         :: (Monad m) => Seq a -> m (Seq a)
-rview          :: (Monad m) => Seq a -> m (Seq a, a)
+rview          :: (Monad m) => Seq a -> m (a, Seq a)
 rhead          :: Seq a -> a
 rheadM         :: (Monad m) => Seq a -> m a
 rtail          :: Seq a -> Seq a
@@ -136,7 +136,7 @@ makeQ i xs ys j
 empty = Q 0 [] [] 0
 single x = Q 1 [x] [] 0
 lcons x (Q i xs ys j) = Q (i+1) (x:xs) ys j
-rcons (Q i xs ys j) y = makeQ i xs (y:ys) (j+1)
+rcons y (Q i xs ys j) = makeQ i xs (y:ys) (j+1)
 
 append (Q i1 xs1 ys1 j1) (Q i2 xs2 ys2 j2) =
     Q (i1 + j1 + i2) (xs1 ++ L.reverseOnto ys1 xs2) ys2 j2
@@ -160,7 +160,7 @@ rview (Q i xs (y:ys) j) = return (Q i xs ys (j-1), y)
 rview (Q i xs [] _) =
   case L.rview xs of
     Nothing      -> fail "BankersQueue.rview: empty sequence"
-    Just (xs',x) -> return (Q (i-1) xs' [] 0, x)
+    Just (x,xs') -> return (x, Q (i-1) xs' [] 0)
 
 rhead (Q i xs (y:ys) j) = y
 rhead (Q _ [] [] _) = error "BankersQueue.rhead: empty sequence"

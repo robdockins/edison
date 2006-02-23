@@ -42,14 +42,14 @@ moduleName     :: String
 empty          :: [a]
 single         :: a -> [a]
 lcons          :: a -> [a] -> [a]
-rcons          :: [a] -> a -> [a]
+rcons          :: a -> [a] -> [a]
 append         :: [a] -> [a] -> [a]
 lview          :: (Monad rm) => [a] -> rm (a, [a])
 lhead          :: [a] -> a
 lheadM         :: (Monad rm) => [a] -> rm a
 ltail          :: [a] -> [a]
 ltailM         :: (Monad rm) => [a] -> rm [a]
-rview          :: (Monad rm) => [a] -> rm ([a], a)
+rview          :: (Monad rm) => [a] -> rm (a, [a])
 rhead          :: [a] -> a
 rheadM         :: (Monad rm) => [a] -> rm a
 rtail          :: [a] -> [a]
@@ -112,7 +112,7 @@ type Seq a = [a]
 empty = []
 single x = [x]
 lcons = (:)
-rcons s x = s ++ [x]
+rcons x s = s ++ [x]
 append = (++)
 
 lview [] = fail "ListSeq.lview: empty sequence"
@@ -131,7 +131,7 @@ ltail [] = error "ListSeq.ltail: empty sequence"
 ltail (x:xs) = xs
 
 rview [] = fail "ListSeq.rview: empty sequence"
-rview xs = return (rtail xs, rhead xs)
+rview xs = return (rhead xs, rtail xs)
 
 rheadM [] = fail "ListSeq.rheadM: empty sequence"
 rheadM (x:xs) = rh x xs

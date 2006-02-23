@@ -54,14 +54,14 @@ moduleName     :: String
 empty          :: Seq a
 single         :: a -> Seq a
 lcons          :: a -> Seq a -> Seq a
-rcons          :: Seq a -> a -> Seq a
+rcons          :: a -> Seq a -> Seq a
 append         :: Seq a -> Seq a -> Seq a
 lview          :: (Monad m) => Seq a -> m (a, Seq a)
 lhead          :: Seq a -> a
 lheadM         :: (Monad m) => Seq a -> m a
 ltail          :: Seq a -> Seq a
 ltailM         :: (Monad m) => Seq a -> m (Seq a)
-rview          :: (Monad m) => Seq a -> m (Seq a, a)
+rview          :: (Monad m) => Seq a -> m (a, Seq a)
 rhead          :: Seq a -> a
 rheadM         :: (Monad m) => Seq a -> m a
 rtail          :: Seq a -> Seq a

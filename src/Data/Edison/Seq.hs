@@ -63,7 +63,7 @@ class (Functor s, MonadPlus s) => Sequence s where
   --
   -- /Axioms:/
   --
-  -- * @single x = lcons x empty = rcons empty x@
+  -- * @single x = lcons x empty = rcons x empty@
   --
   --   Default running time: @O( 1 )@
   single    :: a -> s a
@@ -81,14 +81,14 @@ class (Functor s, MonadPlus s) => Sequence s where
 
   -- | Add a new element to the right\/rear of a sequence
   --
-  -- > rcons <x0,...,xn-1> x = <x0,...,xn-1,x>
+  -- > rcons x <x0,...,xn-1> = <x0,...,xn-1,x>
   --
   -- /Axioms:/
   --
-  -- * @rcons xs x = append xs (single x)@
+  -- * @rcons x xs = append xs (single x)@
   --
   --   Default running time: @O( n )@
-  rcons     :: s a -> a -> s a
+  rcons     :: a -> s a -> s a
 
   -- | Append two sequence, with the first argument on the left
   --   and the second argument on the right.
@@ -198,10 +198,10 @@ class (Functor s, MonadPlus s) => Sequence s where
   --
   -- * @rview empty = fail@
   --
-  -- * @rview (rcons xs x) = return (xs,x)@
+  -- * @rview (rcons x xs) = return (x,xs)@
   --
   --   Default running time: @O( n )@
-  rview     :: (Monad m) => s a -> m (s a, a)
+  rview     :: (Monad m) => s a -> m (a, s a)
 
   -- | Return the last (rightmost) element of the sequence.
   --   Signals error if sequence is empty.
@@ -210,7 +210,7 @@ class (Functor s, MonadPlus s) => Sequence s where
   --
   -- * @rhead empty = undefined@
   --
-  -- * @rhead (rcons xs x) = x@
+  -- * @rhead (rcons x xs) = x@
   --
   --   Default running time: @O( n )@
   rhead     :: s a -> a 
@@ -222,7 +222,7 @@ class (Functor s, MonadPlus s) => Sequence s where
   --
   -- * @rheadM empty = fail@
   --
-  -- * @rheadM (rcons xs x) = return x@
+  -- * @rheadM (rcons x xs) = return x@
   --
   --   Default running time: @O( n )@
   rheadM    :: (Monad m) => s a -> m a
@@ -234,7 +234,7 @@ class (Functor s, MonadPlus s) => Sequence s where
   --
   -- * @rtail empty = undefined@
   --
-  -- * @rtail (rcons xs x) = xs@
+  -- * @rtail (rcons x xs) = xs@
   --
   --   Default running time: @O( n )@
   rtail     :: s a -> s a
@@ -246,7 +246,7 @@ class (Functor s, MonadPlus s) => Sequence s where
   --
   -- * @rtailM empty = fail@
   --
-  -- * @rtailM (rcons xs x) = return xs@
+  -- * @rtailM (rcons x xs) = return xs@
   --
   --   Default running time: @O( n )@
   rtailM    :: (Monad m) => s a -> m (s a)
@@ -312,7 +312,7 @@ class (Functor s, MonadPlus s) => Sequence s where
   --
   -- * @reverse empty = empty@
   --
-  -- * @reverse (lcons x xs) = rcons (reverse xs) x@
+  -- * @reverse (lcons x xs) = rcons x (reverse xs)@
   --
   --   Default running time: @O( n )@
   reverse      :: s a -> s a
@@ -425,7 +425,7 @@ class (Functor s, MonadPlus s) => Sequence s where
   --
   -- * @foldr1 f empty = undefined@
   --
-  -- * @foldr1 f (rcons xs x) = foldr f x xs@
+  -- * @foldr1 f (rcons x xs) = foldr f x xs@
   --
   --   Default running time: @O( t * n )@
   --     where @t@ is the running time of @f@
@@ -495,7 +495,7 @@ class (Functor s, MonadPlus s) => Sequence s where
 
   -- | See 'reduce1' for additional notes.
   --
-  -- > reducel f x xs = reduce1 f (rcons xs x)
+  -- > reducel f x xs = reduce1 f (rcons x xs)
   --
   -- /Axioms:/
   --
@@ -827,7 +827,7 @@ class (Functor s, MonadPlus s) => Sequence s where
   --
   -- * @mapWithIndex f empty = empty@
   --
-  -- * @mapWithIndex f (rcons xs x) = rcons (mapWithIndex f xs) (f (size xs) x)@
+  -- * @mapWithIndex f (rcons x xs) = rcons (f (size xs) x) (mapWithIndex f xs)@
   --
   --   Default running time: @O( t * n )@
   --     where @t@ is the running time of @f@
@@ -843,7 +843,7 @@ class (Functor s, MonadPlus s) => Sequence s where
   --
   -- * @foldrWithIndex f c empty = c@
   --
-  -- * @foldrWithIndex f c (rcons xs x) =
+  -- * @foldrWithIndex f c (rcons x xs) =
   --      foldrWithIndex f (f (size xs) x c) xs@
   --
   --   Default running time: @O( t * n )@
@@ -871,7 +871,7 @@ class (Functor s, MonadPlus s) => Sequence s where
   --
   -- * @foldlWithIndex f c empty = c@
   --
-  -- * @foldlWithIndex f c (rcons xs x) =
+  -- * @foldlWithIndex f c (rcons x xs) =
   --      f (foldlWithIndex f c xs) (size xs) x@
   --
   --   Default running time: @O( t * n )@

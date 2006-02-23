@@ -49,14 +49,14 @@ moduleName     :: String
 empty          :: Seq a
 single         :: a -> Seq a
 lcons          :: a -> Seq a -> Seq a
-rcons          :: Seq a -> a -> Seq a
+rcons          :: a -> Seq a -> Seq a
 append         :: Seq a -> Seq a -> Seq a
 lview          :: (Monad m) => Seq a -> m (a, Seq a)
 lhead          :: Seq a -> a
 lheadM         :: (Monad m) => Seq a -> m a
 ltail          :: Seq a -> Seq a
 ltailM         :: (Monad m) => Seq a -> m (Seq a)
-rview          :: (Monad m) => Seq a -> m (Seq a, a)
+rview          :: (Monad m) => Seq a -> m (a, Seq a)
 rhead          :: Seq a -> a
 rheadM         :: (Monad m) => Seq a -> m a
 rtail          :: Seq a -> Seq a
@@ -148,7 +148,7 @@ ltailM E = fail "MyersStack.ltailM: empty sequence"
 ltailM (C _ x xs _) = return xs
 
 rview E = fail "MyersStack.rview: empty sequence"
-rview xs = return (rtail xs, rhead xs)
+rview xs = return (rhead xs, rtail xs)
 
 rhead E = error "MyersStack.rhead: empty sequence"
 rhead (C _ x xs xs') = rh x xs xs'

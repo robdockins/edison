@@ -17,20 +17,20 @@ import Data.Edison.Seq
 import qualified Data.Edison.Seq.ListSeq as L
 import Control.Monad.Identity
 
-rconsUsingAppend :: Sequence s => s a -> a -> s a
-rconsUsingAppend s x = append s (single x)
+rconsUsingAppend :: Sequence s => a -> s a -> s a
+rconsUsingAppend x s = append s (single x)
 
-rconsUsingFoldr :: Sequence s => s a -> a -> s a
-rconsUsingFoldr s x = foldr lcons (single x) s
+rconsUsingFoldr :: Sequence s => a -> s a -> s a
+rconsUsingFoldr x s = foldr lcons (single x) s
 
 appendUsingFoldr :: Sequence s => s a -> s a -> s a
 appendUsingFoldr s t | null t = s
                             | otherwise = foldr lcons t s
 
-rviewDefault :: (Monad m, Sequence s) => s a -> m (s a, a)
+rviewDefault :: (Monad m, Sequence s) => s a -> m (a, s a)
 rviewDefault xs
   | null xs   = fail $ instanceName xs ++ ".rview: empty sequence"
-  | otherwise = return (rtail xs, rhead xs)
+  | otherwise = return (rhead xs, rtail xs)
 
 
 rtailUsingLview :: (Sequence s) => s a -> s a
