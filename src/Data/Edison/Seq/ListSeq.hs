@@ -198,13 +198,13 @@ reducer f e [] = e
 reducer f e xs = f (reduce1 f xs) e
 
 reducer' f e [] = e
-reducer' f e xs = f (reduce1' f xs) e
+reducer' f e xs = (f $! (reduce1' f xs)) $! e
 
 reducel f e [] = e
 reducel f e xs = f e (reduce1 f xs)
 
 reducel' f e [] = e
-reducel' f e xs = f e (reduce1' f xs)
+reducel' f e xs = (f $! e) $! (reduce1' f xs)
 
 reduce1 f [] = error "ListSeq.reduce1: empty sequence"
 reduce1 f [x] = x
