@@ -177,10 +177,16 @@ foldl' f e [] = e
 foldl' f e (x:xs) = e `seq` foldl' f (f e x) xs
 
 foldr1 f [] = error "ListSeq.foldr1: empty sequence"
-foldr1 f (x:xs) = foldr f x xs
+foldr1 f xs = fr xs
+  where fr [x]    = x
+        fr (x:xs) = f x $ fr xs
+        fr _ = error "ListSeq.foldr1: bug!"
 
 foldr1' f [] = error "ListSeq.foldr1': empty sequence"
-foldr1' f (x:xs) = foldr' f x xs
+foldr1' f xs = fr xs
+  where fr [x]    = x
+        fr (x:xs) = f x $! fr xs
+        fr _  = error "ListSeq.foldr1': bug!"
 
 foldl1 f [] = error "ListSeq.foldl1: empty sequence"
 foldl1 f (x:xs) = foldl f x xs
@@ -253,7 +259,7 @@ adjust f i xs
 
 mapWithIndex f = mapi 0
   where mapi i [] = []
-        mapi i (x:xs) = f i x : mapi (succ 1) xs
+        mapi i (x:xs) = f i x : mapi (succ i) xs
 
 foldrWithIndex f e = foldi 0
   where foldi i [] = e
