@@ -125,8 +125,7 @@ class (Functor s, MonadPlus s) => Sequence s where
   -- * @n \<= 0   ==> copy n x = empty@
   --
   --   Default running time: @O( n )@
-  copy      :: Int -> a -> s a          -- returns empty if size is negative
-
+  copy      :: Int -> a -> s a
 
   -- | Separate a sequence into its first (leftmost) element and the
   --   remaining sequence.  Calls 'fail' if the sequence is empty.
@@ -188,9 +187,6 @@ class (Functor s, MonadPlus s) => Sequence s where
   --   Default running time: @O( 1 )@
   ltailM    :: (Monad m) => s a -> m (s a)
 
-  lhead = ID.runIdentity . lheadM
-  ltail = ID.runIdentity . ltailM
-
   -- | Separate a sequence into its last (rightmost) element and the
   --   remaining sequence.  Calls 'fail' if the sequence is empty.
   --
@@ -250,9 +246,6 @@ class (Functor s, MonadPlus s) => Sequence s where
   --
   --   Default running time: @O( n )@
   rtailM    :: (Monad m) => s a -> m (s a)
-
-  rhead = ID.runIdentity . rheadM
-  rtail = ID.runIdentity . rtailM
 
   -- | Returns 'True' if the sequence is empty and 'False' otherwise.
   -- 
@@ -620,7 +613,6 @@ class (Functor s, MonadPlus s) => Sequence s where
   --   Default running time: @O( i )@
   splitAt     :: Int -> s a -> (s a, s a)
 
-
   -- | Extract a subsequence from a sequence.  The integer
   --   arguments are \"start index\" and \"length\" NOT
   --   \"start index\" and \"end index\".  Behaves the same
@@ -779,8 +771,6 @@ class (Functor s, MonadPlus s) => Sequence s where
   --   Default running time: @O( i )@
   lookupWithDefault  :: a -> Int -> s a -> a
 
-  lookup m k = ID.runIdentity (lookupM m k)
-
   -- | Replace the element at the given index, or return
   --   the original sequence if the index is out of bounds.
   --   All indexes are 0 based.
@@ -888,11 +878,6 @@ class (Functor s, MonadPlus s) => Sequence s where
   --   Default running time: @O( t * n )@
   --     where @t@ is the running time of @f@
   foldlWithIndex' :: (b -> Int -> a -> b) -> b -> s a -> b
-
-
-----------------------------------------------------------------------
--- Zips and unzips
-
 
   -- | Combine two sequences into a sequence of pairs.  If the
   --   sequences are different lengths, the excess elements of the
