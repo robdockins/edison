@@ -20,8 +20,8 @@ module Data.Edison.Coll.SplayHeap (
     deleteSeq,null,size,member,count,structuralInvariant,
 
     -- * Coll operations
-    toSeq, lookup, lookupM, lookupAll, lookupWithDefault, fold, fold1,
-    filter, partition,
+    toSeq, lookup, lookupM, lookupAll, lookupWithDefault, fold, fold',
+    fold1, fold1', filter, partition,
 
     -- * OrdCollX operations
     deleteMin,deleteMax,unsafeInsertMin,unsafeInsertMax,unsafeFromOrdSeq,
@@ -29,7 +29,8 @@ module Data.Edison.Coll.SplayHeap (
     partitionLE_GT,partitionLT_GT,
 
     -- * OrdColl operations
-    minView,minElem,maxView,maxElem,foldr,foldl,foldr1,foldl1,toOrdSeq,
+    minView,minElem,maxView,maxElem,foldr,foldr',foldl,foldl',
+    foldr1,foldr1',foldl1,foldl1',toOrdSeq,
     unsafeMapMonotonic,
 
     -- * Documentation
@@ -88,6 +89,8 @@ lookupAll :: (Ord a,S.Sequence s) => a -> Heap a -> s a
 lookupWithDefault :: Ord a => a -> a -> Heap a -> a
 fold      :: Ord a => (a -> b -> b) -> b -> Heap a -> b
 fold1     :: Ord a => (a -> a -> a) -> Heap a -> a
+fold'     :: Ord a => (a -> b -> b) -> b -> Heap a -> b
+fold1'    :: Ord a => (a -> a -> a) -> Heap a -> a
 filter    :: Ord a => (a -> Bool) -> Heap a -> Heap a
 partition :: Ord a => (a -> Bool) -> Heap a -> (Heap a, Heap a)
 
@@ -113,6 +116,10 @@ foldr    :: Ord a => (a -> b -> b) -> b -> Heap a -> b
 foldl    :: Ord a => (b -> a -> b) -> b -> Heap a -> b
 foldr1   :: Ord a => (a -> a -> a) -> Heap a -> a
 foldl1   :: Ord a => (a -> a -> a) -> Heap a -> a
+foldr'   :: Ord a => (a -> b -> b) -> b -> Heap a -> b
+foldl'   :: Ord a => (b -> a -> b) -> b -> Heap a -> b
+foldr1'  :: Ord a => (a -> a -> a) -> Heap a -> a
+foldl1'  :: Ord a => (a -> a -> a) -> Heap a -> a
 toOrdSeq :: (Ord a,S.Sequence s) => Heap a -> s a
 
 unsafeMapMonotonic :: (a -> b) -> Heap a -> Heap b
@@ -187,8 +194,14 @@ lookupAll x xs = look xs x S.empty
 fold f e E = e
 fold f e (T a x b) = f x (fold f (fold f e b) a)
 
+fold' f e E = e
+fold' f e (T a x b) = e `seq` f x $! (fold' f (fold' f e b) a)
+
 fold1 f E = error "SplayHeap.fold1: empty heap"
 fold1 f (T a x b) = fold f (fold f x b) a
+
+fold1' f E = error "SplayHeap.fold1': empty heap"
+fold1' f (T a x b) = fold' f (fold' f x b) a
 
 filter p E = E
 filter p (T a x b) 
@@ -361,18 +374,34 @@ maxElem (T a x b) = maxel x b
 foldr f e E = e
 foldr f e (T a x b) = foldr f (f x (foldr f e b)) a
 
+foldr' f e E = e
+foldr' f e (T a x b) = foldr' f (f x $! (foldr' f e b)) a
+
 foldl f e E = e
 foldl f e (T a x b) = foldl f (f (foldl f e a) x) b
+
+foldl' f e E = e
+foldl' f e (T a x b) = e `seq` foldl' f ((f $! (foldl' f e a)) x) b
 
 foldr1 f E = error "SplayHeap.foldr1: empty heap"
 foldr1 f (T a x b) = foldr f (myfold f x b) a
   where myfold f x E = x
         myfold f x (T a y b) = f x (foldr f (myfold f y b) a)
 
+foldr1' f E = error "SplayHeap.foldr1': empty heap"
+foldr1' f (T a x b) = foldr' f (myfold f x b) a
+  where myfold f x E = x
+        myfold f x (T a y b) = f x $! (foldr' f (myfold f y b) a)
+
 foldl1 f E = error "SplayHeap.foldl1: empty heap"
 foldl1 f (T a x b) = foldl f (myfold f a x) b
   where myfold f E x = x
         myfold f (T a x b) y = f (foldl f (myfold f a x) b) y
+
+foldl1' f E = error "SplayHeap.foldl1': empty heap"
+foldl1' f (T a x b) = foldl' f (myfold f a x) b
+  where myfold f E x = x
+        myfold f (T a x b) y = (f $! (foldl f (myfold f a x) b)) y
 
 toOrdSeq xs = tos xs S.empty
   where tos E rest = rest
@@ -410,12 +439,14 @@ instance Ord a => C.OrdCollX (Heap a) a where
 instance Ord a => C.Coll (Heap a) a where
   {toSeq = toSeq; lookup = lookup; lookupM = lookupM; 
    lookupAll = lookupAll; lookupWithDefault = lookupWithDefault; 
-   fold = fold; fold1 = fold1; filter = filter; partition = partition}
+   fold = fold; fold' = fold'; fold1 = fold1; fold1' = fold1';
+   filter = filter; partition = partition}
 
 instance Ord a => C.OrdColl (Heap a) a where
   {minView = minView; minElem = minElem; maxView = maxView; 
-   maxElem = maxElem; foldr = foldr; foldl = foldl; foldr1 = foldr1; 
-   foldl1 = foldl1; toOrdSeq = toOrdSeq;
+   maxElem = maxElem; foldr = foldr; foldr' = foldr'; foldl = foldl; 
+   foldl' = foldl'; foldr1 = foldr1; foldr1' = foldr1';
+   foldl1 = foldl1; foldl1' = foldl1'; toOrdSeq = toOrdSeq;
    unsafeMapMonotonic = unsafeMapMonotonic}
 
 

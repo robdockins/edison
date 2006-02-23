@@ -66,27 +66,30 @@ setTests set = TestLabel ("Set Test "++(instanceName set)) . TestList $
    , qcTest $ prop_unionSeq set
    , qcTest $ prop_delete set
    , qcTest $ prop_deleteAll set
-   , qcTest $ prop_deleteSeq set            -- 10
-   , qcTest $ prop_null_size set
+   , qcTest $ prop_deleteSeq set
+   , qcTest $ prop_null_size set            -- 10
    , qcTest $ prop_member_count set
    , qcTest $ prop_toSeq set
    , qcTest $ prop_lookup set
    , qcTest $ prop_fold set
+   , qcTest $ prop_strict_fold set
    , qcTest $ prop_filter_partition set
    , qcTest $ prop_deleteMin_Max set
    , qcTest $ prop_unsafeInsertMin_Max set
    , qcTest $ prop_unsafeFromOrdSeq set
-   , qcTest $ prop_unsafeAppend set         -- 20
+   , qcTest $ prop_unsafeAppend set        -- 20
    , qcTest $ prop_filter set
    , qcTest $ prop_partition set
    , qcTest $ prop_minView_maxView set
    , qcTest $ prop_minElem_maxElem set
    , qcTest $ prop_foldr_foldl set
+   , qcTest $ prop_strict_foldr_foldl set
    , qcTest $ prop_foldr1_foldl1 set
+   , qcTest $ prop_strict_foldr1_foldl1 set
    , qcTest $ prop_toOrdSeq set
-   , qcTest $ prop_intersect_difference set
+   , qcTest $ prop_intersect_difference set -- 30
    , qcTest $ prop_subset_subsetEq set
-   , qcTest $ prop_fromSeqWith set         -- 30
+   , qcTest $ prop_fromSeqWith set
    , qcTest $ prop_insertWith set
    , qcTest $ prop_insertSeqWith set
    , qcTest $ prop_unionl_unionr_unionWith set
@@ -225,6 +228,12 @@ prop_fold set xs =
     &&
     (null xs || fold1 (+) xs == sum (toOrdList xs))
 
+prop_strict_fold :: SetTest Int set => set Int -> set Int -> Bool
+prop_strict_fold set xs =
+    fold' (+) 0 xs == fold (+) 0 xs
+    &&
+    (null xs || fold1' (+) xs == fold1 (+) xs)
+
 prop_filter_partition :: SetTest Int set => set Int -> set Int -> Bool
 prop_filter_partition set xs =
     let filter_p_xs = filter p xs
@@ -337,6 +346,12 @@ prop_foldr_foldl set xs =
     &&
     foldl (flip (:)) [] xs == Prelude.reverse (toOrdList xs)
 
+prop_strict_foldr_foldl :: SetTest Int set => set Int -> set Int -> Bool
+prop_strict_foldr_foldl set xs =
+    foldr' (+) 0 xs == foldr (+) 0 xs
+    &&
+    foldl' (+) 0 xs == foldl (+) 0 xs
+
 prop_foldr1_foldl1 :: SetTest Int set => set Int -> set Int -> Property
 prop_foldr1_foldl1 set xs =
     not (null xs) ==>
@@ -345,6 +360,13 @@ prop_foldr1_foldl1 set xs =
       foldl1 (flip f) xs == foldl (flip f) 1333 xs
   where f x 1333 = x
         f x y = 3*x - 7*y
+
+prop_strict_foldr1_foldl1 :: SetTest Int set => set Int -> set Int -> Property
+prop_strict_foldr1_foldl1 set xs =
+    not (null xs) ==>
+       foldr1' (+) xs == foldr1 (+) xs
+       &&
+       foldl1' (+) xs == foldl1 (+) xs
 
 prop_toOrdSeq :: SetTest Int set => set Int -> set Int -> Bool
 prop_toOrdSeq set xs =

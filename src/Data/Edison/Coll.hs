@@ -322,9 +322,15 @@ class CollX c a => Coll c a | c -> a where
   -- | Fold over all the elements in a collection in an unspecified order.
   fold       :: (a -> b -> b) -> b -> c -> b
 
+  -- | A strict variant of 'fold'.
+  fold'      :: (a -> b -> b) -> b -> c -> b
+
   -- | Fold over all the elements in a collection in an unspecified order.
   --   An error is signaled if the collection is empty.
   fold1      :: (a -> a -> a) -> c -> a
+
+  -- | A strict variant of 'fold1'.
+  fold1'     :: (a -> a -> a) -> c -> a
 
   -- | Remove all elements not satisfying the predicate.
   filter     :: (a -> Bool) -> c -> c
@@ -372,19 +378,31 @@ class (Coll c a, OrdCollX c a) => OrdColl c a | c -> a where
   --   associativity. (For sets, this will always be increasing order)
   foldr      :: (a -> b -> b) -> b -> c -> b
 
+  -- | A strict variant of 'foldr'.
+  foldr'     :: (a -> b -> b) -> b -> c -> b
+
   -- | Fold arcoss the elements in non-decreasing order with left
   --   associativity. (For sets, this will always be increasing order)
   foldl      :: (b -> a -> b) -> b -> c -> b
+
+  -- | A strict variant of 'foldl'.
+  foldl'     :: (b -> a -> b) -> b -> c -> b
 
   -- | Fold across the elements in non-decreasing order with right
   --   associativity, or signal an error if the collection is empty.
   --   (For sets, this will always be increasing order)
   foldr1     :: (a -> a -> a) -> c -> a
 
+  -- | A strict variant of 'foldr1'.
+  foldr1'    :: (a -> a -> a) -> c -> a
+
   -- | Fold across the elements in non-decreasing order with left
   --   associativity, or signal an error if the collection is empty.
   --   (For sets, this will always be increasing order)
   foldl1     :: (a -> a -> a) -> c -> a
+
+  -- | A strict variant of 'foldl1'.
+  foldl1'    :: (a -> a -> a) -> c -> a
 
   -- | List the elements in non-decreasing order. (For sets, this will always
   --   be increasing order)

@@ -78,19 +78,22 @@ bagTests bag = TestLabel ("Bag test "++(instanceName bag)) . TestList $
    , qcTest $ prop_toSeq bag
    , qcTest $ prop_lookup bag
    , qcTest $ prop_fold bag
+   , qcTest $ prop_strict_fold bag
    , qcTest $ prop_filter_partition bag
    , qcTest $ prop_deleteMin_Max bag
    , qcTest $ prop_unsafeInsertMin_Max bag
    , qcTest $ prop_unsafeFromOrdSeq bag
-   , qcTest $ prop_filter bag
-   , qcTest $ prop_partition bag         -- 20
+   , qcTest $ prop_filter bag            -- 20
+   , qcTest $ prop_partition bag
    , qcTest $ prop_minView_maxView bag
    , qcTest $ prop_minElem_maxElem bag
    , qcTest $ prop_foldr_foldl bag
+   , qcTest $ prop_strict_foldr_foldl bag
    , qcTest $ prop_foldr1_foldl1 bag
+   , qcTest $ prop_strict_foldr1_foldl1 bag
    , qcTest $ prop_toOrdSeq bag
    , qcTest $ prop_unsafeAppend bag
-   , qcTest $ prop_unsafeMapMonotonic bag
+   , qcTest $ prop_unsafeMapMonotonic bag -- 30
    ]
 
 ----------------------------------------------------
@@ -212,6 +215,12 @@ prop_fold bag xs =
     &&
     (null xs || fold1 (+) xs == sum (toOrdList xs))
 
+prop_strict_fold :: BagTest Int bag => bag Int -> bag Int -> Bool
+prop_strict_fold bag xs =
+    fold' (+) 0 xs == fold (+) 0 xs
+    &&
+    (null xs || fold1' (+) xs == fold1 (+) xs)
+
 prop_filter_partition :: BagTest Int bag => bag Int -> bag Int -> Bool
 prop_filter_partition bag xs =
     let filter_p_xs = filter p xs
@@ -319,6 +328,12 @@ prop_foldr_foldl bag xs =
     &&
     foldl (flip (:)) [] xs == Prelude.reverse (toOrdList xs)
 
+prop_strict_foldr_foldl :: BagTest Int bag => bag Int -> bag Int -> Bool
+prop_strict_foldr_foldl bag xs =
+    foldr' (+) 0 xs == foldr (+) 0 xs
+    &&
+    foldl' (+) 0 xs == foldl (+) 0 xs
+
 prop_foldr1_foldl1 :: BagTest Int bag => bag Int -> bag Int -> Property
 prop_foldr1_foldl1 bag xs =
     not (null xs) ==>
@@ -327,6 +342,13 @@ prop_foldr1_foldl1 bag xs =
       foldl1 (flip f) xs == foldl (flip f) 1333 xs
   where f x 1333 = x
         f x y = 3*x - 7*y
+
+prop_strict_foldr1_foldl1 :: BagTest Int bag => bag Int -> bag Int -> Property
+prop_strict_foldr1_foldl1 bag xs =
+    not (null xs) ==>
+       foldr1' (+) xs == foldr1 (+) xs
+       &&
+       foldl1' (+) xs == foldl1 (+) xs
 
 prop_toOrdSeq :: BagTest Int bag => bag Int -> bag Int -> Bool
 prop_toOrdSeq bag xs =

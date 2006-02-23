@@ -17,8 +17,8 @@ module Data.Edison.Coll.LazyPairingHeap (
     deleteSeq,null,size,member,count,structuralInvariant,
 
     -- * Coll operations
-    toSeq, lookup, lookupM, lookupAll, lookupWithDefault, fold, fold1,
-    filter, partition,
+    toSeq, lookup, lookupM, lookupAll, lookupWithDefault, fold, fold',
+    fold1, fold1', filter, partition,
 
     -- * OrdCollX operations
     deleteMin,deleteMax,unsafeInsertMin,unsafeInsertMax,unsafeFromOrdSeq,
@@ -26,7 +26,8 @@ module Data.Edison.Coll.LazyPairingHeap (
     partitionLE_GT,partitionLT_GT,
 
     -- * OrdColl operations
-    minView,minElem,maxView,maxElem,foldr,foldl,foldr1,foldl1,toOrdSeq,
+    minView,minElem,maxView,maxElem,foldr,foldr',foldl,foldl',
+    foldr1,foldr1',foldl1,foldl1',toOrdSeq,
     unsafeMapMonotonic,
 
     -- * Documentation
@@ -301,10 +302,22 @@ fold f c E = c
 fold f c (H1 x xs) = f x (fold f c xs)
 fold f c (H2 x h xs) = f x (fold f (fold f c xs) h)
 
+fold' :: (a -> b -> b) -> b -> Heap a -> b
+fold' f c E = c
+fold' f c (H1 x xs)   = c `seq` f x $! (fold' f c xs)
+fold' f c (H2 x h xs) = c `seq` f x $! (fold' f (fold' f c xs) h)
+
+
 fold1 :: (a -> a -> a) -> Heap a -> a
 fold1 f E = error "LazyPairingHeap.fold1: empty heap"
 fold1 f (H1 x xs) = fold f x xs
 fold1 f (H2 x h xs) = fold f (fold f x xs) h
+
+fold1' :: (a -> a -> a) -> Heap a -> a
+fold1' f E = error "LazyPairingHeap.fold1': empty heap"
+fold1' f (H1 x xs)   = fold' f x xs
+fold1' f (H2 x h xs) = fold' f (fold' f x xs) h
+
 
 filter :: Ord a => (a -> Bool) -> Heap a -> Heap a
 filter p E = E
@@ -376,10 +389,20 @@ foldr f c E = c
 foldr f c (H1 x xs) = f x (foldr f c xs)
 foldr f c (H2 x h xs) = f x (foldr f c (union h xs))
 
+foldr' :: Ord a => (a -> b -> b) -> b -> Heap a -> b
+foldr' f c E = c
+foldr' f c (H1 x xs)   = c `seq` f x $! (foldr' f c xs)
+foldr' f c (H2 x h xs) = c `seq` f x $! (foldr' f c (union h xs))
+
 foldl :: Ord a => (b -> a -> b) -> b -> Heap a -> b
 foldl f c E = c
 foldl f c (H1 x xs) = foldl f (f c x) xs
 foldl f c (H2 x h xs) = foldl f (f c x) (union h xs)
+
+foldl' :: Ord a => (b -> a -> b) -> b -> Heap a -> b
+foldl' f c E = c
+foldl' f c (H1 x xs)   = c `seq` foldl' f (f c x) xs
+foldl' f c (H2 x h xs) = c `seq` foldl' f (f c x) (union h xs)
 
 foldr1 :: Ord a => (a -> a -> a) -> Heap a -> a
 foldr1 f E = error "LazyPairingHeap.foldr1: empty heap"
@@ -387,10 +410,21 @@ foldr1 f (H1 x E) = x
 foldr1 f (H1 x xs) = f x (foldr1 f xs)
 foldr1 f (H2 x h xs) = f x (foldr1 f (union h xs))
 
+foldr1' :: Ord a => (a -> a -> a) -> Heap a -> a
+foldr1' f E = error "LazyPairingHeap.foldr1': empty heap"
+foldr1' f (H1 x E)    = x
+foldr1' f (H1 x xs)   = f x $! (foldr1' f xs)
+foldr1' f (H2 x h xs) = f x $! (foldr1' f (union h xs))
+
 foldl1 :: Ord a => (a -> a -> a) -> Heap a -> a
 foldl1 f E = error "LazyPairingHeap.foldl1: empty heap"
 foldl1 f (H1 x xs) = foldl f x xs
 foldl1 f (H2 x h xs) = foldl f x (union h xs)
+
+foldl1' :: Ord a => (a -> a -> a) -> Heap a -> a
+foldl1' f E = error "LazyPairingHeap.foldl1': empty heap"
+foldl1' f (H1 x xs)   = foldl' f x xs
+foldl1' f (H2 x h xs) = foldl' f x (union h xs)
 
 unsafeMapMonotonic :: (Ord a,Ord b) => (a -> b) -> Heap a -> Heap b
 unsafeMapMonotonic = mapm
@@ -447,13 +481,15 @@ instance Ord a => C.OrdCollX (Heap a) a where
 instance Ord a => C.Coll (Heap a) a where
   {toSeq = toSeq; lookup = lookup; lookupM = lookupM; 
    lookupAll = lookupAll; lookupWithDefault = lookupWithDefault; 
-   fold = fold; fold1 = fold1; filter = filter; partition = partition}
+   fold = fold; fold' = fold'; fold1 = fold1; fold1' = fold1';
+   filter = filter; partition = partition}
 
 instance Ord a => C.OrdColl (Heap a) a where
   {minView = minView; minElem = minElem; maxView = maxView; 
-   maxElem = maxElem; foldr = foldr; foldl = foldl; foldr1 = foldr1; 
-   foldl1 = foldl1; toOrdSeq = toOrdSeq;
-   unsafeMapMonotonic = unsafeMapMonotonic}
+   maxElem = maxElem; foldr = foldr; foldr' = foldr'; 
+   foldl = foldl; foldl' = foldl'; foldr1 = foldr1;
+   foldr1' = foldr1'; foldl1 = foldl1; foldl1' = foldl1';
+   toOrdSeq = toOrdSeq; unsafeMapMonotonic = unsafeMapMonotonic}
 
 instance Ord a => Eq (Heap a) where
   xs == ys = C.toOrdList xs == C.toOrdList ys

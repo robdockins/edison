@@ -13,8 +13,8 @@ module Data.Edison.Coll.UnbalancedSet (
     deleteSeq,null,size,member,count,
 
     -- * Coll operations
-    toSeq,lookup,lookupM,lookupAll,lookupWithDefault,fold,fold1,
-    filter,partition,
+    toSeq,lookup,lookupM,lookupAll,lookupWithDefault,fold,fold',
+    fold1,fold1',filter,partition,
 
     -- * OrdCollX operations
     deleteMin,deleteMax,unsafeInsertMin,unsafeInsertMax,unsafeFromOrdSeq,
@@ -22,8 +22,8 @@ module Data.Edison.Coll.UnbalancedSet (
     partitionLE_GT,partitionLT_GT,
 
     -- * OrdColl operations
-    minView,minElem,maxView,maxElem,foldr,foldl,foldr1,foldl1,toOrdSeq,
-    unsafeMapMonotonic,
+    minView,minElem,maxView,maxElem,foldr,foldr',foldl,foldl',
+    foldr1,foldr1',foldl1,foldl1',toOrdSeq,unsafeMapMonotonic,
 
     -- * SetX operations
     intersection,difference,subset,subsetEq,
@@ -69,6 +69,8 @@ lookupAll  :: (Ord a,S.Sequence seq) => a -> Set a -> seq a
 lookupWithDefault :: Ord a => a -> a -> Set a -> a
 fold       :: (a -> b -> b) -> b -> Set a -> b
 fold1      :: (a -> a -> a) -> Set a -> a
+fold'      :: (a -> b -> b) -> b -> Set a -> b
+fold1'     :: (a -> a -> a) -> Set a -> a
 filter     :: Ord a => (a -> Bool) -> Set a -> Set a
 partition  :: Ord a => (a -> Bool) -> Set a -> (Set a, Set a)
 
@@ -94,6 +96,10 @@ foldr         :: (a -> b -> b) -> b -> Set a -> b
 foldl         :: (b -> a -> b) -> b -> Set a -> b
 foldr1        :: (a -> a -> a) -> Set a -> a
 foldl1        :: (a -> a -> a) -> Set a -> a
+foldr'        :: (a -> b -> b) -> b -> Set a -> b
+foldl'        :: (b -> a -> b) -> b -> Set a -> b
+foldr1'       :: (a -> a -> a) -> Set a -> a
+foldl1'       :: (a -> a -> a) -> Set a -> a
 toOrdSeq      :: (Ord a,S.Sequence seq) => Set a -> seq a
 
 intersection  :: Ord a => Set a -> Set a -> Set a
@@ -175,8 +181,14 @@ lookupM x (T a y b) =
 fold f e E = e
 fold f e (T a x b) = f x (fold f (fold f e a) b)
 
+fold' f e E = e
+fold' f e (T a x b) = e `seq` f x $! (fold' f (fold' f e a) b)
+
 fold1 f E = error "UnbalancedSet.fold1: empty collection"
 fold1 f (T a x b) = fold f (fold f x a) b
+
+fold1' f E = error "UnbalancedSet.fold1': empty collection"
+fold1' f (T a x b) = fold' f (fold' f x a) b
 
 deleteMin E = E
 deleteMin (T E x b) = b
@@ -277,16 +289,30 @@ maxElem (T a x b) = maxElem b
 foldr f e E = e
 foldr f e (T a x b) = foldr f (f x (foldr f e b)) a
 
+foldr' f e E = e
+foldr' f e (T a x b) = e `seq` foldr' f (f x $! (foldr' f e b)) a
+
 foldl f e E = e
 foldl f e (T a x b) = foldl f (f (foldl f e a) x) b
+
+foldl' f e E = e
+foldl' f e (T a x b) = e `seq` foldl' f ((f $! (foldl' f e a)) x) b
 
 foldr1 f E = error "UnbalancedSet.foldr1: empty collection"
 foldr1 f (T a x E) = foldr f x a
 foldr1 f (T a x b) = foldr f (f x (foldr1 f b)) a
 
+foldr1' f E = error "UnbalancedSet.foldr1': empty collection"
+foldr1' f (T a x E) = foldr' f x a
+foldr1' f (T a x b) = foldr' f (f x $! (foldr1' f b)) a
+
 foldl1 f E = error "UnbalancedSet.foldl1: empty collection"
 foldl1 f (T E x b) = foldl f x b
 foldl1 f (T a x b) = foldl f (f (foldl1 f a) x) b
+
+foldl1' f E = error "UnbalancedSet.foldl1': empty collection"
+foldl1' f (T E x b) = foldl' f x b
+foldl1' f (T a x b) = foldl' f ((f $! (foldl1' f a)) x) b
 
 unsafeMapMonotonic f E = E
 unsafeMapMonotonic f (T a x b) = 
@@ -343,12 +369,14 @@ instance Ord a => C.OrdCollX (Set a) a where
 instance Ord a => C.Coll (Set a) a where
   {toSeq = toSeq; lookup = lookup; lookupM = lookupM; 
    lookupAll = lookupAll; lookupWithDefault = lookupWithDefault; 
-   fold = fold; fold1 = fold1; filter = filter; partition = partition}
+   fold = fold; fold' = fold'; fold1 = fold1; fold1' = fold1';
+   filter = filter; partition = partition}
 
 instance Ord a => C.OrdColl (Set a) a where
   {minView = minView; minElem = minElem; maxView = maxView; 
-   maxElem = maxElem; foldr = foldr; foldl = foldl; foldr1 = foldr1; 
-   foldl1 = foldl1; toOrdSeq = toOrdSeq;
+   maxElem = maxElem; foldr = foldr; foldr' = foldr'; 
+   foldl = foldl; foldl' = foldl'; foldr1 = foldr1; foldr1' = foldr1';
+   foldl1 = foldl1; foldl1' = foldl1'; toOrdSeq = toOrdSeq;
    unsafeMapMonotonic = unsafeMapMonotonic}
 
 instance Ord a => C.SetX (Set a) a where

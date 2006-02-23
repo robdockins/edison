@@ -16,8 +16,8 @@ module Data.Edison.Coll.LeftistHeap (
     deleteSeq,null,size,member,count,structuralInvariant,
 
     -- * Coll operations
-    toSeq, lookup, lookupM, lookupAll, lookupWithDefault, fold, fold1,
-    filter, partition,
+    toSeq, lookup, lookupM, lookupAll, lookupWithDefault, fold, fold',
+    fold1, fold1', filter, partition,
 
     -- * OrdCollX operations
     deleteMin,deleteMax,unsafeInsertMin,unsafeInsertMax,unsafeFromOrdSeq,
@@ -25,7 +25,8 @@ module Data.Edison.Coll.LeftistHeap (
     partitionLE_GT,partitionLT_GT,
 
     -- * OrdColl operations
-    minView,minElem,maxView,maxElem,foldr,foldl,foldr1,foldl1,toOrdSeq,
+    minView,minElem,maxView,maxElem,foldr,foldr',foldl,foldl',
+    foldr1,foldr1',foldl1,foldl1',toOrdSeq,
     unsafeMapMonotonic,
 
     -- * Documentation
@@ -186,9 +187,18 @@ fold :: Ord a => (a -> b -> b) -> b -> Heap a -> b
 fold f e E = e
 fold f e (L _ x a b) = f x (fold f (fold f e a) b)
 
+fold' :: Ord a => (a -> b -> b) -> b -> Heap a -> b
+fold' f e E = e
+fold' f e (L _ x a b) = e `seq` f x $! (fold' f (fold' f e a) b)
+
 fold1 :: Ord a => (a -> a -> a) -> Heap a -> a
 fold1 f E = error "LeftistHeap.fold1: empty collection"
 fold1 f (L _ x a b) = fold f (fold f x a) b
+
+fold1' :: Ord a => (a -> a -> a) -> Heap a -> a
+fold1' f E = error "LeftistHeap.fold1': empty collection"
+fold1' f (L _ x a b) = fold' f (fold' f x a) b
+
 
 filter :: Ord a => (a -> Bool) -> Heap a -> Heap a
 filter p E = E
@@ -319,18 +329,35 @@ foldr :: Ord a => (a -> b -> b) -> b -> Heap a -> b
 foldr f e E = e
 foldr f e (L _ x a b) = f x (foldr f e (union a b))
 
+foldr' :: Ord a => (a -> b -> b) -> b -> Heap a -> b
+foldr' f e E = e
+foldr' f e (L _ x a b) = e `seq` f x $! (foldr' f e (union a b))
+
 foldl :: Ord a => (b -> a -> b) -> b -> Heap a -> b
 foldl f e E = e
 foldl f e (L _ x a b) = foldl f (f e x) (union a b)
+
+foldl' :: Ord a => (b -> a -> b) -> b -> Heap a -> b
+foldl' f e E = e
+foldl' f e (L _ x a b) = e `seq` foldl' f (f e x) (union a b)
 
 foldr1 :: Ord a => (a -> a -> a) -> Heap a -> a
 foldr1 f E = error "LeftistHeap.foldr1: empty collection"
 foldr1 f (L _ x E _) = x
 foldr1 f (L _ x a b) = f x (foldr1 f (union a b))
 
+foldr1' :: Ord a => (a -> a -> a) -> Heap a -> a
+foldr1' f E = error "LeftistHeap.foldr1': empty collection"
+foldr1' f (L _ x E _) = x
+foldr1' f (L _ x a b) = f x $! (foldr1' f (union a b))
+
 foldl1 :: Ord a => (a -> a -> a) -> Heap a -> a
 foldl1 f E = error "LeftistHeap.foldl1: empty collection"
 foldl1 f (L _ x a b) = foldl f x (union a b)
+
+foldl1' :: Ord a => (a -> a -> a) -> Heap a -> a
+foldl1' f E = error "LeftistHeap.foldl1: empty collection"
+foldl1' f (L _ x a b) = foldl' f x (union a b)
 
 {- ???? -}
 unsafeMapMonotonic :: Ord a => (a -> a) -> Heap a -> Heap a
@@ -388,13 +415,15 @@ instance Ord a => C.OrdCollX (Heap a) a where
 instance Ord a => C.Coll (Heap a) a where
   {toSeq = toSeq; lookup = lookup; lookupM = lookupM; 
    lookupAll = lookupAll; lookupWithDefault = lookupWithDefault; 
-   fold = fold; fold1 = fold1; filter = filter; partition = partition}
+   fold = fold; fold' = fold'; fold1 = fold1; fold1' = fold1';
+   filter = filter; partition = partition}
 
 instance Ord a => C.OrdColl (Heap a) a where
   {minView = minView; minElem = minElem; maxView = maxView; 
-   maxElem = maxElem; foldr = foldr; foldl = foldl; foldr1 = foldr1; 
-   foldl1 = foldl1; toOrdSeq = toOrdSeq;
-   unsafeMapMonotonic = unsafeMapMonotonic}
+   maxElem = maxElem; foldr = foldr; foldr' = foldr';
+   foldl = foldl; foldl' = foldl'; foldr1 = foldr1; 
+   foldr1' = foldr1'; foldl1 = foldl1; foldl1' = foldl1';
+   toOrdSeq = toOrdSeq; unsafeMapMonotonic = unsafeMapMonotonic}
 
 instance Ord a => Eq (Heap a) where
   xs == ys = C.toOrdList xs == C.toOrdList ys

@@ -11,8 +11,8 @@ module Data.Edison.Coll.MinHeap (
     deleteSeq,null,size,member,count,structuralInvariant,
 
     -- * Coll operations
-    toSeq, lookup, lookupM, lookupAll, lookupWithDefault, fold, fold1,
-    filter, partition,
+    toSeq, lookup, lookupM, lookupAll, lookupWithDefault, fold, fold',
+    fold1, fold1', filter, partition,
 
     -- * OrdCollX operations
     deleteMin,deleteMax,unsafeInsertMin,unsafeInsertMax,unsafeFromOrdSeq,
@@ -20,7 +20,8 @@ module Data.Edison.Coll.MinHeap (
     partitionLE_GT,partitionLT_GT,
 
     -- * OrdColl operations
-    minView,minElem,maxView,maxElem,foldr,foldl,foldr1,foldl1,toOrdSeq,
+    minView,minElem,maxView,maxElem,foldr,foldr',foldl,foldl',
+    foldr1,foldr1',foldl1,foldl1',toOrdSeq,
     unsafeMapMonotonic,
 
     -- * Documentation
@@ -68,6 +69,8 @@ lookupAll :: (C.Coll h a,Ord a,S.Sequence s) => a -> Min h a -> s a
 lookupWithDefault :: (C.Coll h a,Ord a) => a -> a -> Min h a -> a
 fold      :: (C.Coll h a) => (a -> b -> b) -> b -> Min h a -> b
 fold1     :: (C.Coll h a) => (a -> a -> a) -> Min h a -> a
+fold'     :: (C.Coll h a) => (a -> b -> b) -> b -> Min h a -> b
+fold1'    :: (C.Coll h a) => (a -> a -> a) -> Min h a -> a
 filter    :: (C.OrdColl h a) => (a -> Bool) -> Min h a -> Min h a
 partition :: (C.OrdColl h a) => (a -> Bool) -> Min h a -> (Min h a, Min h a)
 
@@ -93,6 +96,10 @@ foldr :: (C.OrdColl h a,Ord a) => (a -> b -> b) -> b -> Min h a -> b
 foldl :: (C.OrdColl h a,Ord a) => (b -> a -> b) -> b -> Min h a -> b
 foldr1 :: (C.OrdColl h a,Ord a) => (a -> a -> a) -> Min h a -> a
 foldl1 :: (C.OrdColl h a,Ord a) => (a -> a -> a) -> Min h a -> a
+foldr' :: (C.OrdColl h a,Ord a) => (a -> b -> b) -> b -> Min h a -> b
+foldl' :: (C.OrdColl h a,Ord a) => (b -> a -> b) -> b -> Min h a -> b
+foldr1' :: (C.OrdColl h a,Ord a) => (a -> a -> a) -> Min h a -> a
+foldl1' :: (C.OrdColl h a,Ord a) => (a -> a -> a) -> Min h a -> a
 toOrdSeq :: (C.OrdColl h a,Ord a,S.Sequence s) => Min h a -> s a
 unsafeMapMonotonic :: (C.OrdColl h a,Ord a) => 
       (a -> a) -> Min h a -> Min h a
@@ -191,8 +198,14 @@ lookupWithDefault d _ _ = d
 fold f e E = e
 fold f e (M x xs) = f x (C.fold f e xs)
 
+fold' f e E = e
+fold' f e (M x xs) = f x $! (C.fold' f e xs)
+
 fold1 f E = error "MinHeap.fold1: empty heap"
 fold1 f (M x xs) = C.fold f x xs
+
+fold1' f E = error "MinHeap.fold1': empty heap"
+fold1' f (M x xs) = C.fold' f x xs
 
 filter p E = E
 filter p (M x xs)
@@ -274,16 +287,30 @@ maxElem (M x xs)
 foldr f e E = e
 foldr f e (M x xs) = f x (C.foldr f e xs)
 
+foldr' f e E = e
+foldr' f e (M x xs) = f x $! (C.foldr' f e xs)
+
 foldl f e E = e
 foldl f e (M x xs) = C.foldl f (f e x) xs
+
+foldl' f e E = e
+foldl' f e (M x xs) = e `seq` C.foldl' f (f e x) xs
 
 foldr1 f E = error "MinHeap.foldr1: empty heap"
 foldr1 f (M x xs)
   | C.null xs   = x
   | otherwise = f x (C.foldr1 f xs)
 
+foldr1' f E = error "MinHeap.foldr1': empty heap"
+foldr1' f (M x xs)
+  | C.null xs = x
+  | otherwise = f x $! (C.foldr1' f xs)
+
 foldl1 f E = error "MinHeap.foldl1: empty heap"
 foldl1 f (M x xs) = C.foldl f x xs
+
+foldl1' f E = error "MinHeap.foldl1': empty heap"
+foldl1' f (M x xs) = C.foldl' f x xs
 
 toOrdSeq E = S.empty
 toOrdSeq (M x xs) = S.lcons x (C.toOrdSeq xs)
@@ -311,12 +338,14 @@ instance (C.OrdColl h a, Ord a) => C.OrdCollX (Min h a) a where
 instance (C.OrdColl h a, Ord a) => C.Coll (Min h a) a where
   {toSeq = toSeq; lookup = lookup; lookupM = lookupM; 
    lookupAll = lookupAll; lookupWithDefault = lookupWithDefault; 
-   fold = fold; fold1 = fold1; filter = filter; partition = partition}
+   fold = fold; fold' = fold'; fold1 = fold1; fold1' = fold1';
+   filter = filter; partition = partition}
 
 instance (C.OrdColl h a, Ord a) => C.OrdColl (Min h a) a where
   {minView = minView; minElem = minElem; maxView = maxView; 
-   maxElem = maxElem; foldr = foldr; foldl = foldl; foldr1 = foldr1; 
-   foldl1 = foldl1; toOrdSeq = toOrdSeq;
+   maxElem = maxElem; foldr = foldr; foldr' = foldr'; 
+   foldl = foldl; foldl' = foldl'; foldr1 = foldr1;  foldr1' = foldr1';
+   foldl1 = foldl1; foldl1' = foldl1'; toOrdSeq = toOrdSeq;
    unsafeMapMonotonic = unsafeMapMonotonic}
 
 -- instance Eq is derived

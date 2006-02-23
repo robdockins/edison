@@ -11,8 +11,8 @@ module Data.Edison.Coll.StandardSet (
     deleteSeq,null,size,member,count,
 
     -- * Coll operations
-    toSeq,lookup,lookupM,lookupAll,lookupWithDefault,fold,fold1,
-    filter,partition,structuralInvariant,
+    toSeq,lookup,lookupM,lookupAll,lookupWithDefault,fold,fold',
+    fold1,fold1',filter,partition,structuralInvariant,
 
     -- * OrdCollX operations
     deleteMin,deleteMax,unsafeInsertMin,unsafeInsertMax,unsafeFromOrdSeq,
@@ -20,8 +20,8 @@ module Data.Edison.Coll.StandardSet (
     partitionLE_GT,partitionLT_GT,
 
     -- * OrdColl operations
-    minView,minElem,maxView,maxElem,foldr,foldl,foldr1,foldl1,toOrdSeq,
-    unsafeMapMonotonic,
+    minView,minElem,maxView,maxElem,foldr,foldr',foldl,foldl',
+    foldr1,foldr1',foldl1,foldl1',toOrdSeq,unsafeMapMonotonic,
 
     -- * SetX operations
     intersection,difference,subset,subsetEq,
@@ -71,6 +71,8 @@ lookupAll  :: (Ord a,S.Sequence seq) => a -> Set a -> seq a
 lookupWithDefault :: Ord a => a -> a -> Set a  -> a
 fold       :: (a -> b -> b) -> b -> Set a -> b
 fold1      :: (a -> a -> a) -> Set a -> a
+fold'      :: (a -> b -> b) -> b -> Set a -> b
+fold1'     :: (a -> a -> a) -> Set a -> a
 filter     :: Ord a => (a -> Bool) -> Set a -> Set a
 partition  :: Ord a => (a -> Bool) -> Set a -> (Set a, Set a)
 
@@ -96,6 +98,10 @@ foldr         :: (a -> b -> b) -> b -> Set a -> b
 foldl         :: (b -> a -> b) -> b -> Set a -> b
 foldr1        :: (a -> a -> a) -> Set a -> a
 foldl1        :: (a -> a -> a) -> Set a -> a
+foldr'        :: (a -> b -> b) -> b -> Set a -> b
+foldl'        :: (b -> a -> b) -> b -> Set a -> b
+foldr1'       :: (a -> a -> a) -> Set a -> a
+foldl1'       :: (a -> a -> a) -> Set a -> a
 toOrdSeq      :: (Ord a,S.Sequence seq) => Set a -> seq a
 
 intersection  :: Ord a => Set a -> Set a -> Set a
@@ -141,7 +147,9 @@ lookupM            = lookupMUsingLookupAll
 lookupAll el set   = toSeqUsingFold (DS.intersection set (DS.singleton el))
 lookupWithDefault  = lookupWithDefaultUsingLookupAll
 fold               = DS.fold
+fold' f x xs       = L.foldl' (flip f) x (DS.toList xs)
 fold1 f set        = let (x,s) = DS.deleteFindMin set in DS.fold f x s
+fold1' f xs        = L.foldl1' (flip f) (DS.toList xs)
 filter             = DS.filter
 partition          = DS.partition
 
@@ -169,10 +177,14 @@ maxView set        = if DS.null set
                         else return (DS.deleteFindMax set)
 maxElem            = DS.findMax
 
-foldr  f x set     = Data.List.foldr  f x (DS.toAscList set)
-foldr1 f   set     = Data.List.foldr1 f   (DS.toAscList set)
-foldl  f x set     = Data.List.foldl  f x (DS.toAscList set)
-foldl1 f   set     = Data.List.foldl1 f   (DS.toAscList set)
+foldr   f x set     = L.foldr   f x (DS.toAscList set)
+foldr'  f x set     = L.foldr'  f x (DS.toAscList set)
+foldr1  f   set     = L.foldr1  f   (DS.toAscList set)
+foldr1' f   set     = L.foldr1' f   (DS.toAscList set)
+foldl   f x set     = L.foldl   f x (DS.toAscList set)
+foldl'  f x set     = L.foldl'  f x (DS.toAscList set)
+foldl1  f   set     = L.foldl1  f   (DS.toAscList set)
+foldl1' f   set     = L.foldl1' f   (DS.toAscList set)
 
 toOrdSeq           = S.fromList . DS.toAscList
 
@@ -213,12 +225,14 @@ instance Ord a => C.OrdCollX (Set a) a where
 instance Ord a => C.Coll (Set a) a where
   {toSeq = toSeq; lookup = lookup; lookupM = lookupM; 
    lookupAll = lookupAll; lookupWithDefault = lookupWithDefault; 
-   fold = fold; fold1 = fold1; filter = filter; partition = partition}
+   fold = fold; fold' = fold'; fold1 = fold1; fold1' = fold1';
+   filter = filter; partition = partition}
 
 instance Ord a => C.OrdColl (Set a) a where
   {minView = minView; minElem = minElem; maxView = maxView; 
-   maxElem = maxElem; foldr = foldr; foldl = foldl; foldr1 = foldr1; 
-   foldl1 = foldl1; toOrdSeq = toOrdSeq;
+   maxElem = maxElem; foldr = foldr; foldr' = foldr'; foldl = foldl;
+   foldl' = foldl'; foldr1 = foldr1; foldr1' = foldr1';
+   foldl1 = foldl1; foldl1' = foldl1'; toOrdSeq = toOrdSeq;
    unsafeMapMonotonic = unsafeMapMonotonic }
 
 instance Ord a => C.SetX (Set a) a where
