@@ -16,11 +16,11 @@ module Data.Edison.Assoc.PatriciaLoMap (
     -- * AssocX operations
     empty,single,fromSeq,insert,insertSeq,union,unionSeq,delete,deleteAll,
     deleteSeq,null,size,member,count,lookup,lookupM,lookupAll,
-    lookupWithDefault,adjust,adjustAll,map,fold,fold1,filter,partition,elements,
-    structuralInvariant,
+    lookupWithDefault,adjust,adjustAll,map,fold,fold',fold1,fold1',
+    filter,partition,elements,structuralInvariant,
 
     -- * Assoc operations
-    toSeq,keys,mapWithKey,foldWithKey,filterWithKey,partitionWithKey,
+    toSeq,keys,mapWithKey,foldWithKey,foldWithKey',filterWithKey,partitionWithKey,
 
     -- * FiniteMapX operations
     fromSeqWith,fromSeqWithKey,insertWith,insertWithKey,insertSeqWith,
@@ -187,10 +187,20 @@ fold f c E = c
 fold f c (L k x) = f x c
 fold f c (B p m t0 t1) = fold f (fold f c t1) t0
 
+fold' :: (a -> b -> b) -> b -> FM a -> b
+fold' f c E = c
+fold' f c (L k x) = c `seq` f x c
+fold' f c (B p m t0 t1) = c `seq` (fold f $! (fold f c t1)) t0
+
 fold1 :: (a -> a -> a) -> FM a -> a
 fold1 f E = error "PatriciaLoMap.fold1: empty map"
 fold1 f (L k x) = x
 fold1 f (B p m t0 t1) = f (fold1 f t0) (fold1 f t1)
+
+fold1' :: (a -> a -> a) -> FM a -> a
+fold1' f E = error "PatriciaLoMap.fold1: empty map"
+fold1' f (L k x) = x
+fold1' f (B p m t0 t1) = f (fold1' f t0) $! (fold1' f t1)
 
 filter :: (a -> Bool) -> FM a -> FM a
 filter g E = E
@@ -365,6 +375,12 @@ foldWithKey f c E = c
 foldWithKey f c (L k x) = f k x c
 foldWithKey f c (B p m t0 t1) = foldWithKey f (foldWithKey f c t1) t0
 
+foldWithKey' :: (Int -> a -> b -> b) -> b -> FM a -> b
+foldWithKey' f c E = c
+foldWithKey' f c (L k x) = c `seq` f k x c
+foldWithKey' f c (B p m t0 t1) = c `seq` (foldWithKey f $! (foldWithKey f c t1)) t0
+
+
 filterWithKey :: (Int -> a -> Bool) -> FM a -> FM a
 filterWithKey g E = E
 filterWithKey g t@(L k x) = if g k x then t else E
@@ -490,13 +506,15 @@ instance A.AssocX FM Int where
    null = null; size = size; member = member; count = count; 
    lookup = lookup; lookupM = lookupM; lookupAll = lookupAll; 
    lookupWithDefault = lookupWithDefault; adjust = adjust; 
-   adjustAll = adjustAll; map = map; fold = fold; fold1 = fold1; 
+   adjustAll = adjustAll; map = map; fold = fold; fold' = fold';
+   fold1 = fold1; fold1' = fold1';
    filter = filter; partition = partition; elements = elements;
    structuralInvariant = structuralInvariant; instanceName m = moduleName}
 
 instance A.Assoc FM Int where
   {toSeq = toSeq; keys = keys; mapWithKey = mapWithKey; 
-   foldWithKey = foldWithKey; filterWithKey = filterWithKey; 
+   foldWithKey = foldWithKey; foldWithKey' = foldWithKey';
+   filterWithKey = filterWithKey; 
    partitionWithKey = partitionWithKey}
 
 instance A.FiniteMapX FM Int where

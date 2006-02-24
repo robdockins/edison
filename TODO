@@ -1,6 +1,6 @@
+strictify folds for TernaryTrie
 structuralInvariant for MyersStack
 structuralInvariant for PatriciaLoMap
 complete test coverage for Assoc
 add docs to the implementations to help decide when to use which ones
 put together some kind of benchmarking
-

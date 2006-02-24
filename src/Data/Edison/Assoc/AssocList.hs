@@ -16,21 +16,22 @@ module Data.Edison.Assoc.AssocList (
     -- * AssocX operations
     empty,single,fromSeq,insert,insertSeq,union,unionSeq,delete,deleteAll,
     deleteSeq,null,size,member,count,lookup,lookupM,lookupAll,
-    lookupWithDefault,adjust,adjustAll,map,fold,fold1,filter,partition,elements,
-    structuralInvariant,
+    lookupWithDefault,adjust,adjustAll,map,fold,fold',fold1,fold1',filter,
+    partition,elements,structuralInvariant,
 
     -- * OrdAssocX operations
     minView, minElem, deleteMin, unsafeInsertMin, maxView, maxElem, deleteMax,
-    unsafeInsertMax, foldr, foldl, foldr1, foldl1, unsafeFromOrdSeq,
-    unsafeAppend, filterLT, filterLE, filterGT, filterGE,
+    unsafeInsertMax, foldr, foldr', foldl, foldl', foldr1, foldr1', 
+    foldl1, foldl1', unsafeFromOrdSeq, unsafeAppend,
+    filterLT, filterLE, filterGT, filterGE,
     partitionLT_GE, partitionLE_GT, partitionLT_GT,
 
     -- * Assoc operations
-    toSeq,keys,mapWithKey,foldWithKey,filterWithKey,partitionWithKey,
+    toSeq,keys,mapWithKey,foldWithKey,foldWithKey',filterWithKey,partitionWithKey,
 
     -- * OrdAssoc operations
     minViewWithKey, minElemWithKey, maxViewWithKey, maxElemWithKey,
-    foldrWithKey, foldlWithKey, toOrdSeq,
+    foldrWithKey, foldrWithKey', foldlWithKey, foldlWithKey', toOrdSeq,
 
     -- * FiniteMapX operations
     fromSeqWith,fromSeqWithKey,insertWith,insertWithKey,insertSeqWith,
@@ -79,6 +80,8 @@ adjustAll     :: Eq k => (a -> a) -> k -> FM k a -> FM k a
 map           :: Eq k => (a -> b) -> FM k a -> FM k b
 fold          :: Eq k => (a -> b -> b) -> b -> FM k a -> b
 fold1         :: Eq k => (a -> a -> a) -> FM k a -> a
+fold'         :: Eq k => (a -> b -> b) -> b -> FM k a -> b
+fold1'        :: Eq k => (a -> a -> a) -> FM k a -> a
 filter        :: Eq k => (a -> Bool) -> FM k a -> FM k a
 partition     :: Eq k => (a -> Bool) -> FM k a -> (FM k a, FM k a)
 elements      :: (Eq k,S.Sequence seq) => FM k a -> seq a
@@ -106,6 +109,7 @@ toSeq            :: (Eq k,S.Sequence seq) => FM k a -> seq (k,a)
 keys             :: (Eq k,S.Sequence seq) => FM k a -> seq k
 mapWithKey       :: Eq k => (k -> a -> b) -> FM k a -> FM k b
 foldWithKey      :: Eq k => (k -> a -> b -> b) -> b -> FM k a -> b
+foldWithKey'     :: Eq k => (k -> a -> b -> b) -> b -> FM k a -> b
 filterWithKey    :: Eq k => (k -> a -> Bool) -> FM k a -> FM k a
 partitionWithKey :: Eq k => (k -> a -> Bool) -> FM k a -> (FM k a, FM k a)
 
@@ -126,6 +130,10 @@ foldr            :: Ord k => (a -> b -> b) -> b -> FM k a -> b
 foldr1           :: Ord k => (a -> a -> a) -> FM k a -> a
 foldl            :: Ord k => (b -> a -> b) -> b -> FM k a -> b
 foldl1           :: Ord k => (a -> a -> a) -> FM k a -> a
+foldr'           :: Ord k => (a -> b -> b) -> b -> FM k a -> b
+foldr1'          :: Ord k => (a -> a -> a) -> FM k a -> a
+foldl'           :: Ord k => (b -> a -> b) -> b -> FM k a -> b
+foldl1'          :: Ord k => (a -> a -> a) -> FM k a -> a
 unsafeFromOrdSeq :: (Ord k,S.Sequence seq) => seq (k,a) -> FM k a
 unsafeAppend     :: Ord k => FM k a -> FM k a -> FM k a
 filterLT         :: Ord k => k -> FM k a -> FM k a
@@ -142,6 +150,8 @@ maxViewWithKey    :: (Ord k,Monad m) => FM k a -> m ((k, a), FM k a)
 maxElemWithKey    :: Ord k => FM k a -> (k,a)
 foldrWithKey      :: Ord k => (k -> a -> b -> b) -> b -> FM k a -> b
 foldlWithKey      :: Ord k => (b -> k -> a -> b) -> b -> FM k a -> b
+foldrWithKey'     :: Ord k => (k -> a -> b -> b) -> b -> FM k a -> b
+foldlWithKey'     :: Ord k => (b -> k -> a -> b) -> b -> FM k a -> b
 toOrdSeq          :: (Ord k,S.Sequence seq) => FM k a -> seq (k,a)
 
 
@@ -179,17 +189,33 @@ foldrFM :: Eq k => (a -> b -> b) -> b -> FM k a -> b
 foldrFM f z E = z
 foldrFM f z (I k a m) = f a (foldrFM f z (delete k m))
 
+foldrFM' :: Eq k => (a -> b -> b) -> b -> FM k a -> b
+foldrFM' f z E = z
+foldrFM' f z (I k a m) = f a $! (foldrFM' f z (delete k m))
+
 foldlFM :: Eq k => (b -> a -> b) -> b -> FM k a -> b
 foldlFM f x E = x
 foldlFM f x (I k a m) = foldlFM f (f x a) (delete k m)
+
+foldlFM' :: Eq k => (b -> a -> b) -> b -> FM k a -> b
+foldlFM' f x E = x
+foldlFM' f x (I k a m) = x `seq` foldlFM' f (f x a) (delete k m)
 
 foldrWithKeyFM :: Eq k => (k -> a -> b -> b) -> b -> FM k a -> b
 foldrWithKeyFM f z E = z
 foldrWithKeyFM f z (I k a m) = f k a (foldrWithKeyFM f z (delete k m))
 
+foldrWithKeyFM' :: Eq k => (k -> a -> b -> b) -> b -> FM k a -> b
+foldrWithKeyFM' f z E = z
+foldrWithKeyFM' f z (I k a m) = f k a $! (foldrWithKeyFM' f z (delete k m))
+
 foldlWithKeyFM :: Eq k => (b -> k -> a -> b) -> b -> FM k a -> b
 foldlWithKeyFM f x E = x
 foldlWithKeyFM f x (I k a m) = foldlWithKeyFM f (f x k a) (delete k m)
+
+foldlWithKeyFM' :: Eq k => (b -> k -> a -> b) -> b -> FM k a -> b
+foldlWithKeyFM' f x E = x
+foldlWithKeyFM' f x (I k a m) = x `seq` foldlWithKeyFM' f (f x k a) (delete k m)
 
 takeWhileFM :: (k -> Bool) -> FM k a -> FM k a
 takeWhileFM p E = E
@@ -274,8 +300,14 @@ map f (I k x m) = I k (f x) (map f m)
 fold f c E = c
 fold f c (I k x m) = fold f (f x c) (delete k m)
 
+fold' f c E = c
+fold' f c (I k x m) = c `seq` fold' f (f x c) (delete k m)
+
 fold1 f E = error "AssocList.fold1: empty map"
 fold1 f (I k x m) = fold f x (delete k m)
+
+fold1' f E = error "AssocList.fold1': empty map"
+fold1' f (I k x m) = fold' f x (delete k m)
 
 filter p E = E
 filter p (I k x m) | p x = I k x (filter p (delete k m))
@@ -299,6 +331,9 @@ mapWithKey f (I k x m) = I k (f k x) (mapWithKey f m)
 
 foldWithKey f c E = c
 foldWithKey f c (I k x m) = foldWithKey f (f k x c) (delete k m)
+
+foldWithKey' f c E = c
+foldWithKey' f c (I k x m) = c `seq` foldWithKey' f (f k x c) (delete k m)
 
 filterWithKey p E = E
 filterWithKey p (I k x m) 
@@ -347,18 +382,31 @@ deleteMax (I k a m) = let (k',_) = findMax k a m in delete k' m
 
 unsafeInsertMax = insert
 
-foldr f z m = foldrFM f z (mergeSortFM m)
+foldr  f z m = foldrFM  f z (mergeSortFM m)
+foldr' f z m = foldrFM' f z (mergeSortFM m)
+
 foldr1 f m =
   case mergeSortFM m of
     E -> error $ moduleName++".foldlr1: empty map"
     I k a m -> foldrFM f a (delete k m)
 
+foldr1' f m =
+  case mergeSortFM m of
+    E -> error $ moduleName++".foldlr1': empty map"
+    I k a m -> foldrFM' f a (delete k m)
+   
+foldl  f x m = foldlFM  f x (mergeSortFM m)
+foldl' f x m = foldlFM' f x (mergeSortFM m)
 
-foldl f x m = foldlFM f x (mergeSortFM m)
 foldl1 f m =
   case mergeSortFM m of
     E -> error $ moduleName++".foldl1: empty map"
     I k a m -> foldlFM f a (delete k m)
+
+foldl1' f m =
+  case mergeSortFM m of
+    E -> error $ moduleName++".foldl1': empty map"
+    I k a m -> foldlFM' f a (delete k m)
 
 unsafeFromOrdSeq   = fromSeq
 unsafeAppend       = union
@@ -382,9 +430,11 @@ maxViewWithKey (I k a m) = let (k',x) = findMin k a m in return ((k',x),delete k
 maxElemWithKey E   = error $ moduleName++".maxElemWithKey: empty map"
 maxElemWithKey (I k a m) = let (k',x) = findMin k a m in (k',x)
 
-foldrWithKey f z   = foldrWithKeyFM f z . mergeSortFM
-foldlWithKey f x   = foldlWithKeyFM f x . mergeSortFM
-toOrdSeq           = toSeq . mergeSortFM
+foldrWithKey  f z   = foldrWithKeyFM  f z . mergeSortFM
+foldrWithKey' f z   = foldrWithKeyFM' f z . mergeSortFM
+foldlWithKey  f x   = foldlWithKeyFM  f x . mergeSortFM
+foldlWithKey' f x   = foldlWithKeyFM' f x . mergeSortFM
+toOrdSeq            = toSeq . mergeSortFM
 
 
 -- defaults
@@ -415,7 +465,8 @@ instance Eq k  => A.AssocX (FM k) k where
    null = null; size = size; member = member; count = count; 
    lookup = lookup; lookupM = lookupM; lookupAll = lookupAll; 
    lookupWithDefault = lookupWithDefault; adjust = adjust; 
-   adjustAll = adjustAll; map = map; fold = fold; fold1 = fold1; 
+   adjustAll = adjustAll; map = map; fold = fold; fold' = fold';
+   fold1 = fold1; fold1' = fold1';
    filter = filter; partition = partition; elements = elements;
    structuralInvariant = structuralInvariant; instanceName m = moduleName}
 
@@ -423,7 +474,8 @@ instance Ord k => A.OrdAssocX (FM k) k where
   {minView = minView; minElem = minElem; deleteMin = deleteMin;
    unsafeInsertMin = unsafeInsertMin; maxView = maxView; maxElem = maxElem;
    deleteMax = deleteMax; unsafeInsertMax = unsafeInsertMax;
-   foldr = foldr; foldl = foldl; foldr1 = foldr1; foldl1 = foldl1;
+   foldr = foldr; foldr' = foldr'; foldl = foldl; foldl' = foldl';
+   foldr1 = foldr1; foldr1' = foldr1'; foldl1 = foldl1; foldl1' = foldl1';
    unsafeFromOrdSeq = unsafeFromOrdSeq; unsafeAppend = unsafeAppend;
    filterLT = filterLT; filterGT = filterGT; filterLE = filterLE;
    filterGE = filterGE; partitionLT_GE = partitionLT_GE;
@@ -441,13 +493,15 @@ instance Ord k => A.OrdFiniteMapX (FM k) k
 
 instance Eq k  => A.Assoc (FM k) k where
   {toSeq = toSeq; keys = keys; mapWithKey = mapWithKey; 
-   foldWithKey = foldWithKey; filterWithKey = filterWithKey; 
+   foldWithKey = foldWithKey; foldWithKey' = foldWithKey';
+   filterWithKey = filterWithKey; 
    partitionWithKey = partitionWithKey}
 
 instance Ord k => A.OrdAssoc (FM k) k where
   {minViewWithKey = minViewWithKey; minElemWithKey = minElemWithKey;
    maxViewWithKey = maxViewWithKey; maxElemWithKey = maxElemWithKey;
-   foldrWithKey = foldrWithKey; foldlWithKey = foldlWithKey;
+   foldrWithKey = foldrWithKey; foldrWithKey' = foldrWithKey';
+   foldlWithKey = foldlWithKey; foldlWithKey' = foldlWithKey';
    toOrdSeq = toOrdSeq}
 
 instance Eq k => A.FiniteMap (FM k) k where

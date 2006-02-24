@@ -10,11 +10,11 @@ module Data.Edison.Assoc.TernaryTrie (
     -- * AssocX operations
     empty,single,fromSeq,insert,insertSeq,union,unionSeq,delete,deleteAll,
     deleteSeq,null,size,member,count,lookup,lookupM,lookupAll,
-    lookupWithDefault,adjust,adjustAll,map,fold,fold1,filter,partition,elements,
+    lookupWithDefault,adjust,adjustAll,map,fold,fold',fold1,fold1',filter,partition,elements,
     structuralInvariant,
 
     -- * Assoc operations
-    toSeq,keys,mapWithKey,foldWithKey,filterWithKey,partitionWithKey,
+    toSeq,keys,mapWithKey,foldWithKey,foldWithKey',filterWithKey,partitionWithKey,
 
     -- * FiniteMapX operations
     fromSeqWith,fromSeqWithKey,insertWith,insertWithKey,insertSeqWith,
@@ -70,6 +70,8 @@ adjustAll     :: Ord k => (a -> a) -> [k] -> FM k a -> FM k a
 map           :: Ord k => (a -> b) -> FM k a -> FM k b
 fold          :: Ord k => (a -> b -> b) -> b -> FM k a -> b
 fold1         :: Ord k => (a -> a -> a) -> FM k a -> a
+fold'         :: Ord k => (a -> b -> b) -> b -> FM k a -> b
+fold1'        :: Ord k => (a -> a -> a) -> FM k a -> a
 filter        :: Ord k => (a -> Bool) -> FM k a -> FM k a
 partition     :: Ord k => (a -> Bool) -> FM k a -> (FM k a, FM k a)
 elements      :: (Ord k,S.Sequence seq) => FM k a -> seq a
@@ -97,6 +99,7 @@ toSeq            :: (Ord k,S.Sequence seq) => FM k a -> seq ([k],a)
 keys             :: (Ord k,S.Sequence seq) => FM k a -> seq [k]
 mapWithKey       :: Ord k => ([k] -> a -> b) -> FM k a -> FM k b
 foldWithKey      :: Ord k => ([k] -> a -> b -> b) -> b -> FM k a -> b
+foldWithKey'     :: Ord k => ([k] -> a -> b -> b) -> b -> FM k a -> b
 filterWithKey    :: Ord k => ([k] -> a -> Bool) -> FM k a -> FM k a
 partitionWithKey :: Ord k => ([k] -> a -> Bool) -> FM k a -> (FM k a, FM k a)
 unionWithKey     :: Ord k => ([k] -> a -> a -> a) -> FM k a -> FM k a -> FM k a
@@ -498,6 +501,9 @@ fold op r (FM n fmb)
     foldFMB (I _ _ v l (FMB' m) r)
       = foldFMB l . foldMV v . foldFMB m . foldFMB r
 
+-- FIXME, undestand this code to strictify it
+fold' = fold
+
 fold1 f (FM v fmb)
   = comb (basecase v) (fold1FMB fmb) id (error "TernaryTrie.fold1: empty map")
   where
@@ -512,6 +518,10 @@ fold1 f (FM v fmb)
       fold1FMB (I _ _ v l (FMB' m) r)
         = comb (fold1FMB l) (comb (basecase v) (comb (fold1FMB l)
           (comb (fold1FMB m) (fold1FMB r))))
+
+-- FIXME, undestand this code to strictify it
+fold1' = fold1
+
 
 filter p = mapVFM (\mv -> case mv of
                             Nothing -> mv
@@ -605,6 +615,11 @@ foldWithKey op r (FM n fmb)
         . foldWithKeyFM (k:ks) m
         . foldWithKeyFM ks r
 
+
+-- FIXME, make this strict
+foldWithKey' = foldWithKey
+
+
 filterWithKey f
   = mapKVFM (\k mv -> case mv of
           Nothing -> mv
@@ -645,13 +660,15 @@ instance Ord k  => A.AssocX (FM k) [k] where
    null = null; size = size; member = member; count = count; 
    lookup = lookup; lookupM = lookupM; lookupAll = lookupAll; 
    lookupWithDefault = lookupWithDefault; adjust = adjust; 
-   adjustAll = adjustAll; map = map; fold = fold; fold1 = fold1; 
-   filter = filter; partition = partition; elements = elements;
+   adjustAll = adjustAll; map = map; fold = fold; fold' = fold';
+   fold1 = fold1; fold1' = fold1'; filter = filter;
+   partition = partition; elements = elements;
    structuralInvariant = structuralInvariant; instanceName m = moduleName}
 
 instance Ord k  => A.Assoc (FM k) [k] where
   {toSeq = toSeq; keys = keys; mapWithKey = mapWithKey; 
-   foldWithKey = foldWithKey; filterWithKey = filterWithKey; 
+   foldWithKey = foldWithKey; foldWithKey' = foldWithKey';
+   filterWithKey = filterWithKey; 
    partitionWithKey = partitionWithKey}
 
 instance Ord k => A.FiniteMapX (FM k) [k] where

@@ -151,6 +151,9 @@ class (Eq k,Functor m) => AssocX m k | m -> k where
   --   unspecified order.  /Note/ that 'fold' ignores the keys.
   fold           :: (a -> b -> b) -> b -> m a -> b
 
+  -- | A strict variant of 'fold'.
+  fold'          :: (a -> b -> b) -> b -> m a -> b
+
   -- | Combine all the elements in a non-empty associative collection using the
   --   given combining function.  Signals an error if the associative collection
   --   is empty.  The elements are processed in an unspecified order.  An
@@ -158,6 +161,9 @@ class (Eq k,Functor m) => AssocX m k | m -> k where
   --   balanced fashion (like 'reduce1' on sequences).  /Note/ that 'fold1'
   --   ignores the keys.
   fold1          :: (a -> a -> a) -> m a -> a
+
+  -- | A strict variant of 'fold1'.
+  fold1'         :: (a -> a -> a) -> m a -> a
 
   -- | Extract all bindings whose elements satisfy the given predicate.
   filter         :: (a -> Bool) -> m a -> m a
@@ -229,10 +235,16 @@ class (AssocX m k, Ord k) => OrdAssocX m k | m -> k where
   --   is increasing.
   foldr              :: (a -> b -> b) -> b -> m a -> b
 
+  -- | A strict variant of 'foldr'.
+  foldr'             :: (a -> b -> b) -> b -> m a -> b
+
   -- | Fold across the elements of an associative collection in non-decreasing
   --   order by key with left associativity.  For finite maps, the order
   --   is increasing.
   foldl              :: (b -> a -> b) -> b -> m a -> b
+
+  -- | A strict variant of 'foldl'.
+  foldl'             :: (b -> a -> b) -> b -> m a -> b
 
   -- | Fold across the elements of an associative collection in non-decreasing
   --   order by key with right associativity.  Signals an error if the
@@ -240,11 +252,17 @@ class (AssocX m k, Ord k) => OrdAssocX m k | m -> k where
   --   increasing.
   foldr1             :: (a -> a -> a) -> m a -> a
 
+  -- | A strict variant of 'foldr1'.
+  foldr1'            :: (a -> a -> a) -> m a -> a
+
   -- | Fold across the elements of an associative collection in non-decreasing
   --   order by key with left associativity.  Signals an error if the 
   --   associative collection is empty.  For finite maps, the order is
   --   increasing.
   foldl1             :: (a -> a -> a) -> m a -> a
+
+  -- | A strict variant of 'foldl1'.
+  foldl1'            :: (a -> a -> a) -> m a -> a
 
   -- | Convert a sequence of bindings into an associative collection with the
   --   precondition that the sequence is sorted into non-decreasing order by
@@ -389,6 +407,9 @@ class AssocX m k => Assoc m k | m -> k where
   --   value of the key.
   foldWithKey       :: (k -> a -> b -> b) -> b -> m a -> b
 
+  -- | A strict variant of 'foldWithKey'.
+  foldWithKey'      :: (k -> a -> b -> b) -> b -> m a -> b
+  
   -- | Extract all bindings from an associative collection which satisfy the
   --   given predicate.
   filterWithKey     :: (k -> a -> Bool) -> m a -> m a
@@ -432,10 +453,16 @@ class (Assoc m k, OrdAssocX m k) => OrdAssoc m k | m -> k where
   --   and an initial value.  For finite maps, the order is increasing.
   foldrWithKey    :: (k -> a -> b -> b) -> b -> m a -> b
 
+  -- | A strict variant of 'foldrWithKey'.
+  foldrWithKey'   :: (k -> a -> b -> b) -> b -> m a -> b
+
   -- | Fold over all bindings in an associative collection in non-decreasing
   --   order by key with left associativity, given a combining function
   --   and an initial value.  For finite maps, the order is increasing.
   foldlWithKey    :: (b -> k -> a -> b) -> b -> m a -> b
+
+  -- | A strict variant of 'foldlWithKey'.
+  foldlWithKey'   :: (b -> k -> a -> b) -> b -> m a -> b
 
   -- | Extract the bindings of an associative collection into a sequence, where
   --   the bindings are in non-decreasing order by key.  For finite maps, this
