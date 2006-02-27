@@ -35,6 +35,20 @@
 --   type constructors are named @Seq@.  This additionally aids substituting 
 --   implementations by simply importing a different module.
 --
+--   Argument orders are select with the following points in mind:
+--
+--   * /Partial application:/ arguments more likely to be static usually
+--     appear before other arugments.
+--
+--   * /Collection appears last:/ in all cases where a function queries a
+--     single collection or modifies an existing collection, the collection
+--     argument will appear last.  This is something of a de facto standard
+--     and lends a degree of consistency to the API.
+--
+--   * /Most natural order:/ where the function represents a well-known
+--     mathematical function on more than one collection, the arguments
+--     are chosen to match the most usual argument order for the function.
+--
 --   /Type classes:/
 --
 --   Each family of abstractions is defined as a set of classes: a main class
