@@ -1,16 +1,20 @@
 -- | This module introduces a number of infix symbols which are alises
 --   for some of the operations in the sequence and set abstractions.
 --   For several, the argument orders are reversed to more closely
---   match usually symbolic usage.
+--   match usual symbolic usage.
 --
 --   The symbols are intended to evoke the the operations they
 --   represent.  Unfortunatly, ASCII is pretty limited, and Haskell
 --   only allocates a few symbols to the operator lexical class.
+--   Thus, some of the operators are less evockative than one would
+--   like.  A future version may introduce unicode operators, which
+--   will allow a wider range of operations to be represented symbolicly.
 --
 --   Unlike most of the modules in Edison, this module is intended to be
 --   imported unqualified.  However, the definition of @(++)@ will conflict
 --   with the Prelude definition.  Either this definition or the Prelude
---   definition will need to be imported @hiding ( (++) )@.
+--   definition will need to be imported @hiding ( (++) )@.  This definition
+--   subsumes the Prelude definition, and can be safely used in place of it.
 
 module Data.Edison.Sym where
 
