@@ -14,8 +14,8 @@ import Data.Edison.Assoc
 import qualified Data.Edison.Seq as S
 import qualified Data.Edison.Seq.ListSeq as L
 
-singleUsingInsert :: (Assoc m k) => k -> a -> m a
-singleUsingInsert k v = insert k v empty
+singletonUsingInsert :: (Assoc m k) => k -> a -> m a
+singletonUsingInsert k v = insert k v empty
 
 fromSeqUsingInsertSeq :: (AssocX m k,S.Sequence seq) => seq (k,a) -> m a
 fromSeqUsingInsertSeq kvs = insertSeq kvs empty

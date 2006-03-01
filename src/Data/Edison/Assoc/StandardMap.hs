@@ -9,7 +9,7 @@ module Data.Edison.Assoc.StandardMap (
     FM,
 
     -- * AssocX operations
-    empty,single,fromSeq,insert,insertSeq,union,unionSeq,delete,deleteAll,
+    empty,singleton,fromSeq,insert,insertSeq,union,unionSeq,delete,deleteAll,
     deleteSeq,null,size,member,count,lookup,lookupM,lookupAll,
     lookupWithDefault,adjust,adjustAll,adjustOrInsert,map,
     fold,fold',fold1,fold1',filter,partition,elements,structuralInvariant,
@@ -60,7 +60,7 @@ moduleName :: String
 moduleName = "Data.Edison.Assoc.StandardMap"
 
 empty             :: FM k a
-single            :: Ord k => k -> a -> FM k a
+singleton         :: Ord k => k -> a -> FM k a
 fromSeq           :: (Ord k,S.Sequence seq) => seq (k,a) -> FM k a
 insert            :: Ord k => k -> a -> FM k a -> FM k a
 insertSeq         :: (Ord k,S.Sequence seq) => seq (k,a) -> FM k a -> FM k a
@@ -166,7 +166,7 @@ structuralInvariant = DM.valid
 
 
 empty              = DM.empty
-single             = DM.singleton
+singleton          = DM.singleton
 fromSeq            = fromSeqUsingInsertSeq
 insert             = DM.insert
 insertSeq          = insertSeqUsingFoldr
@@ -272,7 +272,7 @@ intersectWithKey   = DM.intersectionWithKey
 
 
 instance Ord k => A.AssocX (FM k) k where
-  {empty = empty; single = single; fromSeq = fromSeq; insert = insert;
+  {empty = empty; singleton = singleton; fromSeq = fromSeq; insert = insert;
    insertSeq = insertSeq; union = union; unionSeq = unionSeq;
    delete = delete; deleteAll = deleteAll; deleteSeq = deleteSeq;
    null = null; size = size; member = member; count = count;

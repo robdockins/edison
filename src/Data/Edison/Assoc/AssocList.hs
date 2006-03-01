@@ -14,7 +14,7 @@ module Data.Edison.Assoc.AssocList (
         -- also instance of Functor
 
     -- * AssocX operations
-    empty,single,fromSeq,insert,insertSeq,union,unionSeq,delete,deleteAll,
+    empty,singleton,fromSeq,insert,insertSeq,union,unionSeq,delete,deleteAll,
     deleteSeq,null,size,member,count,lookup,lookupM,lookupAll,
     lookupWithDefault,adjust,adjustAll,adjustOrInsert,map,
     fold,fold',fold1,fold1',filter,partition,elements,structuralInvariant,
@@ -58,7 +58,7 @@ import Test.QuickCheck (Arbitrary(..), variant)
 -- signatures for exported functions
 moduleName    :: String
 empty         :: Eq k => FM k a
-single        :: Eq k => k -> a -> FM k a
+singleton     :: Eq k => k -> a -> FM k a
 fromSeq       :: (Eq k,S.Sequence seq) => seq (k,a) -> FM k a
 insert        :: Eq k => k -> a -> FM k a -> FM k a
 insertSeq     :: (Eq k,S.Sequence seq) => seq (k,a) -> FM k a -> FM k a
@@ -241,7 +241,7 @@ spanFM p o@(I k a m)
 -- interface functions
 
 empty = E
-single k x = I k x E
+singleton k x = I k x E
 insert = I
 insertSeq kxs m = S.foldr uinsert m kxs
 fromSeq = S.foldr uinsert E
@@ -294,7 +294,7 @@ adjust f key (I k x m) | key == k  = I key (f x) m
 
 adjustAll = adjust
 
-adjustOrInsert f key E = single key (f Nothing)
+adjustOrInsert f key E = singleton key (f Nothing)
 adjustOrInsert f key (I k x m)
     | key == k  = I key (f (Just x)) m
     | otherwise = I k x (adjustOrInsert f key m)
@@ -465,7 +465,7 @@ intersectWithKey = intersectWithKeyUsingLookupM
 -- instance declarations
 
 instance Eq k  => A.AssocX (FM k) k where
-  {empty = empty; single = single; fromSeq = fromSeq; insert = insert; 
+  {empty = empty; singleton = singleton; fromSeq = fromSeq; insert = insert; 
    insertSeq = insertSeq; union = union; unionSeq = unionSeq; 
    delete = delete; deleteAll = deleteAll; deleteSeq = deleteSeq; 
    null = null; size = size; member = member; count = count; 

@@ -14,7 +14,7 @@ module Data.Edison.Assoc.PatriciaLoMap (
         -- also instance of Functor
 
     -- * AssocX operations
-    empty,single,fromSeq,insert,insertSeq,union,unionSeq,delete,deleteAll,
+    empty,singleton,fromSeq,insert,insertSeq,union,unionSeq,delete,deleteAll,
     deleteSeq,null,size,member,count,lookup,lookupM,lookupAll,
     lookupWithDefault,adjust,adjustAll,adjustOrInsert,map,
     fold,fold',fold1,fold1',filter,partition,elements,structuralInvariant,
@@ -99,8 +99,8 @@ keepR x y = y
 empty :: FM a
 empty = E
 
-single :: Int -> a -> FM a
-single k x = L k x
+singleton :: Int -> a -> FM a
+singleton k x = L k x
 
 fromSeq :: S.Sequence seq => seq (Int,a) -> FM a
 fromSeq = S.foldl (\t (k, x) -> insert k x t) E
@@ -504,7 +504,7 @@ unionSeqWithKey = unionSeqWithKeyUsingReduce
 -- instance declarations
 
 instance A.AssocX FM Int where
-  {empty = empty; single = single; fromSeq = fromSeq; insert = insert; 
+  {empty = empty; singleton = singleton; fromSeq = fromSeq; insert = insert; 
    insertSeq = insertSeq; union = union; unionSeq = unionSeq; 
    delete = delete; deleteAll = deleteAll; deleteSeq = deleteSeq; 
    null = null; size = size; member = member; count = count; 

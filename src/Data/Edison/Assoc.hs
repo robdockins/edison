@@ -57,7 +57,7 @@ class (Eq k,Functor m) => AssocX m k | m -> k where
   empty          :: m a
 
   -- | Create an associative collection with a single binding.
-  single         :: k -> a -> m a
+  singleton      :: k -> a -> m a
 
   -- | Create an associative collection from a  list of bindings. Which element
   --   and key are kept in the case of duplicates is unspecified.
