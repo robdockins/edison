@@ -539,6 +539,22 @@ toOrdList = toOrdSeq
 unionListWithKey = unionSeqWithKey
 
 
+{- maybe add later
+  -- | Change or delete a single binding for the given key by applying a function
+  --   to its element.  If the function returns @Nothing@, then the binding
+  --   will be deleted.  If the key binds more than one element, it is unspecified which
+  --   will be modified.  If the key is not found in the collection, it is returned
+  --   unchanged.
+  adjustOrDelete :: (a -> Maybe a) -> k -> m a -> m a
+
+  -- | Change or delete all bindings for teh given key by applying a function to
+  --   its elements.  For any element where the function returns @Nothing@, the
+  --   corresponding binding is deleted.  If the key is not found in the collection,
+  --   it is returned unchanged.
+  adjustOrDeleteAll :: (a -> Maybe a) -> k -> m a -> m a
+-}
+
+
 {-
 Leave out until somebody asks for:
 witness????
