@@ -35,11 +35,11 @@ module Data.Edison.Assoc.AssocList (
 
     -- * FiniteMapX operations
     fromSeqWith,fromSeqWithKey,insertWith,insertWithKey,insertSeqWith,
-    insertSeqWithKey,unionl,unionr,unionWith,unionSeqWith,intersectWith,
+    insertSeqWithKey,unionl,unionr,unionWith,unionSeqWith,intersectionWith,
     difference,subset,subsetEq,
 
     -- * FiniteMap operations
-    unionWithKey,unionSeqWithKey,intersectWithKey,
+    unionWithKey,unionSeqWithKey,intersectionWithKey,
 
     -- * Documentation
     moduleName
@@ -101,7 +101,7 @@ unionr           :: Eq k => FM k a -> FM k a -> FM k a
 unionWith        :: Eq k => (a -> a -> a) -> FM k a -> FM k a -> FM k a
 unionSeqWith     :: (Eq k,S.Sequence seq) => 
                         (a -> a -> a) -> seq (FM k a) -> FM k a
-intersectWith    :: Eq k => (a -> b -> c) -> FM k a -> FM k b -> FM k c
+intersectionWith :: Eq k => (a -> b -> c) -> FM k a -> FM k b -> FM k c
 difference       :: Eq k => FM k a -> FM k b -> FM k a
 subset           :: Eq k => FM k a -> FM k b -> Bool    
 subsetEq         :: Eq k => FM k a -> FM k b -> Bool    
@@ -117,7 +117,7 @@ partitionWithKey :: Eq k => (k -> a -> Bool) -> FM k a -> (FM k a, FM k a)
 unionWithKey     :: Eq k => (k -> a -> a -> a) -> FM k a -> FM k a -> FM k a
 unionSeqWithKey  :: (Eq k,S.Sequence seq) => 
                         (k -> a -> a -> a) -> seq (FM k a) -> FM k a
-intersectWithKey :: Eq k => (k -> a -> b -> c) -> FM k a -> FM k b -> FM k c
+intersectionWithKey :: Eq k => (k -> a -> b -> c) -> FM k a -> FM k b -> FM k c
 
 minView          :: (Ord k,Monad m) => FM k a -> m (a,FM k a)
 minElem          :: Ord k => FM k a -> a
@@ -454,13 +454,13 @@ unionWith = unionWithUsingInsertWith
 unionSeqWith = unionSeqWithUsingFoldr
 fromSeqWith = fromSeqWithUsingInsertSeqWith
 fromSeqWithKey = fromSeqWithKeyUsingInsertSeqWithKey
-intersectWith = intersectWithUsingLookupM
+intersectionWith = intersectionWithUsingLookupM
 difference = differenceUsingDelete
 subset = subsetUsingSubsetEq
 subsetEq = subsetEqUsingMember
 unionWithKey = unionWithKeyUsingInsertWithKey
 unionSeqWithKey = unionSeqWithKeyUsingFoldr
-intersectWithKey = intersectWithKeyUsingLookupM
+intersectionWithKey = intersectionWithKeyUsingLookupM
 
 -- instance declarations
 
@@ -492,7 +492,7 @@ instance Eq k => A.FiniteMapX (FM k) k where
    insertWith  = insertWith; insertWithKey = insertWithKey; 
    insertSeqWith = insertSeqWith; insertSeqWithKey = insertSeqWithKey; 
    unionl = unionl; unionr = unionr; unionWith = unionWith; 
-   unionSeqWith = unionSeqWith; intersectWith = intersectWith; 
+   unionSeqWith = unionSeqWith; intersectionWith = intersectionWith; 
    difference = difference; subset = subset; subsetEq = subsetEq}
 
 instance Ord k => A.OrdFiniteMapX (FM k) k
@@ -512,7 +512,7 @@ instance Ord k => A.OrdAssoc (FM k) k where
 
 instance Eq k => A.FiniteMap (FM k) k where
   {unionWithKey = unionWithKey; unionSeqWithKey = unionSeqWithKey; 
-   intersectWithKey = intersectWithKey}
+   intersectionWithKey = intersectionWithKey}
 
 instance Ord k => A.OrdFiniteMap (FM k) k
 

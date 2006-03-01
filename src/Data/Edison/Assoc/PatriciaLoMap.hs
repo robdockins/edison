@@ -24,11 +24,11 @@ module Data.Edison.Assoc.PatriciaLoMap (
 
     -- * FiniteMapX operations
     fromSeqWith,fromSeqWithKey,insertWith,insertWithKey,insertSeqWith,
-    insertSeqWithKey,unionl,unionr,unionWith,unionSeqWith,intersectWith,
+    insertSeqWithKey,unionl,unionr,unionWith,unionSeqWith,intersectionWith,
     difference,subset,subsetEq,
 
     -- * FiniteMap operations
-    unionWithKey,unionSeqWithKey,intersectWithKey,
+    unionWithKey,unionSeqWithKey,intersectionWithKey,
 
     -- * Documentation
     moduleName
@@ -294,28 +294,28 @@ unionWith f s@(B _ _ _ _) E = s
 unionWith f (L k x) t = insertWith f k x t
 unionWith f E t = t
 
-intersectWith :: (a -> b -> c) -> FM a -> FM b -> FM c
-intersectWith f s@(B p m s0 s1) t@(B q n t0 t1)
+intersectionWith :: (a -> b -> c) -> FM a -> FM b -> FM c
+intersectionWith f s@(B p m s0 s1) t@(B q n t0 t1)
   | m < n    = if matchPrefix q p m then
-                  if zeroBit q m then intersectWith f s0 t
-                                 else intersectWith f s1 t
+                  if zeroBit q m then intersectionWith f s0 t
+                                 else intersectionWith f s1 t
                 else E
   | m > n    = if matchPrefix p q n then
-                  if zeroBit p n then intersectWith f s t0
-                                 else intersectWith f s t1
+                  if zeroBit p n then intersectionWith f s t0
+                                 else intersectionWith f s t1
                 else E
   | otherwise = if p /= q then E
-                else makeB p m (intersectWith f s0 t0) (intersectWith f s1 t1)
-intersectWith f (B p m s0 s1) (L k y) =
+                else makeB p m (intersectionWith f s0 t0) (intersectionWith f s1 t1)
+intersectionWith f (B p m s0 s1) (L k y) =
     case lookupM k (if zeroBit k m then s0 else s1) of
       Just x  -> L k (f x y)
       Nothing -> E
-intersectWith f s@(B _ _ _ _) E = E
-intersectWith f (L k x) t =
+intersectionWith f s@(B _ _ _ _) E = E
+intersectionWith f (L k x) t =
     case lookupM k t of
       Just y  -> L k (f x y)
       Nothing -> E
-intersectWith f E t = E
+intersectionWith f E t = E
 
 difference :: FM a -> FM b -> FM a
 difference s@(B p m s0 s1) t@(B q n t0 t1)
@@ -420,28 +420,28 @@ unionWithKey f s@(B _ _ _ _) E = s
 unionWithKey f (L k x) t = insertWith (f k) k x t
 unionWithKey f E t = t
 
-intersectWithKey :: (Int -> a -> b -> c) -> FM a -> FM b -> FM c
-intersectWithKey f s@(B p m s0 s1) t@(B q n t0 t1)
+intersectionWithKey :: (Int -> a -> b -> c) -> FM a -> FM b -> FM c
+intersectionWithKey f s@(B p m s0 s1) t@(B q n t0 t1)
   | m < n    = if matchPrefix q p m then
-                  if zeroBit q m then intersectWithKey f s0 t
-                                 else intersectWithKey f s1 t
+                  if zeroBit q m then intersectionWithKey f s0 t
+                                 else intersectionWithKey f s1 t
                 else E
   | m > n    = if matchPrefix p q n then
-                  if zeroBit p n then intersectWithKey f s t0
-                                 else intersectWithKey f s t1
+                  if zeroBit p n then intersectionWithKey f s t0
+                                 else intersectionWithKey f s t1
                 else E
   | otherwise = if p /= q then E
-                else makeB p m (intersectWithKey f s0 t0) (intersectWithKey f s1 t1)
-intersectWithKey f (B p m s0 s1) (L k y) =
+                else makeB p m (intersectionWithKey f s0 t0) (intersectionWithKey f s1 t1)
+intersectionWithKey f (B p m s0 s1) (L k y) =
     case lookupM k (if zeroBit k m then s0 else s1) of
       Just x  -> L k (f k x y)
       Nothing -> E
-intersectWithKey f s@(B _ _ _ _) E = E
-intersectWithKey f (L k x) t =
+intersectionWithKey f s@(B _ _ _ _) E = E
+intersectionWithKey f (L k x) t =
     case lookupM k t of
       Just y  -> L k (f k x y)
       Nothing -> E
-intersectWithKey f E t = E
+intersectionWithKey f E t = E
 
 -- defaults
 
@@ -526,12 +526,12 @@ instance A.FiniteMapX FM Int where
    insertWith = insertWith; insertWithKey = insertWithKey; 
    insertSeqWith = insertSeqWith; insertSeqWithKey = insertSeqWithKey; 
    unionl = unionl; unionr = unionr; unionWith = unionWith; 
-   unionSeqWith = unionSeqWith; intersectWith = intersectWith; 
+   unionSeqWith = unionSeqWith; intersectionWith = intersectionWith; 
    difference = difference; subset = subset; subsetEq = subsetEq}
 
 instance A.FiniteMap FM Int where
   {unionWithKey = unionWithKey; unionSeqWithKey = unionSeqWithKey; 
-   intersectWithKey = intersectWithKey}
+   intersectionWithKey = intersectionWithKey}
 
 instance Functor FM where
   fmap = map

@@ -18,11 +18,11 @@ module Data.Edison.Assoc.TernaryTrie (
 
     -- * FiniteMapX operations
     fromSeqWith,fromSeqWithKey,insertWith,insertWithKey,insertSeqWith,
-    insertSeqWithKey,unionl,unionr,unionWith,unionSeqWith,intersectWith,
+    insertSeqWithKey,unionl,unionr,unionWith,unionSeqWith,intersectionWith,
     difference,subset,subsetEq,
 
     -- * FiniteMap operations
-    unionWithKey,unionSeqWithKey,intersectWithKey,
+    unionWithKey,unionSeqWithKey,intersectionWithKey,
 
     -- * Other supported operations
     mergeKVFM,
@@ -91,7 +91,7 @@ unionr           :: Ord k => FM k a -> FM k a -> FM k a
 unionWith        :: Ord k => (a -> a -> a) -> FM k a -> FM k a -> FM k a
 unionSeqWith     :: (Ord k,S.Sequence seq) => 
                         (a -> a -> a) -> seq (FM k a) -> FM k a
-intersectWith    :: Ord k => (a -> b -> c) -> FM k a -> FM k b -> FM k c
+intersectionWith :: Ord k => (a -> b -> c) -> FM k a -> FM k b -> FM k c
 difference       :: Ord k => FM k a -> FM k b -> FM k a
 subset           :: Ord k => FM k a -> FM k b -> Bool    
 subsetEq         :: Ord k => FM k a -> FM k b -> Bool    
@@ -106,7 +106,7 @@ partitionWithKey :: Ord k => ([k] -> a -> Bool) -> FM k a -> (FM k a, FM k a)
 unionWithKey     :: Ord k => ([k] -> a -> a -> a) -> FM k a -> FM k a -> FM k a
 unionSeqWithKey  :: (Ord k,S.Sequence seq) => 
                        ([k] -> a -> a -> a) -> seq (FM k a) -> FM k a
-intersectWithKey :: Ord k => ([k] -> a -> b -> c) -> FM k a -> FM k b -> FM k c
+intersectionWithKey :: Ord k => ([k] -> a -> b -> c) -> FM k a -> FM k b -> FM k c
 
 moduleName = "Data.Edison.Assoc.TernaryTrie"
 
@@ -562,7 +562,7 @@ unionWith f = unionWithKey (const f)
 
 unionSeqWith = unionSeqWithUsingReduce
 
-intersectWith f = intersectWithKey (const f)
+intersectionWith f = intersectionWithKey (const f)
 
 difference mx my
   = mergeVFM (\v1 v2 -> case v2 of
@@ -647,7 +647,7 @@ unionWithKey f
 
 unionSeqWithKey = unionSeqWithKeyUsingReduce
 
-intersectWithKey f
+intersectionWithKey f
   = mergeKVFM (\k v1m v2m ->
     case v1m of
         Nothing -> Nothing
@@ -682,12 +682,12 @@ instance Ord k => A.FiniteMapX (FM k) [k] where
    insertWith  = insertWith; insertWithKey = insertWithKey; 
    insertSeqWith = insertSeqWith; insertSeqWithKey = insertSeqWithKey; 
    unionl = unionl; unionr = unionr; unionWith = unionWith; 
-   unionSeqWith = unionSeqWith; intersectWith = intersectWith; 
+   unionSeqWith = unionSeqWith; intersectionWith = intersectionWith; 
    difference = difference; subset = subset; subsetEq = subsetEq}
 
 instance Ord k => A.FiniteMap (FM k) [k] where
   {unionWithKey = unionWithKey; unionSeqWithKey = unionSeqWithKey; 
-   intersectWithKey = intersectWithKey}
+   intersectionWithKey = intersectionWithKey}
 
 instance Ord k => Functor (FM k) where
   fmap =  map

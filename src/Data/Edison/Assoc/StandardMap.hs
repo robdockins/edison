@@ -16,7 +16,7 @@ module Data.Edison.Assoc.StandardMap (
 
     -- * FiniteMapX operations
     fromSeqWith,fromSeqWithKey,insertWith,insertWithKey,insertSeqWith,
-    insertSeqWithKey,unionl,unionr,unionWith,unionSeqWith,intersectWith,
+    insertSeqWithKey,unionl,unionr,unionWith,unionSeqWith,intersectionWith,
     difference,subset,subsetEq,
 
     -- * OrdAssocX operations
@@ -34,7 +34,7 @@ module Data.Edison.Assoc.StandardMap (
     foldrWithKey, foldrWithKey', foldlWithKey, foldlWithKey', toOrdSeq,
 
     -- * FiniteMap operations
-    unionWithKey,unionSeqWithKey,intersectWithKey,
+    unionWithKey,unionSeqWithKey,intersectionWithKey,
 
     -- * Documentation
     moduleName
@@ -132,7 +132,7 @@ unionr            :: Ord k => FM k a -> FM k a -> FM k a
 unionWith         :: Ord k => (a -> a -> a) -> FM k a -> FM k a -> FM k a
 unionSeqWith      :: (Ord k,S.Sequence seq) =>
                          (a -> a -> a) -> seq (FM k a) -> FM k a
-intersectWith     :: Ord k => (a -> b -> c) -> FM k a -> FM k b -> FM k c
+intersectionWith  :: Ord k => (a -> b -> c) -> FM k a -> FM k b -> FM k c
 difference        :: Ord k => FM k a -> FM k b -> FM k a
 subset            :: Ord k => FM k a -> FM k b -> Bool
 subsetEq          :: Ord k => FM k a -> FM k b -> Bool
@@ -159,7 +159,7 @@ toOrdSeq          :: (Ord k,S.Sequence seq) => FM k a -> seq (k,a)
 unionWithKey      :: Ord k => (k -> a -> a -> a) -> FM k a -> FM k a -> FM k a
 unionSeqWithKey   :: (Ord k,S.Sequence seq) => (k -> a -> a -> a)
                         -> seq (FM k a) -> FM k a
-intersectWithKey  :: Ord k => (k -> a -> b -> c) -> FM k a -> FM k b -> FM k c
+intersectionWithKey  :: Ord k => (k -> a -> b -> c) -> FM k a -> FM k b -> FM k c
 
 structuralInvariant :: Ord k => FM k a -> Bool
 structuralInvariant = DM.valid
@@ -239,7 +239,7 @@ unionl             = DM.union
 unionr             = flip DM.union
 unionWith          = DM.unionWith
 unionSeqWith       = unionSeqWithUsingReduce
-intersectWith      = DM.intersectionWith
+intersectionWith   = DM.intersectionWith
 difference         = DM.difference
 subset             = DM.isProperSubmapOfBy (\_ _ -> True)
 subsetEq           = DM.isSubmapOfBy (\_ _ -> True)
@@ -268,7 +268,7 @@ toOrdSeq           = S.fromList . DM.toAscList
 
 unionWithKey       = DM.unionWithKey
 unionSeqWithKey    = unionSeqWithKeyUsingReduce
-intersectWithKey   = DM.intersectionWithKey
+intersectionWithKey = DM.intersectionWithKey
 
 
 instance Ord k => A.AssocX (FM k) k where
@@ -299,7 +299,7 @@ instance Ord k => A.FiniteMapX (FM k) k where
    insertWith = insertWith; insertWithKey = insertWithKey;
    insertSeqWith = insertSeqWith; insertSeqWithKey = insertSeqWithKey;
    unionl = unionl; unionr = unionr; unionWith = unionWith;
-   unionSeqWith = unionSeqWith; intersectWith = intersectWith;
+   unionSeqWith = unionSeqWith; intersectionWith = intersectionWith;
    difference = difference; subset = subset; subsetEq = subsetEq}
 
 instance Ord k => A.OrdFiniteMapX (FM k) k
@@ -319,7 +319,7 @@ instance Ord k => A.OrdAssoc (FM k) k where
 
 instance Ord k => A.FiniteMap (FM k) k where
   {unionWithKey = unionWithKey; unionSeqWithKey = unionSeqWithKey;
-   intersectWithKey = intersectWithKey}
+   intersectionWithKey = intersectionWithKey}
 
 instance Ord k => A.OrdFiniteMap (FM k) k
 

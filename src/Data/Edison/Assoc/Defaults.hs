@@ -132,16 +132,16 @@ unionSeqWithKeyUsingFoldr ::
       (k -> a -> a -> a) -> seq (m a) -> m a
 unionSeqWithKeyUsingFoldr f ms = S.foldr (unionWithKey f) empty ms
 
-intersectWithUsingLookupM :: 
+intersectionWithUsingLookupM :: 
     FiniteMap m k => (a -> b -> c) -> m a -> m b -> m c
-intersectWithUsingLookupM f m1 m2 = foldWithKey ins empty m1
+intersectionWithUsingLookupM f m1 m2 = foldWithKey ins empty m1
   where ins k x m = case lookupM k m2 of
                       Nothing -> m
                       Just y  -> insert k (f x y) m
 
-intersectWithKeyUsingLookupM :: 
+intersectionWithKeyUsingLookupM :: 
     FiniteMap m k => (k -> a -> b -> c) -> m a -> m b -> m c
-intersectWithKeyUsingLookupM f m1 m2 = foldWithKey ins empty m1
+intersectionWithKeyUsingLookupM f m1 m2 = foldWithKey ins empty m1
   where ins k x m = case lookupM k m2 of
                       Nothing -> m
                       Just y  -> insert k (f k x y) m

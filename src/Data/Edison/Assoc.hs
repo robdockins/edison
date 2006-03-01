@@ -373,7 +373,7 @@ class AssocX m k => FiniteMapX m k | m -> k where
   --   keys in the argument finite maps.  The combining function computes
   --   the value of the element given the bound elements from the argument
   --   finite maps.
-  intersectWith      :: (a -> b -> c) -> m a -> m b -> m c
+  intersectionWith   :: (a -> b -> c) -> m a -> m b -> m c
 
   -- | Computes the difference of two finite maps; that is, all bindings
   --   in the first finite map whose keys to not appear in the second.
@@ -490,10 +490,10 @@ class (Assoc m k, FiniteMapX m k) => FiniteMap m k | m -> k where
   --   kept and passed into the combining function is unspecified.
   unionSeqWithKey   :: Sequence seq => (k -> a -> a -> a) -> seq (m a) -> m a
 
-  -- | Same as 'intersectWith', except that the combining function
+  -- | Same as 'intersectionWith', except that the combining function
   --   additionally takes the key value for each binding.  Which key is
   --   kept and passed into the combining function is unspecified.
-  intersectWithKey  :: (k -> a -> b -> c) -> m a -> m b -> m c
+  intersectionWithKey  :: (k -> a -> b -> c) -> m a -> m b -> m c
 
 -- | Finite maps with observable keys where the keys additionally
 --   have an ordering relation.  This class introduces no new methods.
