@@ -30,7 +30,7 @@ lookupAllUsingLookupM :: (Set c a,S.Sequence seq) => a -> c -> seq a
 lookupAllUsingLookupM x xs =
   case lookupM x xs of
     Nothing -> S.empty
-    Just y  -> S.single y
+    Just y  -> S.singleton y
 
 deleteSeqUsingDelete :: (CollX c a,S.Sequence seq) => seq a -> c -> c
 deleteSeqUsingDelete xs c = S.foldr delete c xs
@@ -46,13 +46,13 @@ fromSeqUsingFoldr = S.foldr insert empty
 
 fromSeqUsingUnionSeq :: (CollX c a,S.Sequence seq) => seq a -> c
 fromSeqUsingUnionSeq = unionList . S.foldl singleCons []
-  where singleCons xs x = S.lcons (single x) xs
+  where singleCons xs x = S.lcons (singleton x) xs
 
 toSeqUsingFold :: (Coll c a,S.Sequence seq) => c -> seq a
 toSeqUsingFold = fold S.lcons S.empty
 
 unsafeInsertMaxUsingUnsafeAppend :: OrdCollX c a => a -> c -> c
-unsafeInsertMaxUsingUnsafeAppend x c = unsafeAppend c (single x)
+unsafeInsertMaxUsingUnsafeAppend x c = unsafeAppend c (singleton x)
 
 toOrdSeqUsingFoldr :: (OrdColl c a,S.Sequence seq) => c -> seq a
 toOrdSeqUsingFoldr = foldr S.lcons S.empty

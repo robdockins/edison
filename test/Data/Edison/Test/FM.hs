@@ -95,7 +95,7 @@ prop_Single fm xs
   = L.null xs `trivial`
         (si fm1 && (L.sort (keys fm1)) == (L.sort (keys fm2)))
     where
-        fm1 = unionSeq [ single k v | (k,v) <- xs ] `asTypeOf` fm
+        fm1 = unionSeq [ singleton k v | (k,v) <- xs ] `asTypeOf` fm
         fm2 = fromSeq xs `asTypeOf` fm
 
 prop_SortedStructure :: FMTest k Int fm => fm Int -> [(k,Int)] -> Property

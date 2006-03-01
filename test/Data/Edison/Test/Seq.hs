@@ -161,14 +161,14 @@ prop_toList seq xs =
 
 prop_single :: SeqTest Int seq => seq Int -> Int -> Bool
 prop_single seq x =
-    let xs = single x `asTypeOf` seq
+    let xs = singleton x `asTypeOf` seq
      in si xs && toList xs == [x]
 
 prop_lcons_rcons :: SeqTest Int seq => seq Int -> Int -> seq Int -> Bool
 prop_lcons_rcons seq x xs =
-    lcons x xs === append (single x) xs
+    lcons x xs === append (singleton x) xs
     &&
-    rcons x xs === append xs (single x)
+    rcons x xs === append xs (singleton x)
 
 
 prop_lview_rview :: SeqTest Int seq => seq Int -> seq Int -> Bool
@@ -261,9 +261,9 @@ prop_strict_fold1 seq xs =
 
 prop_reduce :: SeqTest Int seq => seq Int -> seq Int -> Bool
 prop_reduce seq xs =
-    reducel append (single 93) (map single xs) === append (single 93) xs
+    reducel append (singleton 93) (map singleton xs) === append (singleton 93) xs
     &&
-    reducer append (single 93) (map single xs) === append xs (single 93)
+    reducer append (singleton 93) (map singleton xs) === append xs (singleton 93)
 
 prop_strict_reduce  :: SeqTest Int seq => seq Int -> seq Int -> Bool
 prop_strict_reduce seq xs =
@@ -274,7 +274,7 @@ prop_strict_reduce seq xs =
 prop_reduce1 :: SeqTest Int seq => seq Int -> seq Int -> Property
 prop_reduce1 seq xs =
     not (null xs) ==>
-      reduce1 append (map single xs) === xs
+      reduce1 append (map singleton xs) === xs
 
 prop_strict_reduce1 :: SeqTest Int seq => seq Int -> seq Int -> Property
 prop_strict_reduce1 seq xs =

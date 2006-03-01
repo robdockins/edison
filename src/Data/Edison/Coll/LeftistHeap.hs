@@ -12,7 +12,7 @@ module Data.Edison.Coll.LeftistHeap (
     Heap, -- instance of Coll/CollX, OrdColl/OrdCollX
 
     -- * CollX operations
-    empty,single,fromSeq,insert,insertSeq,union,unionSeq,delete,deleteAll,
+    empty,singleton,fromSeq,insert,insertSeq,union,unionSeq,delete,deleteAll,
     deleteSeq,null,size,member,count,structuralInvariant,
 
     -- * Coll operations
@@ -85,8 +85,8 @@ rather that rebuilding with union at every deleted node
 empty :: Ord a => Heap a
 empty = E
 
-single :: Ord a => a -> Heap a
-single x = L 1 x E E
+singleton :: Ord a => a -> Heap a
+singleton x = L 1 x E E
 
 insert :: Ord a => a -> Heap a -> Heap a
 insert x E = L 1 x E E
@@ -398,7 +398,7 @@ toOrdSeq = toOrdSeqUsingFoldr
 -- instance declarations
 
 instance Ord a => C.CollX (Heap a) a where
-  {empty = empty; single = single; fromSeq = fromSeq; insert = insert;
+  {empty = empty; singleton = singleton; fromSeq = fromSeq; insert = insert;
    insertSeq = insertSeq; union = union; unionSeq = unionSeq; 
    delete = delete; deleteAll = deleteAll; deleteSeq = deleteSeq;
    null = null; size = size; member = member; count = count;

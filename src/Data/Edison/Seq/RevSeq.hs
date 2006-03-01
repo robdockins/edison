@@ -19,7 +19,7 @@ module Data.Edison.Seq.RevSeq (
     Rev, -- Rev s instance of Sequence, Functor, Monad, MonadPlus
 
     -- * Sequence Operations
-    empty,single,lcons,rcons,append,lview,lhead,ltail,rview,rhead,rtail,
+    empty,singleton,lcons,rcons,append,lview,lhead,ltail,rview,rhead,rtail,
     lheadM,ltailM,rheadM,rtailM,
     null,size,concat,reverse,reverseOnto,fromList,toList,
     map,concatMap,foldr,foldr',foldl,foldl',foldr1,foldr1',foldl1,foldl1',
@@ -52,7 +52,7 @@ import Test.QuickCheck
 moduleName     :: String
 instanceName   :: S.Sequence s => Rev s a -> String
 empty          :: S.Sequence s => Rev s a
-single         :: S.Sequence s => a -> Rev s a
+singleton      :: S.Sequence s => a -> Rev s a
 lcons          :: S.Sequence s => a -> Rev s a -> Rev s a
 rcons          :: S.Sequence s => a -> Rev s a -> Rev s a
 append         :: S.Sequence s => Rev s a -> Rev s a -> Rev s a
@@ -131,7 +131,7 @@ fromSeq xs = N (S.size xs - 1) xs
 toSeq (N m xs) = xs
 
 empty = N (-1) S.empty
-single x = N 0 (S.single x)
+singleton x = N 0 (S.singleton x)
 lcons x (N m xs) = N (m+1) (S.rcons x xs)
 rcons x (N m xs) = N (m+1) (S.lcons x xs)
 append (N m xs) (N n ys) = N (m+n+1) (S.append ys xs)
@@ -284,7 +284,7 @@ structuralInvariant (N i s) = i == ((S.size s) - 1)
 -- instances
 
 instance S.Sequence s => S.Sequence (Rev s) where
-  {empty = empty; single = single; lcons = lcons; rcons = rcons;
+  {empty = empty; singleton = singleton; lcons = lcons; rcons = rcons;
    append = append; lview = lview; lhead = lhead; ltail = ltail;
    lheadM = lheadM; ltailM = ltailM; rheadM = rheadM; rtailM = rtailM;
    rview = rview; rhead = rhead; rtail = rtail; null = null;
@@ -310,7 +310,7 @@ instance S.Sequence s => Functor (Rev s) where
   fmap = map
 
 instance S.Sequence s => Monad (Rev s) where
-  return = single
+  return = singleton
   xs >>= k = concatMap k xs
 
 instance S.Sequence s => MonadPlus (Rev s) where

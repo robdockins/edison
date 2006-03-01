@@ -18,10 +18,10 @@ import qualified Data.Edison.Seq.ListSeq as L
 import Control.Monad.Identity
 
 rconsUsingAppend :: Sequence s => a -> s a -> s a
-rconsUsingAppend x s = append s (single x)
+rconsUsingAppend x s = append s (singleton x)
 
 rconsUsingFoldr :: Sequence s => a -> s a -> s a
-rconsUsingFoldr x s = foldr lcons (single x) s
+rconsUsingFoldr x s = foldr lcons (singleton x) s
 
 appendUsingFoldr :: Sequence s => s a -> s a -> s a
 appendUsingFoldr s t | null t = s

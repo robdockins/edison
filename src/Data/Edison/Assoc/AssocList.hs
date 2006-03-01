@@ -278,7 +278,7 @@ lookupM key (I k x m) | key == k  = return x
                       | otherwise = lookupM key m
 
 lookupAll key E = S.empty
-lookupAll key (I k x m) | key == k  = S.single x 
+lookupAll key (I k x m) | key == k  = S.singleton x 
                         | otherwise = lookupAll key m
 
 lookupWithDefault d key E = d

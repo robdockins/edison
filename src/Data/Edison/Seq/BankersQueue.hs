@@ -20,7 +20,7 @@ module Data.Edison.Seq.BankersQueue (
     Seq, -- instance of Sequence, Functor, Monad, MonadPlus
 
     -- * Sequence operations
-    empty,single,lcons,rcons,append,lview,lhead,ltail,rview,rhead,rtail,
+    empty,singleton,lcons,rcons,append,lview,lhead,ltail,rview,rhead,rtail,
     lheadM,ltailM,rheadM,rtailM,
     null,size,concat,reverse,reverseOnto,fromList,toList,
     map,concatMap,foldr,foldr',foldl,foldl',foldr1,foldr1',foldl1,foldl1',
@@ -53,7 +53,7 @@ import Test.QuickCheck
 -- signatures for exported functions
 moduleName     :: String
 empty          :: Seq a
-single         :: a -> Seq a
+singleton      :: a -> Seq a
 lcons          :: a -> Seq a -> Seq a
 rcons          :: a -> Seq a -> Seq a
 append         :: Seq a -> Seq a -> Seq a
@@ -134,7 +134,7 @@ makeQ i xs ys j
   | otherwise = Q i xs ys j
 
 empty = Q 0 [] [] 0
-single x = Q 1 [x] [] 0
+singleton x = Q 1 [x] [] 0
 lcons x (Q i xs ys j) = Q (i+1) (x:xs) ys j
 rcons y (Q i xs ys j) = makeQ i xs (y:ys) (j+1)
 
@@ -332,7 +332,7 @@ unzipWith3 = unzipWith3UsingLists
 -- instances
 
 instance S.Sequence Seq where
-  {empty = empty; single = single; lcons = lcons; rcons = rcons;
+  {empty = empty; singleton = singleton; lcons = lcons; rcons = rcons;
    append = append; lview = lview; lhead = lhead; ltail = ltail;
    lheadM = lheadM; ltailM = ltailM; rheadM = rheadM; rtailM = rtailM;
    rview = rview; rhead = rhead; rtail = rtail; null = null;
@@ -358,7 +358,7 @@ instance Functor Seq where
   fmap = map
 
 instance Monad Seq where
-  return = single
+  return = singleton
   xs >>= k = concatMap k xs
 
 instance MonadPlus Seq where

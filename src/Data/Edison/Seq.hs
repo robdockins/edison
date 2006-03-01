@@ -59,14 +59,14 @@ class (Functor s, MonadPlus s) => Sequence s where
 
   -- | Create a singleton sequence
   --
-  -- > single x = <x>
+  -- > singleton x = <x>
   --
   -- /Axioms:/
   --
-  -- * @single x = lcons x empty = rcons x empty@
+  -- * @singleton x = lcons x empty = rcons x empty@
   --
   --   Default running time: @O( 1 )@
-  single    :: a -> s a
+  singleton    :: a -> s a
 
   -- | Add a new element to the front\/left of a sequence
   --
@@ -74,7 +74,7 @@ class (Functor s, MonadPlus s) => Sequence s where
   --
   -- /Axioms:/
   --
-  -- * @lcons x xs = append (single x) xs@
+  -- * @lcons x xs = append (singleton x) xs@
   --
   --   Default running time: @O( 1 )@
   lcons     :: a -> s a -> s a
@@ -85,7 +85,7 @@ class (Functor s, MonadPlus s) => Sequence s where
   --
   -- /Axioms:/
   --
-  -- * @rcons x xs = append xs (single x)@
+  -- * @rcons x xs = append xs (singleton x)@
   --
   --   Default running time: @O( n )@
   rcons     :: a -> s a -> s a
@@ -538,7 +538,7 @@ class (Functor s, MonadPlus s) => Sequence s where
   --   The canonical applications of the reduce functions are algorithms like
   --   mergesort where:
   --
-  -- > mergesort xs = reducer merge empty (map single xs)
+  -- > mergesort xs = reducer merge empty (map singleton xs)
   --
   --
   -- /Axioms:/

@@ -7,7 +7,7 @@ module Data.Edison.Coll.MinHeap (
     Min, -- instance of Coll/CollX, OrdColl/OrdCollX
 
     -- * CollX operations
-    empty,single,fromSeq,insert,insertSeq,union,unionSeq,delete,deleteAll,
+    empty,singleton,fromSeq,insert,insertSeq,union,unionSeq,delete,deleteAll,
     deleteSeq,null,size,member,count,structuralInvariant,
 
     -- * Coll operations
@@ -48,7 +48,7 @@ structuralInvariant E = True
 structuralInvariant (M x h) = if C.null h then True else x <= C.minElem h
 
 empty     :: Min h a
-single    :: (C.CollX h a,Ord a) => a -> Min h a
+singleton :: (C.CollX h a,Ord a) => a -> Min h a
 fromSeq   :: (C.OrdColl h a,Ord a,S.Sequence s) => s a -> Min h a
 insert    :: (C.OrdCollX h a,Ord a) => a -> Min h a -> Min h a
 insertSeq :: (C.OrdColl h a,Ord a,S.Sequence s) => s a -> Min h a -> Min h a
@@ -114,7 +114,7 @@ toPrim E = C.empty
 toPrim (M x xs) = C.unsafeInsertMin x xs
 
 empty = E
-single x = M x C.empty
+singleton x = M x C.empty
 
 fromSeq = fromPrim . C.fromSeq
 
@@ -321,7 +321,7 @@ unsafeMapMonotonic = unsafeMapMonotonicUsingFoldr
 -- instance declarations
 
 instance (C.OrdColl h a, Ord a) => C.CollX (Min h a) a where
-  {empty = empty; single = single; fromSeq = fromSeq; insert = insert;
+  {empty = empty; singleton = singleton; fromSeq = fromSeq; insert = insert;
    insertSeq = insertSeq; union = union; unionSeq = unionSeq; 
    delete = delete; deleteAll = deleteAll; deleteSeq = deleteSeq;
    null = null; size = size; member = member; count = count;

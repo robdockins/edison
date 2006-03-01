@@ -13,7 +13,7 @@ module Data.Edison.Coll.LazyPairingHeap (
     Heap, -- instance of Coll/CollX, OrdColl/OrdCollX
 
     -- * CollX operations
-    empty,single,fromSeq,insert,insertSeq,union,unionSeq,delete,deleteAll,
+    empty,singleton,fromSeq,insert,insertSeq,union,unionSeq,delete,deleteAll,
     deleteSeq,null,size,member,count,structuralInvariant,
 
     -- * Coll operations
@@ -72,8 +72,8 @@ makeH2 x h xs = H2 x h xs
 empty :: Heap a
 empty = E
 
-single :: a -> Heap a
-single x = H1 x E
+singleton :: a -> Heap a
+singleton x = H1 x E
 
 insert :: Ord a => a -> Heap a -> Heap a
 insert x E = H1 x E
@@ -464,7 +464,7 @@ toOrdSeq = toOrdSeqUsingFoldr
 -- instance declarations
 
 instance Ord a => C.CollX (Heap a) a where
-  {empty = empty; single = single; fromSeq = fromSeq; insert = insert;
+  {empty = empty; singleton = singleton; fromSeq = fromSeq; insert = insert;
    insertSeq = insertSeq; union = union; unionSeq = unionSeq; 
    delete = delete; deleteAll = deleteAll; deleteSeq = deleteSeq;
    null = null; size = size; member = member; count = count;

@@ -21,7 +21,7 @@ module Data.Edison.Seq.RandList (
     Seq, -- instance of Sequence, Functor, Monad, MonadPlus
 
     -- * Sequence Operations
-    empty,single,lcons,rcons,append,lview,lhead,ltail,rview,rhead,rtail,
+    empty,singleton,lcons,rcons,append,lview,lhead,ltail,rview,rhead,rtail,
     lheadM,ltailM,rheadM,rtailM,
     null,size,concat,reverse,reverseOnto,fromList,toList,
     map,concatMap,foldr,foldr',foldl,foldl',foldr1,foldr1',foldl1,foldl1',
@@ -52,7 +52,7 @@ import Test.QuickCheck
 -- signatures for exported functions
 moduleName     :: String
 empty          :: Seq a
-single         :: a -> Seq a
+singleton      :: a -> Seq a
 lcons          :: a -> Seq a -> Seq a
 rcons          :: a -> Seq a -> Seq a
 append         :: Seq a -> Seq a -> Seq a
@@ -129,7 +129,7 @@ half :: Int -> Int
 half n = n `quot` 2  -- use a shift?
 
 empty = E
-single x = C 1 (L x) E
+singleton x = C 1 (L x) E
 
 lcons x xs@(C i s (C j t xs'))
     | i == j = C (1 + i + j) (T x s t) xs'
@@ -391,7 +391,7 @@ structuralInvariant (C x t s) = x > 0 && checkTree x t && checkSeq x s
 -- instances
 
 instance S.Sequence Seq where
-  {empty = empty; single = single; lcons = lcons; rcons = rcons;
+  {empty = empty; singleton = singleton; lcons = lcons; rcons = rcons;
    append = append; lview = lview; lhead = lhead; ltail = ltail;
    lheadM = lheadM; ltailM = ltailM; rheadM = rheadM; rtailM = rtailM;
    rview = rview; rhead = rhead; rtail = rtail; null = null;
@@ -417,7 +417,7 @@ instance Functor Seq where
   fmap = map
 
 instance Monad Seq where
-  return = single
+  return = singleton
   xs >>= k = concatMap k xs
 
 instance MonadPlus Seq where

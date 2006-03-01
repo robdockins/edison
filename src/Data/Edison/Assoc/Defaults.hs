@@ -44,7 +44,7 @@ countUsingMember k m = if member k m then 1 else 0
 
 lookupAllUsingLookupM :: (AssocX m k,S.Sequence seq) => k -> m a -> seq a
 lookupAllUsingLookupM k m = case lookupM k m of
-                              Just x -> S.single x
+                              Just x -> S.singleton x
                               Nothing -> S.empty
 
 lookupWithDefaultUsingLookupM :: AssocX m k => a -> k -> m a -> a

@@ -11,7 +11,7 @@ module Data.Edison.Seq.ListSeq (
     Seq,
 
     -- * Sequence Operations
-    empty,single,lcons,rcons,append,lview,lhead,lheadM,ltail,ltailM,
+    empty,singleton,lcons,rcons,append,lview,lhead,lheadM,ltail,ltailM,
     rview,rhead,rheadM,rtail,rtailM,
     null,size,concat,reverse,reverseOnto,fromList,toList,
     map,concatMap,foldr,foldr',foldl,foldl',foldr1,foldr1',foldl1,foldl1',
@@ -40,7 +40,7 @@ import qualified Data.Edison.Seq as S ( Sequence(..) )
 -- signatures for exported functions
 moduleName     :: String
 empty          :: [a]
-single         :: a -> [a]
+singleton      :: a -> [a]
 lcons          :: a -> [a] -> [a]
 rcons          :: a -> [a] -> [a]
 append         :: [a] -> [a] -> [a]
@@ -110,7 +110,7 @@ moduleName = "Data.Edison.Seq.ListSeq"
 type Seq a = [a]
 
 empty = []
-single x = [x]
+singleton x = [x]
 lcons = (:)
 rcons x s = s ++ [x]
 append = (++)
@@ -316,7 +316,7 @@ structuralInvariant = const True
 -- declare the instance
 
 instance S.Sequence [] where
-  {empty = empty; single = single; lcons = lcons; rcons = rcons;
+  {empty = empty; singleton = singleton; lcons = lcons; rcons = rcons;
    append = append; null = null;
    lview = lview; lhead = lhead; ltail = ltail;
    lheadM = lheadM; ltailM = ltailM;

@@ -12,7 +12,7 @@ module Data.Edison.Seq.SizedSeq (
     Sized, -- Sized s instance of Sequence, Functor, Monad, MonadPlus
 
     -- * Sequence Operations
-    empty,single,lcons,rcons,append,lview,lhead,ltail,rview,rhead,rtail,
+    empty,singleton,lcons,rcons,append,lview,lhead,ltail,rview,rhead,rtail,
     lheadM,ltailM,rheadM,rtailM,
     null,size,concat,reverse,reverseOnto,fromList,toList,
     map,concatMap,foldr,foldr',foldl,foldl',foldr1,foldr1',foldl1,foldl1',
@@ -47,7 +47,7 @@ import Test.QuickCheck
 moduleName     :: String
 instanceName   :: S.Sequence s => Sized s a -> String
 empty          :: S.Sequence s => Sized s a
-single         :: S.Sequence s => a -> Sized s a
+singleton      :: S.Sequence s => a -> Sized s a
 lcons          :: S.Sequence s => a -> Sized s a -> Sized s a
 rcons          :: S.Sequence s => a -> Sized s a -> Sized s a
 append         :: S.Sequence s => Sized s a -> Sized s a -> Sized s a
@@ -130,7 +130,7 @@ fromSeq xs = N (S.size xs) xs
 toSeq (N n xs) = xs
 
 empty = N 0 S.empty
-single x = N 1 (S.single x)
+singleton x = N 1 (S.singleton x)
 lcons x (N n xs) = N (n+1) (S.lcons x xs)
 rcons x (N n xs) = N (n+1) (S.rcons x xs)
 append (N m xs) (N n ys) = N (m+n) (S.append xs ys)
@@ -263,7 +263,7 @@ structuralInvariant (N i s) = i == S.size s
 -- instances
 
 instance S.Sequence s => S.Sequence (Sized s) where
-  {empty = empty; single = single; lcons = lcons; rcons = rcons;
+  {empty = empty; singleton = singleton; lcons = lcons; rcons = rcons;
    append = append; lview = lview; lhead = lhead; ltail = ltail;
    lheadM = lheadM; ltailM = ltailM; rheadM = rheadM; rtailM = rtailM;
    rview = rview; rhead = rhead; rtail = rtail; null = null;
@@ -289,7 +289,7 @@ instance S.Sequence s => Functor (Sized s) where
   fmap = map
 
 instance S.Sequence s => Monad (Sized s) where
-  return = single
+  return = singleton
   xs >>= k = concatMap k xs
 
 instance S.Sequence s => MonadPlus (Sized s) where

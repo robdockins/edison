@@ -9,7 +9,7 @@ module Data.Edison.Coll.UnbalancedSet (
     Set, -- instance of Coll/CollX, OrdColl/OrdCollX, Set/SetX, OrdSet/OrdSetX
 
     -- * CollX operations
-    empty,single,fromSeq,insert,insertSeq,union,unionSeq,delete,deleteAll,
+    empty,singleton,fromSeq,insert,insertSeq,union,unionSeq,delete,deleteAll,
     deleteSeq,null,size,member,count,
 
     -- * Coll operations
@@ -48,7 +48,7 @@ import Test.QuickCheck
 -- signatures for exported functions
 moduleName :: String
 empty      :: Set a
-single     :: a -> Set a
+singleton  :: a -> Set a
 fromSeq    :: (Ord a,S.Sequence seq) => seq a -> Set a
 insert     :: Ord a => a -> Set a -> Set a
 insertSeq  :: (Ord a,S.Sequence seq) => seq a -> Set a -> Set a
@@ -140,7 +140,7 @@ structuralInvariant t = bounded Nothing Nothing t
 
 
 empty = E
-single x = T E x E
+singleton x = T E x E
 
 insertWith c x = ins
   where ins E = T E x E
@@ -352,7 +352,7 @@ intersectionWith = intersectionWithUsingOrdLists
 -- instance declarations
 
 instance Ord a => C.CollX (Set a) a where
-  {empty = empty; single = single; fromSeq = fromSeq; insert = insert;
+  {empty = empty; singleton = singleton; fromSeq = fromSeq; insert = insert;
    insertSeq = insertSeq; union = union; unionSeq = unionSeq; 
    delete = delete; deleteAll = deleteAll; deleteSeq = deleteSeq;
    null = null; size = size; member = member; count = count;

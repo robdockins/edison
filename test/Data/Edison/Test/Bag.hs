@@ -123,7 +123,7 @@ si = structuralInvariant
 
 prop_single :: BagTest Int bag => bag Int -> Int -> Bool
 prop_single bag x =
-    let xs = single x `asTypeOf` bag
+    let xs = singleton x `asTypeOf` bag
      in si xs
         &&
         toOrdList xs == [x]
@@ -258,9 +258,9 @@ prop_unsafeInsertMin_Max :: BagTest Int bag =>
 	bag Int -> Int -> bag Int -> Bool
 prop_unsafeInsertMin_Max bag i xs =
     if null xs then
-      unsafeInsertMin 0 xs === single 0
+      unsafeInsertMin 0 xs === singleton 0
       &&
-      unsafeInsertMax 0 xs === single 0
+      unsafeInsertMax 0 xs === singleton 0
     else
       unsafeInsertMin lo xs === insert lo xs
       &&

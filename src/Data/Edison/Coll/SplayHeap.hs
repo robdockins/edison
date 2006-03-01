@@ -16,7 +16,7 @@ module Data.Edison.Coll.SplayHeap (
     Heap, -- instance of Coll/CollX, OrdColl/OrdCollX
 
     -- * CollX operations
-    empty,single,fromSeq,insert,insertSeq,union,unionSeq,delete,deleteAll,
+    empty,singleton,fromSeq,insert,insertSeq,union,unionSeq,delete,deleteAll,
     deleteSeq,null,size,member,count,structuralInvariant,
 
     -- * Coll operations
@@ -68,7 +68,7 @@ structuralInvariant t = bounded Nothing Nothing t
 
 
 empty     :: Heap a
-single    :: a -> Heap a
+singleton :: a -> Heap a
 fromSeq   :: (Ord a,S.Sequence s) => s a -> Heap a
 insert    :: Ord a => a -> Heap a -> Heap a
 insertSeq :: (Ord a,S.Sequence s) => s a -> Heap a -> Heap a
@@ -125,7 +125,7 @@ toOrdSeq :: (Ord a,S.Sequence s) => Heap a -> s a
 unsafeMapMonotonic :: (a -> b) -> Heap a -> Heap b
 
 empty = E
-single x = T E x E
+singleton x = T E x E
 
 insert x xs = T a x b
   where (a,b) = partitionLE_GT x xs
@@ -422,7 +422,7 @@ unsafeFromOrdSeq = unsafeFromOrdSeqUsingUnsafeInsertMin
 -- instance declarations
 
 instance Ord a => C.CollX (Heap a) a where
-  {empty = empty; single = single; fromSeq = fromSeq; insert = insert;
+  {empty = empty; singleton = singleton; fromSeq = fromSeq; insert = insert;
    insertSeq = insertSeq; union = union; unionSeq = unionSeq; 
    delete = delete; deleteAll = deleteAll; deleteSeq = deleteSeq;
    null = null; size = size; member = member; count = count;

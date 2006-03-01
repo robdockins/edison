@@ -7,7 +7,7 @@ module Data.Edison.Coll.StandardSet (
     Set,
 
     -- * CollX operations
-    empty,single,fromSeq,insert,insertSeq,union,unionSeq,delete,deleteAll,
+    empty,singleton,fromSeq,insert,insertSeq,union,unionSeq,delete,deleteAll,
     deleteSeq,null,size,member,count,
 
     -- * Coll operations
@@ -50,7 +50,7 @@ import qualified Data.Set as DS
 -- signatures for exported functions
 moduleName :: String
 empty      :: Set a
-single     :: a -> Set a
+singleton  :: a -> Set a
 fromSeq    :: (Ord a,S.Sequence seq) => seq a -> Set a
 insert     :: Ord a => a -> Set a -> Set a
 insertSeq  :: (Ord a,S.Sequence seq) => seq a -> Set a -> Set a
@@ -127,7 +127,7 @@ structuralInvariant :: Ord a => Set a -> Bool
 structuralInvariant = DS.valid
 
 empty              = DS.empty
-single             = DS.singleton
+singleton          = DS.singleton
 fromSeq            = fromSeqUsingFoldr
 insert             = DS.insert
 insertSeq          = insertSeqUsingUnion
@@ -208,7 +208,7 @@ unsafeMapMonotonic = DS.mapMonotonic
 
 
 instance Ord a => C.CollX (Set a) a where
-  {empty = empty; single = single; fromSeq = fromSeq; insert = insert;
+  {empty = empty; singleton = singleton; fromSeq = fromSeq; insert = insert;
    insertSeq = insertSeq; union = union; unionSeq = unionSeq; 
    delete = delete; deleteAll = deleteAll; deleteSeq = deleteSeq;
    null = null; size = size; member = member; count = count;

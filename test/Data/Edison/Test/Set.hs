@@ -133,7 +133,7 @@ si = structuralInvariant
 
 prop_single :: SetTest Int set => set Int -> Int -> Bool
 prop_single set x =
-    let xs = single x `asTypeOf` set
+    let xs = singleton x `asTypeOf` set
      in si xs
         &&
         toOrdList xs == [x]
@@ -271,9 +271,9 @@ prop_unsafeInsertMin_Max :: SetTest Int set =>
 	set Int -> Int -> set Int -> Bool
 prop_unsafeInsertMin_Max set i xs =
     if null xs then
-      unsafeInsertMin 0 xs === single 0
+      unsafeInsertMin 0 xs === singleton 0
       &&
-      unsafeInsertMax 0 xs === single 0
+      unsafeInsertMax 0 xs === singleton 0
     else
       unsafeInsertMin lo xs === insert lo xs
       &&

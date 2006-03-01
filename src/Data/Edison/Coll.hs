@@ -101,7 +101,7 @@ class Eq a => CollX c a | c -> a where
   empty          :: c
 
   -- | create a singleton collection
-  single         :: a -> c
+  singleton      :: a -> c
 
   -- | Convert a sequence to a collection.  For sets, it is unspecified
   --   which element is kept in case of duplicates.

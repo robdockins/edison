@@ -31,7 +31,7 @@ module Data.Edison.Seq.BraunSeq (
     Seq, -- instance of Sequence, Functor, Monad, MonadPlus
 
     -- * Sequence Operations
-    empty,single,lcons,rcons,append,lview,lhead,ltail,rview,rhead,rtail,
+    empty,singleton,lcons,rcons,append,lview,lhead,ltail,rview,rhead,rtail,
     lheadM,ltailM,rheadM,rtailM,
     null,size,concat,reverse,reverseOnto,fromList,toList,
     map,concatMap,foldr,foldr',foldl,foldl',foldr1,foldr1',foldl1,foldl1',
@@ -66,7 +66,7 @@ import qualified Data.Edison.Seq.ListSeq as L
 -- signatures for exported functions
 moduleName     :: String
 empty          :: Seq a
-single         :: a -> Seq a
+singleton      :: a -> Seq a
 lcons          :: a -> Seq a -> Seq a
 rcons          :: a -> Seq a -> Seq a
 append         :: Seq a -> Seq a -> Seq a
@@ -143,13 +143,13 @@ half :: Int -> Int
 half n = n `quot` 2  -- use a shift?
 
 empty = E
-single x = B x E E
+singleton x = B x E E
 
-lcons x E = single x
+lcons x E = singleton x
 lcons x (B y a b) = B x (lcons y b) a
 
 rcons y ys = insAt (size ys) ys
-  where insAt 0 _ = single y
+  where insAt 0 _ = singleton y
         insAt i (B x a b)
           | odd i     = B x (insAt (half i) a) b
           | otherwise = B x a (insAt (half i - 1) b)
@@ -269,7 +269,7 @@ fromList = L.lhead . L.foldr build [E] . rows 1
           where (ts1, ts2) = L.splitAt k ts
 
         zipWithB [] _ _ = []
-        zipWithB (x:xs) [] _ = single x : L.map single xs
+        zipWithB (x:xs) [] _ = singleton x : L.map singleton xs
         zipWithB (x:xs) (t:ts) [] = B x t E : zipWithB xs ts []
         zipWithB (x:xs) (t1:ts1) (t2:ts2) = B x t1 t2 : zipWithB xs ts1 ts2
 
@@ -304,7 +304,7 @@ map f (B x a b) = B (f x) (map f a) (map f b)
 copy n x = if n <= 0 then empty else fst (copy2 n)
   where copy2 n
             | odd n     = (B x a a, B x b a)
-            | n == 0    = (E, single x)
+            | n == 0    = (E, singleton x)
             | otherwise = (B x b a, B x b b)
           where (a, b) = copy2 (half (n-1))
 
@@ -458,7 +458,7 @@ splitWhile = splitWhileUsingLview
 -- instances
 
 instance S.Sequence Seq where
-  {empty = empty; single = single; lcons = lcons; rcons = rcons;
+  {empty = empty; singleton = singleton; lcons = lcons; rcons = rcons;
    append = append; lview = lview; lhead = lhead; ltail = ltail;
    lheadM = lheadM; ltailM = ltailM; rheadM = rheadM; rtailM = rtailM;
    rview = rview; rhead = rhead; rtail = rtail; null = null;
@@ -484,7 +484,7 @@ instance Functor Seq where
   fmap = map
 
 instance Monad Seq where
-  return = single
+  return = singleton
   xs >>= k = concatMap k xs
 
 instance MonadPlus Seq where
