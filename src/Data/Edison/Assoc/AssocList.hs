@@ -16,8 +16,8 @@ module Data.Edison.Assoc.AssocList (
     -- * AssocX operations
     empty,single,fromSeq,insert,insertSeq,union,unionSeq,delete,deleteAll,
     deleteSeq,null,size,member,count,lookup,lookupM,lookupAll,
-    lookupWithDefault,adjust,adjustAll,map,fold,fold',fold1,fold1',filter,
-    partition,elements,structuralInvariant,
+    lookupWithDefault,adjust,adjustAll,adjustOrInsert,map,
+    fold,fold',fold1,fold1',filter,partition,elements,structuralInvariant,
 
     -- * OrdAssocX operations
     minView, minElem, deleteMin, unsafeInsertMin, maxView, maxElem, deleteMax,
@@ -77,6 +77,7 @@ lookupAll     :: (Eq k,S.Sequence seq) => k -> FM k a -> seq a
 lookupWithDefault :: Eq k => a -> k -> FM k a -> a
 adjust        :: Eq k => (a -> a) -> k -> FM k a -> FM k a
 adjustAll     :: Eq k => (a -> a) -> k -> FM k a -> FM k a
+adjustOrInsert :: Eq k => (Maybe a -> a) -> k -> FM k a -> FM k a
 map           :: Eq k => (a -> b) -> FM k a -> FM k b
 fold          :: Eq k => (a -> b -> b) -> b -> FM k a -> b
 fold1         :: Eq k => (a -> a -> a) -> FM k a -> a
@@ -293,6 +294,11 @@ adjust f key (I k x m) | key == k  = I key (f x) m
 
 adjustAll = adjust
 
+adjustOrInsert f key E = single key (f Nothing)
+adjustOrInsert f key (I k x m)
+    | key == k  = I key (f (Just x)) m
+    | otherwise = I k x (adjustOrInsert f key m)
+
 
 map f E = E
 map f (I k x m) = I k (f x) (map f m)
@@ -465,8 +471,8 @@ instance Eq k  => A.AssocX (FM k) k where
    null = null; size = size; member = member; count = count; 
    lookup = lookup; lookupM = lookupM; lookupAll = lookupAll; 
    lookupWithDefault = lookupWithDefault; adjust = adjust; 
-   adjustAll = adjustAll; map = map; fold = fold; fold' = fold';
-   fold1 = fold1; fold1' = fold1';
+   adjustAll = adjustAll; adjustOrInsert = adjustOrInsert;
+   map = map; fold = fold; fold' = fold'; fold1 = fold1; fold1' = fold1';
    filter = filter; partition = partition; elements = elements;
    structuralInvariant = structuralInvariant; instanceName m = moduleName}
 

@@ -142,6 +142,14 @@ class (Eq k,Functor m) => AssocX m k | m -> k where
   --   unchanged.
   adjustAll      :: (a -> a) -> k -> m a -> m a
 
+  -- | Searches for a matching key in the collection.  If the key is found,
+  --   the given function is called with @Just x@ where @x@ is the current
+  --   value of the binding.  If the key is not found, the function is called
+  --   with @Nothing@.  The returned value is then bound to the key.  If the 
+  --   given key is bound more than once in the collection, it is unspecified
+  --   which element is adjusted.
+  adjustOrInsert :: (Maybe a -> a) -> k -> m a -> m a
+
   -- | Apply a function to the elements of every binding in the associative
   --   collection.  It will ordinarily be the same as 'fmap' from the Functor instance.
   map            :: (a -> b) -> m a -> m b

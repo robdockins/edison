@@ -10,8 +10,8 @@ module Data.Edison.Assoc.TernaryTrie (
     -- * AssocX operations
     empty,single,fromSeq,insert,insertSeq,union,unionSeq,delete,deleteAll,
     deleteSeq,null,size,member,count,lookup,lookupM,lookupAll,
-    lookupWithDefault,adjust,adjustAll,map,fold,fold',fold1,fold1',filter,partition,elements,
-    structuralInvariant,
+    lookupWithDefault,adjust,adjustAll,adjustOrInsert,map,
+    fold,fold',fold1,fold1',filter,partition,elements,structuralInvariant,
 
     -- * Assoc operations
     toSeq,keys,mapWithKey,foldWithKey,foldWithKey',filterWithKey,partitionWithKey,
@@ -67,6 +67,7 @@ lookupAll     :: (Ord k,S.Sequence seq) => [k] -> FM k a -> seq a
 lookupWithDefault :: Ord k => a -> [k] -> FM k a -> a
 adjust        :: Ord k => (a -> a) -> [k] -> FM k a -> FM k a
 adjustAll     :: Ord k => (a -> a) -> [k] -> FM k a -> FM k a
+adjustOrInsert :: Ord k => (Maybe a -> a) -> [k] -> FM k a -> FM k a
 map           :: Ord k => (a -> b) -> FM k a -> FM k b
 fold          :: Ord k => (a -> b -> b) -> b -> FM k a -> b
 fold1         :: Ord k => (a -> a -> a) -> FM k a -> a
@@ -485,6 +486,11 @@ adjust f k
 
 adjustAll = adjust
 
+adjustOrInsert f k 
+  = addToFM k (\mv -> case mv of
+                        Nothing -> Just (f Nothing)
+                        Just v  -> Just (f (Just v)))
+
 map f
   = mapVFM (\mv -> case mv of
                         Nothing -> Nothing
@@ -660,9 +666,9 @@ instance Ord k  => A.AssocX (FM k) [k] where
    null = null; size = size; member = member; count = count; 
    lookup = lookup; lookupM = lookupM; lookupAll = lookupAll; 
    lookupWithDefault = lookupWithDefault; adjust = adjust; 
-   adjustAll = adjustAll; map = map; fold = fold; fold' = fold';
-   fold1 = fold1; fold1' = fold1'; filter = filter;
-   partition = partition; elements = elements;
+   adjustAll = adjustAll; adjustOrInsert = adjustOrInsert;
+   map = map; fold = fold; fold' = fold'; fold1 = fold1; fold1' = fold1';
+   filter = filter; partition = partition; elements = elements;
    structuralInvariant = structuralInvariant; instanceName m = moduleName}
 
 instance Ord k  => A.Assoc (FM k) [k] where

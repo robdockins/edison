@@ -7,6 +7,8 @@
 module Data.Edison.Assoc.Defaults 
 where
 
+import Data.Maybe (fromJust)
+
 import Prelude hiding (null,map,lookup,foldr,foldl,foldr1,foldl1,filter)
 import Data.Edison.Assoc
 import qualified Data.Edison.Seq as S
@@ -154,3 +156,9 @@ subsetUsingSubsetEq m1 m2 = subsetEq m1 m2 && size m1 < size m2
 subsetEqUsingMember :: FiniteMap m k => m a -> m b -> Bool
 subsetEqUsingMember m1 m2 = foldWithKey mem True m1
   where mem k _ b = member k m2 && b
+
+adjustOrInsertUsingMember :: AssocX m k => (Maybe a -> a) -> k -> m a -> m a
+adjustOrInsertUsingMember f k m =
+  if member k m
+     then adjust (f . Just) k m
+     else insert k (f Nothing) m

@@ -16,8 +16,8 @@ module Data.Edison.Assoc.PatriciaLoMap (
     -- * AssocX operations
     empty,single,fromSeq,insert,insertSeq,union,unionSeq,delete,deleteAll,
     deleteSeq,null,size,member,count,lookup,lookupM,lookupAll,
-    lookupWithDefault,adjust,adjustAll,map,fold,fold',fold1,fold1',
-    filter,partition,elements,structuralInvariant,
+    lookupWithDefault,adjust,adjustAll,adjustOrInsert,map,
+    fold,fold',fold1,fold1',filter,partition,elements,structuralInvariant,
 
     -- * Assoc operations
     toSeq,keys,mapWithKey,foldWithKey,foldWithKey',filterWithKey,partitionWithKey,
@@ -176,6 +176,10 @@ adjust f k t@(B p m t0 t1) =
       if zeroBit k m then B p m (adjust f k t0) t1
                      else B p m t0 (adjust f k t1)
     else t
+
+-- FIXME can we do better than this?
+adjustOrInsert :: (Maybe a -> a) -> Int -> FM a -> FM a
+adjustOrInsert = adjustOrInsertUsingMember
 
 map :: (a -> b) -> FM a -> FM b
 map f E = E
@@ -506,8 +510,8 @@ instance A.AssocX FM Int where
    null = null; size = size; member = member; count = count; 
    lookup = lookup; lookupM = lookupM; lookupAll = lookupAll; 
    lookupWithDefault = lookupWithDefault; adjust = adjust; 
-   adjustAll = adjustAll; map = map; fold = fold; fold' = fold';
-   fold1 = fold1; fold1' = fold1';
+   adjustAll = adjustAll; adjustOrInsert = adjustOrInsert;
+   map = map; fold = fold; fold' = fold'; fold1 = fold1; fold1' = fold1';
    filter = filter; partition = partition; elements = elements;
    structuralInvariant = structuralInvariant; instanceName m = moduleName}
 
