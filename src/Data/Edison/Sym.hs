@@ -1,4 +1,13 @@
--- | This module introduces a number of infix symbols which are alises
+-- |
+--   Module      :  Data.Edison.Sym
+--   Copyright   :  Copyright (c) 2006 Robert Dockins
+--   License     :  BSD3; see COPYRIGHT file for terms and conditions
+--
+--   Maintainer  :  robdockins AT fastmail DOT fm
+--   Stability   :  provisional
+--   Portability :  non-portable (MPTC and FD)
+--
+--   This module introduces a number of infix symbols which are alises
 --   for some of the operations in the sequence and set abstractions.
 --   For several, the argument orders are reversed to more closely
 --   match usual symbolic usage.

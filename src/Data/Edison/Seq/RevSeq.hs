@@ -1,7 +1,13 @@
--- Copyright (c) 1998-1999 Chris Okasaki.  
--- See COPYRIGHT file for terms and conditions.
-
--- | This module defines a sequence adaptor Rev s.
+-- |
+--   Module      :  Data.Edison.Seq.RevSeq
+--   Copyright   :  Copyright (c) 1998-1999 Chris Okasaki
+--   License     :  BSD3; see COPYRIGHT file for terms and conditions
+--
+--   Maintainer  :  robdockins AT fastmail DOT fm
+--   Stability   :  provisional
+--   Portability :  non-portable (MPTC and FD)
+--
+--   This module defines a sequence adaptor Rev s.
 --   If @s@ is a sequence type constructor, then @Rev s@
 --   is a sequence type constructor that is identical to @s@,
 --   except that it is kept in the opposite order.

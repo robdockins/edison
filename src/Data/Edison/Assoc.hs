@@ -1,7 +1,13 @@
--- Copyright (c) 1998 Chris Okasaki.  
--- See COPYRIGHT file for terms and conditions.
-
--- | The /associative collection/ abstraction includes finite maps, finite
+-- |
+--   Module      :  Data.Edison.Assoc
+--   Copyright   :  Copyright (c) 1998 Chris Okasaki
+--   License     :  BSD3; see COPYRIGHT file for terms and conditions
+--
+--   Maintainer  :  robdockins AT fastmail DOT fm
+--   Stability   :  provisional
+--   Portability :  non-portable (MPTC and FD)
+--
+--   The /associative collection/ abstraction includes finite maps, finite
 --   relations, and priority queues where the priority is separate from the
 --   element.  Associative collections are defined in Edison as a set of eight
 --   classes, organized in the hierarchy shown here FIXME.

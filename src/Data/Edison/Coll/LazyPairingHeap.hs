@@ -1,7 +1,13 @@
--- Copyright (c) 1998-1999 Chris Okasaki.  
--- See COPYRIGHT file for terms and conditions.
-
--- | Lazy Paring Heaps.
+-- |
+--   Module      :  Data.Edison.Coll.LazyPairingHeap
+--   Copyright   :  Copyright (c) 1998-1999 Chris Okasaki
+--   License     :  BSD3; see COPYRIGHT file for terms and conditions
+--
+--   Maintainer  :  robdockins AT fastmail DOT fm
+--   Stability   :  provisional
+--   Portability :  non-portable (MPTC and FD)
+--
+--   Lazy Paring Heaps
 --
 --   /References:/
 --

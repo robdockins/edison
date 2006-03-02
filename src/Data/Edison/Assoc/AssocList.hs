@@ -1,7 +1,13 @@
--- Copyright (c) 1998 Chris Okasaki.  
--- See COPYRIGHT file for terms and conditions.
-
--- | This module implements finite maps as simple association lists.
+-- |
+--   Module      :  Data.Edison.Assoc.AssocList
+--   Copyright   :  Copyright (c) 1998 Chris Okasaki
+--   License     :  BSD3; see COPYRIGHT file for terms and conditions
+--
+--   Maintainer  :  robdockins AT fastmail DOT fm
+--   Stability   :  provisional
+--   Portability :  non-portable (MPTC and FD)
+--
+--   This module implements finite maps as simple association lists.
 --  
 --   Duplicates are removed conceptually, but not physically.  The first
 --   occurrence of a given key is the one that is considered to be in the map.

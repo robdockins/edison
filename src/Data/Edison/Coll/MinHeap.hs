@@ -1,7 +1,14 @@
--- Copyright (c) 1999 Chris Okasaki.  
--- See COPYRIGHT file for terms and conditions.
+-- |
+--   Module      :  Data.Edison.Coll.MinHeap
+--   Copyright   :  Copyright (c) 1999 Chris Okasaki
+--   License     :  BSD3; see COPYRIGHT file for terms and conditions
+--
+--   Maintainer  :  robdockins AT fastmail DOT fm
+--   Stability   :  provisional
+--   Portability :  non-portable (MPTC and FD)
+--
+--   A generic adaptor for bags to keep the minimum element sparately.
 
--- | A generic adaptor for bags to keep the minimum element sparately.
 module Data.Edison.Coll.MinHeap (
     -- * Min heap adaptor type
     Min, -- instance of Coll/CollX, OrdColl/OrdCollX

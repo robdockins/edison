@@ -1,7 +1,13 @@
--- Copyright (c) 1998-1999 Chris Okasaki.  
--- See COPYRIGHT file for terms and conditions.
-
--- | Binary Random-Access lists.  All functions have the standard running
+-- |
+--   Module      :  Data.Edison.Seq.BinaryRandList
+--   Copyright   :  Copyright (c) 1998-1999 Chris Okasaki
+--   License     :  BSD3; see COPYRIGHT file for terms and conditions
+--
+--   Maintainer  :  robdockins AT fastmail DOT fm
+--   Stability   :  provisional
+--   Portability :  non-portable (MPTC and FD)
+--
+--   Binary Random-Access lists.  All functions have the standard running
 --   times from "Data.Edison.Seq" except the following:
 --
 --  * lookup   @O( log n )@

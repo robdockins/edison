@@ -1,7 +1,13 @@
--- Copyright (c) 1998 Chris Okasaki.  
--- See COPYRIGHT file for terms and conditions.
-
--- | The /collection/ abstraction includes sets, bags and priority queues
+-- |
+--   Module      :  Data.Edison.Coll
+--   Copyright   :  Copyright (c) 1998 Chris Okasaki
+--   License     :  BSD3; see COPYRIGHT file for terms and conditions
+--
+--   Maintainer  :  robdockins AT fastmail DOT fm
+--   Stability   :  provisional
+--   Portability :  non-portable (MPTC and FD)
+--
+--   The /collection/ abstraction includes sets, bags and priority queues
 --   (heaps).  Collections are defined in Edison as a set of eight classes,
 --   organized in the heirarchy shown here FIXME.
 --

@@ -1,7 +1,13 @@
--- Copyright (c) 2006 Robert Dockins
--- See COPYRIGHT file for terms and conditions.
-
--- | The standard library "Data.Map" repackaged as an Edison
+-- |
+--   Module      :  Data.Edison.Assoc.AssocList
+--   Copyright   :  Copyright (c) 2006 Robert Dockins
+--   License     :  BSD3; see COPYRIGHT file for terms and conditions
+--
+--   Maintainer  :  robdockins AT fastmail DOT fm
+--   Stability   :  provisional
+--   Portability :  non-portable (MPTC and FD)
+--
+--   The standard library "Data.Map" repackaged as an Edison
 --   associative collection.
 
 module Data.Edison.Assoc.StandardMap (

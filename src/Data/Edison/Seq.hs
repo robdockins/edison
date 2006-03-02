@@ -1,7 +1,13 @@
--- Copyright (c) 1998-1999 Chris Okasaki.  
--- See COPYRIGHT file for terms and conditions.
-
--- | The sequence abstraction is usually viewed as a hierarchy of ADTs
+-- |
+--   Module      :  Data.Edison.Seq
+--   Copyright   :  Copyright (c) 1998-1999 Chris Okasaki
+--   License     :  BSD3; see COPYRIGHT file for terms and conditions
+--
+--   Maintainer  :  robdockins AT fastmail DOT fm
+--   Stability   :  provisional
+--   Portability :  non-portable (MPTC and FD)
+--
+--   The sequence abstraction is usually viewed as a hierarchy of ADTs
 --   including lists, queues, deques, catenable lists, etc. However, such
 --   a hierarchy is based on efficiency rather than functionality. For example,
 --   a list supports all the operations that a deque supports, even though

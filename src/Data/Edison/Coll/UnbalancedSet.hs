@@ -1,9 +1,14 @@
--- Copyright (c) 1998-1999 Chris Okasaki.  
--- See COPYRIGHT file for terms and conditions.
+-- |
+--   Module      :  Data.Edison.Coll.UnbalancedSet
+--   Copyright   :  Copyright (c) 1998-1999 Chris Okasaki
+--   License     :  BSD3; see COPYRIGHT file for terms and conditions
+--
+--   Maintainer  :  robdockins AT fastmail DOT fm
+--   Stability   :  provisional
+--   Portability :  non-portable (MPTC and FD)
+--
+--   Sets implemented as unbalanced binary search trees.
 
--- defaults can be improved!
-
--- | Sets implemented as unbalanced binary search trees.
 module Data.Edison.Coll.UnbalancedSet (
     -- * Set type
     Set, -- instance of Coll/CollX, OrdColl/OrdCollX, Set/SetX, OrdSet/OrdSetX

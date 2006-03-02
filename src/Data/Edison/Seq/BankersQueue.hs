@@ -1,7 +1,13 @@
--- Copyright (c) 1998-1999 Chris Okasaki.  
--- See COPYRIGHT file for terms and conditions.
-
--- | This module implements Banker's Queues. It has the standard running
+-- |
+--   Module      :  Data.Edison.Seq.BankersQueue
+--   Copyright   :  Copyright (c) 1998-1999 Chris Okasaki
+--   License     :  BSD3; see COPYRIGHT file for terms and conditions
+--
+--   Maintainer  :  robdockins AT fastmail DOT fm
+--   Stability   :  provisional
+--   Portability :  non-portable (MPTC and FD)
+--
+--   This module implements Banker's Queues. It has the standard running
 --   times from "Data.Edison.Seq" except for the following:
 --
 --   * rcons   @O( 1 )@

@@ -1,7 +1,13 @@
--- Copyright (c) 1998-1999 Chris Okasaki.  
--- See COPYRIGHT file for terms and conditions.
-
--- | One-sided Braun sequences.  All running times are as listed in 
+-- |
+--   Module      :  Data.Edison.Seq.BraunSeq
+--   Copyright   :  Copyright (c) 1998-1999 Chris Okasaki
+--   License     :  BSD3; see COPYRIGHT file for terms and conditions
+--
+--   Maintainer  :  robdockins AT fastmail DOT fm
+--   Stability   :  provisional
+--   Portability :  non-portable (MPTC and FD)
+--
+--   One-sided Braun sequences.  All running times are as listed in 
 --   "Data.Edison.Seq" except the following:
 --
 --   * lcons   @O( log n )@

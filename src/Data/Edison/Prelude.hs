@@ -1,8 +1,15 @@
--- Copyright (c) 1998 Chris Okasaki.  
--- See COPYRIGHT file for terms and conditions.
-
--- | This module is a central depository of common definitions
+-- |
+--   Module      :  Data.Edison.Prelude
+--   Copyright   :  Copyright (c) 1998 Chris Okasaki
+--   License     :  BSD3; see COPYRIGHT file for terms and conditions
+--
+--   Maintainer  :  robdockins AT fastmail DOT fm
+--   Stability   :  provisional
+--   Portability :  non-portable (MPTC and FD)
+--
+--   This module is a central depository of common definitions
 --   used throughout Edison.
+
 module Data.Edison.Prelude (
 -- * Hashing classes
   Hash (..)

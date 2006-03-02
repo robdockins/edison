@@ -1,7 +1,14 @@
--- Copyright (c) 2002 Andrew Bromage.  
--- See COPYRIGHT file for terms and conditions.
+-- |
+--   Module      :  Data.Edison.Assoc.TernaryTrie
+--   Copyright   :  Copyright (c) 2002 Andrew Bromage
+--   License     :  BSD3; see COPYRIGHT file for terms and conditions
+--
+--   Maintainer  :  robdockins AT fastmail DOT fm
+--   Stability   :  provisional
+--   Portability :  non-portable (MPTC and FD)
+--
+--   Finite maps implemented as ternary search tries
 
--- | Finite maps implemented as ternary search tries.
 module Data.Edison.Assoc.TernaryTrie (
     -- * Type of ternary search tries
     FM, -- instance of Assoc(X), FiniteMap(X)

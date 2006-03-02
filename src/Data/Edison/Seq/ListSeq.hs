@@ -1,7 +1,13 @@
--- Copyright (c) 1998 Chris Okasaki.  
--- See COPYRIGHT file for terms and conditions.
-
--- | This module packages the standard prelude list type as a
+-- |
+--   Module      :  Data.Edison.Seq.ListSeq
+--   Copyright   :  Copyright (c) 1998 Chris Okasaki
+--   License     :  BSD3; see COPYRIGHT file for terms and conditions
+--
+--   Maintainer  :  robdockins AT fastmail DOT fm
+--   Stability   :  provisional
+--   Portability :  non-portable (MPTC and FD)
+--
+--   This module packages the standard prelude list type as a
 --   sequence.  This is the baseline sequence implementation and
 --   all methods have the default running times listed in
 --   "Data.Edison.Seq".

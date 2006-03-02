@@ -1,7 +1,13 @@
--- Copyright (c) 1998-1999 Chris Okasaki.  
--- See COPYRIGHT file for terms and conditions.
-
--- | Random-Access Lists.  All operations are as listed in "Data.Edison.Seq"
+-- |
+--   Module      :  Data.Edison.Seq.RandList
+--   Copyright   :  Copyright (c) 1998-1999 Chris Okasaki
+--   License     :  BSD3; see COPYRIGHT file for terms and conditions
+--
+--   Maintainer  :  robdockins AT fastmail DOT fm
+--   Stability   :  provisional
+--   Portability :  non-portable (MPTC and FD)
+--
+--   Random-Access Lists.  All operations are as listed in "Data.Edison.Seq"
 --   except the following:
 --
 --   * lookup @O( log n )@

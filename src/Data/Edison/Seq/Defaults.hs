@@ -1,21 +1,26 @@
--- Copyright (c) 1998 Chris Okasaki.  
--- See COPYRIGHT file for terms and conditions.
-
--- | This module provides default implementations of many of
+-- |
+--   Module      :  Data.Edison.Seq.Defaults
+--   Copyright   :  Copyright (c) 1998 Chris Okasaki
+--   License     :  BSD3; see COPYRIGHT file for terms and conditions
+--
+--   Maintainer  :  robdockins AT fastmail DOT fm
+--   Stability   :  internal (unstable)
+--   Portability :  non-portable (MPTC and FD)
+--
+--   This module provides default implementations of many of
 --   the sequence operations.  It is used to fill in implementations
 --   and is not intended for end users.
 
-module Data.Edison.Seq.Defaults
-where
+module Data.Edison.Seq.Defaults where
 
 import Prelude hiding (concat,reverse,map,concatMap,foldr,foldl,foldr1,foldl1,
                        filter,takeWhile,dropWhile,lookup,take,drop,splitAt,
                        zip,zip3,zipWith,zipWith3,unzip,unzip3,null)
+import Control.Monad.Identity
 
 import Data.Edison.Prelude
 import Data.Edison.Seq
 import qualified Data.Edison.Seq.ListSeq as L
-import Control.Monad.Identity
 
 rconsUsingAppend :: Sequence s => a -> s a -> s a
 rconsUsingAppend x s = append s (singleton x)

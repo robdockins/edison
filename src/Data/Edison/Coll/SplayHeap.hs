@@ -1,7 +1,13 @@
--- Copyright (c) 1999 Chris Okasaki.  
--- See COPYRIGHT file for terms and conditions.
-
--- | Splay heaps.
+-- |
+--   Module      :  Data.Edison.Coll.SplayHeap
+--   Copyright   :  Copyright (c) 1999 Chris Okasaki
+--   License     :  BSD3; see COPYRIGHT file for terms and conditions
+--
+--   Maintainer  :  robdockins AT fastmail DOT fm
+--   Stability   :  provisional
+--   Portability :  non-portable (MPTC and FD)
+--
+--   Splay heaps.
 --
 --   If 'minElem' is called frequently, then SplayHeap should
 --   be used in conjunction with "Data.Edison.Coll.MinHeap".

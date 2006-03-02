@@ -1,7 +1,13 @@
--- Copyright (c) 1998 Chris Okasaki.  
--- See COPYRIGHT file for terms and conditions.
-
--- | Finite maps implemented as little-endian Patricia trees.
+-- |
+--   Module      :  Data.Edison.Assoc.OatriciaLoMap
+--   Copyright   :  Copyright (c) 1998 Chris Okasaki
+--   License     :  BSD3; see COPYRIGHT file for terms and conditions
+--
+--   Maintainer  :  robdockins AT fastmail DOT fm
+--   Stability   :  provisional
+--   Portability :  non-portable (MPTC and FD)
+--
+--   Finite maps implemented as little-endian Patricia trees.
 --
 --   /References:/
 --

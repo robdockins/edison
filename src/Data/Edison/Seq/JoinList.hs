@@ -1,7 +1,13 @@
--- Copyright (c) 1998-1999 Chris Okasaki.  
--- See COPYRIGHT file for terms and conditions.
-
--- | Join lists. All running times are as listed in "Data.Edison.Seq" except
+-- |
+--   Module      :  Data.Edison.Seq.JoinList
+--   Copyright   :  Copyright (c) 1998-1999 Chris Okasaki
+--   License     :  BSD3; see COPYRIGHT file for terms and conditions
+--
+--   Maintainer  :  robdockins AT fastmail DOT fm
+--   Stability   :  provisional
+--   Portability :  non-portable (MPTC and FD)
+--
+--   Join lists. All running times are as listed in "Data.Edison.Seq" except
 --   for the following:
 --
 --   * rcons  @O( 1 )@

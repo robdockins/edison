@@ -1,15 +1,21 @@
--- Copyright (c) 1998 Chris Okasaki.  
--- See COPYRIGHT file for terms and conditions.
-
--- | This module provides default implementations of many of the associative
+-- |
+--   Module      :  Data.Edison.Assoc.Defaults
+--   Copyright   :  Copyright (c) 1998 Chris Okasaki
+--   License     :  BSD3; see COPYRIGHT file for terms and conditions
+--
+--   Maintainer  :  robdockins AT fastmail DOT fm
+--   Stability   :  internal (unstable)
+--   Portability :  non-portable (MPTC and FD)
+--
+--   This module provides default implementations of many of the associative
 --   collection operations.  These function are used to fill in collection
 --   implementations and are not intended to be used directly by end users.
-module Data.Edison.Assoc.Defaults 
-where
 
-import Data.Maybe (fromJust)
+module Data.Edison.Assoc.Defaults where
 
 import Prelude hiding (null,map,lookup,foldr,foldl,foldr1,foldl1,filter)
+import Data.Maybe (fromJust)
+
 import Data.Edison.Assoc
 import qualified Data.Edison.Seq as S
 import qualified Data.Edison.Seq.ListSeq as L

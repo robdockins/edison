@@ -1,15 +1,21 @@
--- Copyright (c) 1998 Chris Okasaki.  
--- See COPYRIGHT file for terms and conditions.
-
--- | This module provides default implementations of many of the collection methods.  The functions
+-- |
+--   Module      :  Data.Edison.Coll.Defaults
+--   Copyright   :  Copyright (c) 1998 Chris Okasaki
+--   License     :  BSD3; see COPYRIGHT file for terms and conditions
+--
+--   Maintainer  :  robdockins AT fastmail DOT fm
+--   Stability   :  internal (unstable)
+--   Portability :  non-portable (MPTC and FD)
+--
+--   This module provides default implementations of many of the collection methods.  The functions
 --   in this module are used to fill out collection implementations and are not intended to be
 --   used directly by end users.
 
-module Data.Edison.Coll.Defaults
-where
+module Data.Edison.Coll.Defaults where
 
 import Prelude hiding (null,foldr,foldl,foldr1,foldl1,lookup,filter)
 import Control.Monad.Identity
+
 import Data.Edison.Coll
 import qualified Data.Edison.Seq as S
 import qualified Data.Edison.Seq.ListSeq as L

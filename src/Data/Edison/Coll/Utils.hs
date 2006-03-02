@@ -1,7 +1,13 @@
--- Copyright (c) 1998 Chris Okasaki.  
--- See COPYRIGHT file for terms and conditions.
-
--- | This module provides implementations of several useful operations
+-- |
+--   Module      :  Data.Edison.Coll.Utils
+--   Copyright   :  Copyright (c) 1998 Chris Okasaki
+--   License     :  BSD3; see COPYRIGHT file for terms and conditions
+--
+--   Maintainer  :  robdockins AT fastmail DOT fm
+--   Stability   :  provisional
+--   Portability :  non-portable (MPTC and FD)
+--
+--   This module provides implementations of several useful operations
 --   that are not included in the collection classes themselves.  This is
 --   usually because the operation involves transforming a collection into a
 --   different type of collection; such operations cannot be typed using
