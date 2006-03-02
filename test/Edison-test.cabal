@@ -1,0 +1,24 @@
+Name:           Edison-test
+Version:        1.2
+License:        BSD3
+License-File:   COPYRIGHT
+Author:         Chris Okasaki
+Maintainer:     robdockins AT fastmail DOT fm
+Synopsis:       Testsuite for Edison
+Category:       Data structures
+Stability:      provisional
+Build-Depends:
+     base >= 1.0,
+     haskell98 >= 1.0,
+     mtl >= 1.0,
+     QuickCheck >= 1.0,
+     HUnit >= 1.1,
+     Edison == 1.2
+
+Executable: testSuite
+Main-Is: Main.hs
+Hs-Source-Dir:  src
+Extensions:
+     MultiParamTypeClasses
+     FunctionalDependencies
+     AllowUndecidableInstances

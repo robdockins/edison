@@ -1,0 +1,27 @@
+This directory contains the Edison test suite.
+To build and run the test suite, first build and install
+the Edison library.  Then run the following commands (here
+we assume you have a Haskell interpreter named 'runhaskell'
+in your path).
+
+runhaskell Setup.hs configure --user
+runhaskell Setup.hs build
+./dist/build/src/testSuite
+
+The tests suite should run to completion with no errors.  Errors
+found by the test suite may indicate bugs in a data structure
+implementaion or in the test suite itself.
+
+If you are a developer, you should run the test suite before
+submitting patches to help ensure you have not accidently introduced
+bugs.  If you are implementing entirely new features, you should
+add test cases to test your new features.
+
+If you are an end-user or OS package maintainer and the test suite
+demonstrates bugs, please email the following information to
+robdockins AT fastmail DOT fm
+
+-- information about your system configuration
+-- Haskell compiler and version
+-- cabal version
+-- The text of the error message

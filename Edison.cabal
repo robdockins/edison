@@ -3,10 +3,10 @@ Version:        1.2
 License:        BSD3
 License-File:   COPYRIGHT
 Author:         Chris Okasaki
-Maintainer:     robdockins@fastmail.fm
+Maintainer:     robdockins AT fastmail DOT fm
 Synopsis:       A library of efficent, purely-functional data structures
 Category:       Data structures
-Stability:      Beta
+Stability:      provisional
 Hs-Source-Dir:  src
 Exposed-modules:
      Data.Edison
@@ -44,18 +44,9 @@ Build-Depends:
      base >= 1.0,
      haskell98 >= 1.0,
      mtl >= 1.0,
-     QuickCheck >= 1.0,
-     HUnit >= 1.1
+     QuickCheck >= 1.0
 Extensions:
      MultiParamTypeClasses
      FunctionalDependencies
      AllowUndecidableInstances
-Ghc-Options: -funbox-strict-fields -fwarn-incomplete-patterns -O2
-
-Executable: testSuite
-Hs-Source-Dir: test
-Main-Is: Main.hs
-Extensions:
-     MultiParamTypeClasses
-     FunctionalDependencies
-     AllowUndecidableInstances
+Ghc-Options: -funbox-strict-fields -fwarn-incomplete-patterns -02
