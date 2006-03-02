@@ -7,15 +7,15 @@
 --   Stability   :  provisional
 --   Portability :  non-portable (MPTC and FD)
 --
---   This module introduces a number of infix symbols which are alises
+--   This module introduces a number of infix symbols which are aliases
 --   for some of the operations in the sequence and set abstractions.
 --   For several, the argument orders are reversed to more closely
 --   match usual symbolic usage.
 --
 --   The symbols are intended to evoke the the operations they
---   represent.  Unfortunatly, ASCII is pretty limited, and Haskell
+--   represent.  Unfortunately, ASCII is pretty limited, and Haskell
 --   only allocates a few symbols to the operator lexical class.
---   Thus, some of the operators are less evockative than one would
+--   Thus, some of the operators are less evocative than one would
 --   like.  A future version may introduce unicode operators, which
 --   will allow a wider range of operations to be represented symbolicly.
 --

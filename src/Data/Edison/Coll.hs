@@ -9,13 +9,13 @@
 --
 --   The /collection/ abstraction includes sets, bags and priority queues
 --   (heaps).  Collections are defined in Edison as a set of eight classes,
---   organized in the heirarchy shown here FIXME.
+--   organized in the hierarchy shown here FIXME.
 --
 --   All collections assume at least an equality relation of elements, and
 --   may also assume an ordering relation.
 --
 --   The hierarchy contains a root class 'CollX' together with seven
---   subclasses satifying one or more of three common sub-properties:
+--   subclasses satisfying one or more of three common sub-properties:
 --
 -- * /Uniqueness/ Each element in the collection is unique (no two
 --   elements in the collection are equal).  These subclasses, indicated
@@ -39,8 +39,8 @@
 --   /Notes on observability/
 --
 --   Note that the equality relation defined by the 'Eq' class is not
---   necessarily true equality.  Very often it is merely an equivalance
---   relation, where two equivalant values may be distinguishable by other
+--   necessarily true equality.  Very often it is merely an equivalence
+--   relation, where two equivalent values may be distinguishable by other
 --   means.  For example, we might consider two binary trees to be equal
 --   if they contain the same elements, even if their shapes are different.
 --
@@ -59,7 +59,7 @@
 --   representatives from an equivalence class are actually present.  As
 --   another example, consider the 'UniqueHash' class defined in
 --   "Data.Edison.Prelude".  If we know that the 'hash' function yields a 
---   unique integer for each equivalance class, then we can represent a
+--   unique integer for each equivalence class, then we can represent a
 --   collection of hashable elements simply as a collection of integers.  With
 --   such a representation, we can still do many useful things like testing for
 --   membership; we just can't support functions like 'fold' or 'filter' that
@@ -103,7 +103,7 @@ import Data.Edison.Seq.ListSeq()
 
 class Eq a => CollX c a | c -> a where
 
-  -- | Thhe empty collection
+  -- | The empty collection
   empty          :: c
 
   -- | create a singleton collection
@@ -130,16 +130,16 @@ class Eq a => CollX c a | c -> a where
   --   element is kept in the case of duplicates.
   unionSeq       :: Sequence seq => seq c -> c
 
-  -- | Delete a single occurance of the given element from a collection.
+  -- | Delete a single occurrence of the given element from a collection.
   --   For bags, it is unspecified which element will be deleted.
   delete         :: a -> c -> c
 
-  -- | Delete all occurances of an element from a collection.  For sets
+  -- | Delete all occurrences of an element from a collection.  For sets
   --   this operation is identical to 'delete'.
   deleteAll      :: a -> c -> c
 
-  -- | Delete a single occurance of each of the given elements from
-  --   a collection.  For bags, there may be multiple occurances of a
+  -- | Delete a single occurrence of each of the given elements from
+  --   a collection.  For bags, there may be multiple occurrences of a
   --   given element in the collection, in which case it is unspecified
   --   which is deleted.
   deleteSeq      :: Sequence seq => seq a -> c -> c
@@ -195,7 +195,7 @@ class (CollX c a, Ord a) => OrdCollX c a | c -> a where
 
   -- | Insert an element into a collection which is guaranteed to be
   --   @>=@ any existing elements in the collection.  For sets, the 
-  --   precondition is strenghtened to @>@.
+  --   precondition is strengthened to @>@.
   unsafeInsertMax    :: a -> c -> c
 
   -- | Convert a sequence in non-decreasing order into a collection.
@@ -207,35 +207,35 @@ class (CollX c a, Ord a) => OrdCollX c a | c -> a where
   --   For sets, this precondition is strengthened to @\<@.
   unsafeAppend       :: c -> c -> c
 
-  -- | Extract the subcollection of elements @\<@ the given element.
+  -- | Extract the sub-collection of elements @\<@ the given element.
   --
   -- /Axioms:/
   --
   -- * @filterLT x xs = filter (\< x) xs@
   filterLT           :: a -> c -> c
 
-  -- | Extract the subcollection of elements @\<=@ the given element.
+  -- | Extract the sub-collection of elements @\<=@ the given element.
   --
   -- /Axioms:/
   --
   -- * @filterLE x xs = filter (\<= x) xs@
   filterLE           :: a -> c -> c
 
-  -- | Extract the subcollection of elements @>@ the given element.
+  -- | Extract the sub-collection of elements @>@ the given element.
   --
   -- /Axioms:/
   --
   -- * @filterGT x xs = filter (> x) xs@
   filterGT           :: a -> c -> c
 
-  -- | Extract the subcollection of elements @>=@ the given element.
+  -- | Extract the sub-collection of elements @>=@ the given element.
   --
   -- /Axioms:/
   --
   -- * @filterGE x xs = filter (>= x) xs@
   filterGE           :: a -> c -> c
 
-  -- | Split a collection into those elements @\<@ a given elemnt and
+  -- | Split a collection into those elements @\<@ a given element and
   --   those @>=@.
   --
   -- /Axioms:/
@@ -261,7 +261,7 @@ class (CollX c a, Ord a) => OrdCollX c a | c -> a where
 
 
 -- | A collection where the set property is maintained; that is, a set
---   contains at most one element of the equivalance class formed by the
+--   contains at most one element of the equivalence class formed by the
 --   'Eq' instance on the elements.
 class CollX c a => SetX c a | c -> a where
 
@@ -361,7 +361,7 @@ class (Coll c a, OrdCollX c a) => OrdColl c a | c -> a where
   --   choices.
   minView    :: (Monad m) => c -> m (a, c)
 
-  -- | Return the minimum element in the collection.  If there are multipl
+  -- | Return the minimum element in the collection.  If there are multiple
   --   copies of the minimum element, it is unspecified which is chosen.
   --   /Note/ that 'minView', 'minElem', and 'deleteMin' may make different
   --   choices.
@@ -380,14 +380,14 @@ class (Coll c a, OrdCollX c a) => OrdColl c a | c -> a where
   --   choices.
   maxElem    :: c -> a
 
-  -- | Fold arcoss the elements in non-decreasing order with right
+  -- | Fold across the elements in non-decreasing order with right
   --   associativity. (For sets, this will always be increasing order)
   foldr      :: (a -> b -> b) -> b -> c -> b
 
   -- | A strict variant of 'foldr'.
   foldr'     :: (a -> b -> b) -> b -> c -> b
 
-  -- | Fold arcoss the elements in non-decreasing order with left
+  -- | Fold across the elements in non-decreasing order with left
   --   associativity. (For sets, this will always be increasing order)
   foldl      :: (b -> a -> b) -> b -> c -> b
 
@@ -423,7 +423,7 @@ class (Coll c a, OrdCollX c a) => OrdColl c a | c -> a where
 
 
 -- | Collections with observable elements where the set property is maintained;
---   that is, a set contains at most one element of the equivalance class
+--   that is, a set contains at most one element of the equivalence class
 --   formed by the 'Eq' instance on the elements.
 --
 --   /WARNING: Each of the following \"With\" functions is unsafe./ 
@@ -481,7 +481,7 @@ class (Coll c a, SetX c a) => Set c a | c -> a where
 
 
 -- | Collections with observable elements where the set property is maintained
---   and where additinally, there is an ordering relation on the elements.
+--   and where additionally, there is an ordering relation on the elements.
 --   This class introduces no new methods, and is simply an abbreviation 
 --   for the context:
 --

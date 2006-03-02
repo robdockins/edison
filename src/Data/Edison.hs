@@ -7,7 +7,7 @@
 --   Stability   :  provisional
 --   Portability :  non-portable (MPTC and FD)
 --
---   Edison is a library of purely functional datastructures written by 
+--   Edison is a library of purely functional data structures written by 
 --   Chris Okasaki.  It is named after Thomas Alva Edison and for the
 --   mnemonic value /ED/i/S/on (/E/fficent /D/ata /S/tructures).
 --
@@ -44,7 +44,7 @@
 --   Argument orders are select with the following points in mind:
 --
 --   * /Partial application:/ arguments more likely to be static usually
---     appear before other arugments.
+--     appear before other arguments.
 --
 --   * /Collection appears last:/ in all cases where a function queries a
 --     single collection or modifies an existing collection, the collection
@@ -59,7 +59,7 @@
 --
 --   Each family of abstractions is defined as a set of classes: a main class
 --   that every implementation of that abstraction should support and several
---   auxilary subclasses that an implementation may or may not support. However,
+--   auxiliary subclasses that an implementation may or may not support. However,
 --   not all applications require the power of type classes, so each method
 --   is also directly accessible from the implementation module.  Thus you can
 --   choose to use overloading or not, as appropriate for your particular
@@ -86,8 +86,8 @@
 --   /Miscellaneous points:/
 --
 --   Some implementations export a few extra functions beyond those included
---   in the relavant classes.  These are typically operations that are
---   particularly efficent for that implementation, but are not general enough
+--   in the relevant classes.  These are typically operations that are
+--   particularly efficient for that implementation, but are not general enough
 --   to warrant inclusion in a class.
 --
 --   Since qualified infix symbols are fairly ugly, they have been avoided as

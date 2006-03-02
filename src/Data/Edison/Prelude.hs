@@ -27,7 +27,7 @@ class Eq a => Hash a where
   hash :: a -> Int
 
 
--- | This class represents hashable objects where the hash funcion
+-- | This class represents hashable objects where the hash function
 --   is /unique/ (injective).  There are no new methods, just a 
 --   stronger invariant:
 --
@@ -37,7 +37,7 @@ class Hash a => UniqueHash a
 
 
 -- | This class represents hashable objects where the hash is
---   reversable.
+--   reversible.
 --
 -- @forall x :: a. unhash (hash x) == x@
 --
@@ -45,7 +45,7 @@ class Hash a => UniqueHash a
 --
 -- @hash (unhash i) == i@
 --
--- does not necessarily hold because unhash is not necessarily
+-- does not necessarily hold because 'unhash' is not necessarily
 -- defined for all @i@, only for all @i@ in the range of hash.
 
 class UniqueHash a => ReversibleHash a where

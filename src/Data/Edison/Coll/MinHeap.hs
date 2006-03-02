@@ -7,7 +7,7 @@
 --   Stability   :  provisional
 --   Portability :  non-portable (MPTC and FD)
 --
---   A generic adaptor for bags to keep the minimum element sparately.
+--   A generic adaptor for bags to keep the minimum element separately.
 
 module Data.Edison.Coll.MinHeap (
     -- * Min heap adaptor type

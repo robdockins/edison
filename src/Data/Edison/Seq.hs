@@ -359,7 +359,7 @@ class (Functor s, MonadPlus s) => Sequence s where
   concatMap  :: (a -> s b) -> s a -> s b
 
   -- | Combine all the elements of a sequence into a single value,
-  --   given a combining function and an intial value.  The function
+  --   given a combining function and an initial value.  The function
   --   is applied with right nesting.
   -- 
   -- > foldr (%) c <x0,...,xn-1> = x0 % (x1 % ( ... % (xn-1 % c)))
@@ -542,7 +542,7 @@ class (Functor s, MonadPlus s) => Sequence s where
   --   typically happen when the sequences were constructed differently.
   --
   --   The canonical applications of the reduce functions are algorithms like
-  --   mergesort where:
+  --   merge sort where:
   --
   -- > mergesort xs = reducer merge empty (map singleton xs)
   --
@@ -603,7 +603,7 @@ class (Functor s, MonadPlus s) => Sequence s where
   drop        :: Int -> s a -> s a
   
   -- | Split a sequence into a prefix of length @i@
-  --   and the remining sequence.  Behaves the same
+  --   and the remaining sequence.  Behaves the same
   --   as the corresponding calls to 'take' and 'drop'
   --   if @i@ is negative or too large.
   --
@@ -634,7 +634,7 @@ class (Functor s, MonadPlus s) => Sequence s where
   --   Default running time: @O( i + len )@
   subseq      :: Int -> Int -> s a -> s a
 
-  -- | Extract the elements of a sequence that satify the
+  -- | Extract the elements of a sequence that satisfy the
   --   given predicate, retaining the relative ordering of
   --   elements from the original sequence.
   --
@@ -685,7 +685,7 @@ class (Functor s, MonadPlus s) => Sequence s where
   --     where @t@ is the running time of @p@
   takeWhile   :: (a -> Bool) -> s a -> s a
 
-  -- | Delete the maximal prefix of elements satifying the
+  -- | Delete the maximal prefix of elements satisfying the
   --   given predicate.
   --
   -- > dropWhile p xs = snd (splitWhile p xs)
@@ -699,7 +699,7 @@ class (Functor s, MonadPlus s) => Sequence s where
   --      else lcons x xs@
   --
   --   Default running time: @O( t * n )@
-  --     where @t@ is the runningn time of @p@
+  --     where @t@ is the running time of @p@
   dropWhile   :: (a -> Bool) -> s a -> s a
 
   -- | Split a sequence into the maximal prefix of elements
@@ -997,7 +997,7 @@ class (Functor s, MonadPlus s) => Sequence s where
   --     of @f@, @g@, and @h@
   unzipWith3  :: (a -> b) -> (a -> c) -> (a -> d) -> s a -> (s b, s c, s d)
 
-  -- | A method to faciliate unit testing.  Returns 'True' if the structural
+  -- | A method to facilitate unit testing.  Returns 'True' if the structural
   --   invariants of the implementation hold for the given sequence.  If
   --   this function returns 'False', it represents a bug in the implementation.
   structuralInvariant :: s a -> Bool

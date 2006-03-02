@@ -95,7 +95,7 @@ class (Eq k,Functor m) => AssocX m k | m -> k where
   --   unchanged if it does not contain the key.
   deleteAll      :: k -> m a -> m a
 
-  -- | Delete a single occurance of each of the given keys from an associative
+  -- | Delete a single occurrence of each of the given keys from an associative
   --   collection.  For bag-like associative collections containing duplicate keys,
   --   it is unspecified which bindings will be removed.
   deleteSeq      :: Sequence seq => seq k -> m a -> m a
@@ -553,7 +553,7 @@ unionListWithKey = unionSeqWithKey
   --   unchanged.
   adjustOrDelete :: (a -> Maybe a) -> k -> m a -> m a
 
-  -- | Change or delete all bindings for teh given key by applying a function to
+  -- | Change or delete all bindings for the given key by applying a function to
   --   its elements.  For any element where the function returns @Nothing@, the
   --   corresponding binding is deleted.  If the key is not found in the collection,
   --   it is returned unchanged.
