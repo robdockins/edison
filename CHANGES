@@ -1,0 +1,28 @@
+
+Changes in 1.2rc2
+  * add strict variants of all folds and reduces
+  * reverse arguemnt orders to 'rcons' and 'lookup*' in
+    Sequence
+  * Add symbolic operators for lcons, rcons, append, and lookup
+    from the Sequence API
+  * Add symbolic operators for subsetEq, difference, intersection
+    and union from the set API
+  * rename 'single' to 'singleton' in all APIs
+  * reaame 'intersect' to 'intersection' in Collection and
+    Associated Collection APIs
+  * add 'adjustOrInsert' to the Associated Collection API
+
+
+Changes in 1.2rc1
+
+  * Modules re-organized into a hirearchy
+  * User's guide distributed throughout source code
+    as Haddock comments
+  * Use cabal for build system
+  * add Data.Edison module to re-export typeclasses
+  * reorder 'lookup*' and 'find*' methods for 
+    Collections and Associated Collections
+  * add 'unsafeMapMonotonic' to main Collection API
+  * organize QuickCheck properties into a full test suite
+  * add a 'structuralInvariant' method to all APIs, for
+    unit testing
