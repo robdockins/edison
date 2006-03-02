@@ -49,4 +49,4 @@ Extensions:
      MultiParamTypeClasses
      FunctionalDependencies
      AllowUndecidableInstances
-Ghc-Options: -funbox-strict-fields -fwarn-incomplete-patterns -02
+Ghc-Options: -funbox-strict-fields -fwarn-incomplete-patterns -O2
