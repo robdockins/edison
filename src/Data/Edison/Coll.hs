@@ -283,8 +283,6 @@ class CollX c a => SetX c a | c -> a where
   --   every element in the first set is also a member of the second set.
   subsetEq    :: c -> c -> Bool
 
-    -- test whether the first set is a proper subset of the second,
-    -- or whether it is a (possibly improper) subset.
 
 -- | Sets where the elements also have an ordering relation.
 --   This class contains no methods; it is only an abbreviation for
