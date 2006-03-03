@@ -10,7 +10,7 @@ runhaskell Setup.hs build
 
 The tests suite should run to completion with no errors.  Errors
 found by the test suite may indicate bugs in a data structure
-implementaion or in the test suite itself.
+implementation or in the test suite itself.
 
 If you are a developer, you should run the test suite before
 submitting patches to help ensure you have not accidently introduced
