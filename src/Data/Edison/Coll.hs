@@ -104,44 +104,73 @@ import Data.Edison.Seq.ListSeq()
 class Eq a => CollX c a | c -> a where
 
   -- | The empty collection
+  --
+  --   This function is always /well-defined/.
   empty          :: c
 
   -- | create a singleton collection
+  --
+  --   This function is always /well-defined/.
   singleton      :: a -> c
 
   -- | Convert a sequence to a collection.  For sets, it is unspecified
   --   which element is kept in case of duplicates.
+  --
+  --   This function is /ambiguous/ at set types if more than one
+  --   equivalent item is in the sequence.  Otherwise it is /well-defined/.
   fromSeq        :: Sequence seq => seq a -> c
 
   -- | Insert an element into a collection.  For sets, if an equal element
   --   is already in the set, the newly inserted element is kept, and the
   --   old element is discarded.
+  --
+  --   This function is always /well-defined/.
   insert         :: a -> c -> c
 
   -- | Insert a sequence of elements into a collection.  For sets,
   --   the behavior with regard to multiple equal elements is unspecified.
+  --
+  --   This function is /ambiguous/ at set types if the sequence contains
+  --   more than one equivalent item or an item which is already in the set.
+  --   Otherwise it is /well-defined/.
   insertSeq      :: Sequence seq => seq a -> c -> c
 
   -- | Merge two collections.  For sets, it is unspecified which element is
   --   kept in the case of duplicates.
+  --
+  --   This function is /ambiguous/ at set types if the sets are not disjoint.
+  --   Otherwise it is /well-defined/.
   union          :: c -> c -> c
 
   -- | Merge a sequence of collections.  For sets, it is unspecified which
   --   element is kept in the case of duplicates.
+  --
+  --   This function is /ambiguous/ at set types if the sets in the sequence
+  --   are not mutually disjoint. Otherwise it is /well-defined/.
   unionSeq       :: Sequence seq => seq c -> c
 
   -- | Delete a single occurrence of the given element from a collection.
   --   For bags, it is unspecified which element will be deleted.
+  --
+  --   This function is /ambiguous/ at bag types if more than one item exists
+  --   in the bag equivalent to the given item.  Otherwise it is /well-defined/.
   delete         :: a -> c -> c
 
   -- | Delete all occurrences of an element from a collection.  For sets
   --   this operation is identical to 'delete'.
+  --
+  --   This function is always /well-defined/.
   deleteAll      :: a -> c -> c
 
   -- | Delete a single occurrence of each of the given elements from
   --   a collection.  For bags, there may be multiple occurrences of a
   --   given element in the collection, in which case it is unspecified
   --   which is deleted.
+  --
+  --   This function is /ambiguous/ at bag types if more than one item
+  --   exists in the bag equivalent to any item in the list and the number
+  --   of equivalent occurrences of that item in the sequence is less than
+  --   the number of occurrences in the bag.  Otherwise it is /well-defined/.
   deleteSeq      :: Sequence seq => seq a -> c -> c
 
   -- | Test whether the collection is empty.
@@ -149,9 +178,13 @@ class Eq a => CollX c a | c -> a where
   -- /Axioms:/
   --
   -- * @null xs = (size xs == 0)@
+  --
+  --   This function is always /well-defined/.
   null           :: c -> Bool
 
   -- | Return the number of elements in the collection.
+  --
+  --   This function is always /well-defined/.
   size           :: c -> Int
 
   -- | Test whether the given element is in the collection.
@@ -159,10 +192,14 @@ class Eq a => CollX c a | c -> a where
   -- /Axioms:/
   --
   -- * @member x xs = (count x xs > 0)@
+  --
+  --   This function is always /well-defined/.
   member         :: a -> c -> Bool
 
   -- | Count how many copies of the given element are in the collection.
   --   For sets, this will always return 0 or 1.
+  --
+  --   This function is always /well-defined/.
   count          :: a -> c -> Int
 
   -- | A method to facilitate unit testing.  Returns 'True' if the structural
@@ -182,29 +219,43 @@ class (CollX c a, Ord a) => OrdCollX c a | c -> a where
 
   -- | Delete the minimum element from the collection.  If there is more
   --   than one minimum, it is unspecified which is deleted.
+  --
+  --   This function is /ambiguous/ at bag types if more than one minimum
+  --   element exists in the bag.  Otherwise it is /well-defined/.
   deleteMin          :: c -> c
 
   -- | Delete the maximum element from the collection.  If there is more
   --   than one maximum, it is unspecified which is deleted.
+  --
+  --   This function is /ambiguous/ at bag types if more than one maximum
+  --   element exists in the bag.  Otherwise it is /well-defined/.
   deleteMax          :: c -> c
 
   -- | Insert an element into a collection which is guaranteed to be
   --   @\<=@ any existing elements in the collection.  For sets, the
   --   precondition is strengthened to @\<@.
+  --
+  --   This function is /well-defined/, under the above preconditions.
   unsafeInsertMin    :: a -> c -> c
 
   -- | Insert an element into a collection which is guaranteed to be
   --   @>=@ any existing elements in the collection.  For sets, the 
   --   precondition is strengthened to @>@.
+  --
+  --   This function is /well-defined/, under the above preconditions.
   unsafeInsertMax    :: a -> c -> c
 
   -- | Convert a sequence in non-decreasing order into a collection.
   --   For sets, the sequence must be in increasing order.
+  --
+  --   This function is /well-defined/, under the above preconditions.
   unsafeFromOrdSeq   :: Sequence seq => seq a -> c
 
   -- | Union two collections where every element in the first
   --   collection is @\<=@ every element in the second collection.
   --   For sets, this precondition is strengthened to @\<@.
+  --
+  --   This function is /well-defined/, under the above preconditions.
   unsafeAppend       :: c -> c -> c
 
   -- | Extract the sub-collection of elements @\<@ the given element.
@@ -212,6 +263,8 @@ class (CollX c a, Ord a) => OrdCollX c a | c -> a where
   -- /Axioms:/
   --
   -- * @filterLT x xs = filter (\< x) xs@
+  --
+  --  This function is always /well-defined/.
   filterLT           :: a -> c -> c
 
   -- | Extract the sub-collection of elements @\<=@ the given element.
@@ -219,6 +272,8 @@ class (CollX c a, Ord a) => OrdCollX c a | c -> a where
   -- /Axioms:/
   --
   -- * @filterLE x xs = filter (\<= x) xs@
+  --
+  --  This function is always /well-defined/.
   filterLE           :: a -> c -> c
 
   -- | Extract the sub-collection of elements @>@ the given element.
@@ -226,6 +281,8 @@ class (CollX c a, Ord a) => OrdCollX c a | c -> a where
   -- /Axioms:/
   --
   -- * @filterGT x xs = filter (> x) xs@
+  --
+  --  This function is always /well-defined/.
   filterGT           :: a -> c -> c
 
   -- | Extract the sub-collection of elements @>=@ the given element.
@@ -233,6 +290,8 @@ class (CollX c a, Ord a) => OrdCollX c a | c -> a where
   -- /Axioms:/
   --
   -- * @filterGE x xs = filter (>= x) xs@
+  --
+  --  This function is always /well-defined/.
   filterGE           :: a -> c -> c
 
   -- | Split a collection into those elements @\<@ a given element and
@@ -241,6 +300,8 @@ class (CollX c a, Ord a) => OrdCollX c a | c -> a where
   -- /Axioms:/
   --
   -- * @partitionLT_GE xs = partition (\<) xs@
+  --
+  --  This function is always /well-defined/.
   partitionLT_GE     :: a -> c -> (c, c)
 
   -- | Split a collection into those elements @\<=@ a given element and
@@ -249,6 +310,8 @@ class (CollX c a, Ord a) => OrdCollX c a | c -> a where
   -- /Axioms:/
   --
   -- * @partitionLE_GT xs = partition (\<=) xs@
+  --
+  --  This function is always /well-defined/.
   partitionLE_GT     :: a -> c -> (c, c)
 
   -- | Split a collection into those elements @\<@ a given element and
@@ -257,6 +320,8 @@ class (CollX c a, Ord a) => OrdCollX c a | c -> a where
   -- /Axioms:/
   --
   -- *@partitionLT_GT x xs = (filterLT x xs,filterGT x xs)@
+  --
+  --  This function is always /well-defined/.
   partitionLT_GT     :: a -> c -> (c, c)
 
 
@@ -267,20 +332,28 @@ class CollX c a => SetX c a | c -> a where
 
   -- | Computes the intersection of two sets.  It is unspecified which 
   --   element is kept when equal elements appear in each set.
+  --
+  --   This function is /ambiguous/, except when the sets are disjoint.
   intersection :: c -> c -> c
 
   -- | Computes the difference of two sets; that is, all elements in
   --   the first set which are not in the second set.
+  --
+  --   This function is always /well-defined/.
   difference  :: c -> c -> c
 
   -- | Test whether the first set is a proper subset of the second set;
   --   that is, if every element in the first set is also a member of the
   --   second set AND there exists some element in the second set which
   --   is not present in the first.
+  --
+  --   This function is always /well-defined/.
   subset      :: c -> c -> Bool    
 
   -- | Test whether the first set is a subset of the second set; that is, if
   --   every element in the first set is also a member of the second set.
+  --
+  --   This function is always /well-defined/.
   subsetEq    :: c -> c -> Bool
 
 
@@ -297,51 +370,81 @@ class (OrdCollX c a, SetX c a) => OrdSetX c a | c -> a
 class CollX c a => Coll c a | c -> a where
 
   -- | List the elements of the collection in an unspecified order.
+  --
+  --   This function is always /ambiguous/.
   toSeq      :: Sequence seq => c -> seq a
 
   -- | Lookup one element equal to the given element.  If no elements
   --   exist in the collection equal to the given element, an error is
   --   signaled.  If multiple copies of the given element exist in the
   --   collection, it is unspecified which is returned.
+  --
+  --   This function is /ambiguous/ at bag types, when more than one
+  --   element equivalent to the given item is in the bag.  Otherwise
+  --   it is /well-defined/.
   lookup     :: a -> c -> a
 
   -- | Lookup one element equal to the given element.  If no elements
   --   exist in the collection equal to the given element, 'fail' is called.
   --   If multiple copies of the given element exist in the collection, it
   --   is unspecified which is returned.
+  --
+  --   This function is /ambiguous/ at bag types, when more than one
+  --   element equivalent to the given item is in the bag.  Otherwise
+  --   it is /well-defined/.
   lookupM    :: (Monad m) => a -> c -> m a
 
   -- | Return a sequence containing all elements in the collection equal to
   --   the given element in an unspecified order.
+  --
+  --   This function is /ambiguous/ at bag types, when more than one
+  --   element equivalent to the given item is in the bag.  Otherwise
+  --   it is /well-defined/.
   lookupAll  :: Sequence seq => a -> c -> seq a
 
   -- | Lookup one element equal to the (second) given element in the collection.
   --   If no elements exist in the collection equal to the given element, then
   --   the default element is returned.
-  lookupWithDefault  :: a -- ^ deault element
+  --
+  --   This function is /ambiguous/ at bag types, when more than one
+  --   element equivalent to the given item is in the bag.  Otherwise
+  --   it is /well-defined/.
+  lookupWithDefault  :: a -- ^ default element
                      -> a -- ^ element to lookup
                      -> c -- ^ collection
                      -> a
 
   -- | Fold over all the elements in a collection in an unspecified order.
+  --
+  --   @fold f@ is /well-defined/ iff @f@ is a commutative, associative function.
   fold       :: (a -> b -> b) -> b -> c -> b
 
   -- | A strict variant of 'fold'.
+  --
+  --   @fold' f@ is /well-defined/ iff @f@ is a commutative, associative function.
   fold'      :: (a -> b -> b) -> b -> c -> b
 
   -- | Fold over all the elements in a collection in an unspecified order.
   --   An error is signaled if the collection is empty.
+  --
+  --   @fold1 f@ is /well-defined/ iff @f@ is a commutative, associative function.
   fold1      :: (a -> a -> a) -> c -> a
 
   -- | A strict variant of 'fold1'.
+  --
+  --   @fold1' f@ is /well-defined/ iff @f@ is a commutative, associative function.
   fold1'     :: (a -> a -> a) -> c -> a
 
   -- | Remove all elements not satisfying the predicate.
+  --
+  --   This function is always /well-defined/.
   filter     :: (a -> Bool) -> c -> c
 
   -- | Returns two collections, the first containing all the elements
   --   satisfying the predicate, and the second containing all the
   --   elements not satisfying the predicate.
+  --
+  --   This function is always /well-defined/.
   partition  :: (a -> Bool) -> c -> (c, c)
 
 
@@ -357,12 +460,18 @@ class (Coll c a, OrdCollX c a) => OrdColl c a | c -> a where
   --   copies of the minimum element, it is unspecified which is chosen.
   --   /Note/ that 'minView', 'minElem', and 'deleteMin' may make different
   --   choices.
+  --
+  --   This function is /ambiguous/ at bag types, if more than one minimum
+  --   element exists in the bag.  Otherwise, it is /well-defined/.
   minView    :: (Monad m) => c -> m (a, c)
 
   -- | Return the minimum element in the collection.  If there are multiple
   --   copies of the minimum element, it is unspecified which is chosen.
   --   /Note/ that 'minView', 'minElem', and 'deleteMin' may make different
   --   choices.
+  --
+  --   This function is /ambiguous/ at bag types, if more than one minimum
+  --   element exists in the bag.  Otherwise, it is /well-defined/.
   minElem    :: c -> a
 
   -- | Return the maximum element in the collection, together with 
@@ -370,31 +479,62 @@ class (Coll c a, OrdCollX c a) => OrdColl c a | c -> a where
   --   copies of the maximum element, it is unspecified which is chosen.
   --   /Note/ that 'maxView', 'maxElem' and 'deleteMax' may make different
   --   choices.
+  --
+  --   This function is /ambiguous/ at bag types, if more than one maximum
+  --   element exists in the bag.  Otherwise, it is /well-defined/.
   maxView    :: (Monad m) => c -> m (a, c)
 
   -- | Return the maximum element in the collection.  If there are multiple
   --   copies of the maximum element, it is unspecified which is chosen.
   --   /Note/ that 'maxView', 'maxElem' and 'deleteMax' may make different
   --   choices.
+  --
+  --   This function is /ambiguous/ at bag types, if more than one maximum
+  --   element exists in the bag.  Otherwise, it is /well-defined/.
   maxElem    :: c -> a
 
   -- | Fold across the elements in non-decreasing order with right
   --   associativity. (For sets, this will always be increasing order)
+  --
+  --   This function is /well-defined/ if the combining function is
+  --   associative and commutative, at all set types, and at bag types
+  --   where no two equivalent elements exist in the bag.  Otherwise
+  --   it is /ambiguous/.
   foldr      :: (a -> b -> b) -> b -> c -> b
 
   -- | A strict variant of 'foldr'.
+  --
+  --   This function is /well-defined/ if the combining function is
+  --   associative and commutative, at all set types, and at bag types
+  --   where no two equivalent elements exist in the bag.  Otherwise
+  --   it is /ambiguous/.
   foldr'     :: (a -> b -> b) -> b -> c -> b
 
   -- | Fold across the elements in non-decreasing order with left
   --   associativity. (For sets, this will always be increasing order)
+  --
+  --   This function is /well-defined/ if the combining function is
+  --   associative and commutative, at all set types, and at bag types
+  --   where no two equivalent elements exist in the bag.  Otherwise
+  --   it is /ambiguous/.
   foldl      :: (b -> a -> b) -> b -> c -> b
 
   -- | A strict variant of 'foldl'.
+  --
+  --   This function is /well-defined/ if the combining function is
+  --   associative and commutative, at all set types, and at bag types
+  --   where no two equivalent elements exist in the bag.  Otherwise
+  --   it is /ambiguous/.
   foldl'     :: (b -> a -> b) -> b -> c -> b
 
   -- | Fold across the elements in non-decreasing order with right
   --   associativity, or signal an error if the collection is empty.
   --   (For sets, this will always be increasing order)
+  --
+  --   This function is /well-defined/ if the combining function is
+  --   associative and commutative, at all set types, and at bag types
+  --   where no two equivalent elements exist in the bag.  Otherwise
+  --   it is /ambiguous/.
   foldr1     :: (a -> a -> a) -> c -> a
 
   -- | A strict variant of 'foldr1'.
@@ -403,19 +543,35 @@ class (Coll c a, OrdCollX c a) => OrdColl c a | c -> a where
   -- | Fold across the elements in non-decreasing order with left
   --   associativity, or signal an error if the collection is empty.
   --   (For sets, this will always be increasing order)
+  --
+  --   This function is /well-defined/ if the combining function is
+  --   associative and commutative, at all set types, and at bag types
+  --   where no two equivalent elements exist in the bag.  Otherwise
+  --   it is /ambiguous/.
   foldl1     :: (a -> a -> a) -> c -> a
 
   -- | A strict variant of 'foldl1'.
+  --
+  --   This function is /well-defined/ if the combining function is
+  --   associative and commutative, at all set types, and at bag types
+  --   where no two equivalent elements exist in the bag.  Otherwise
+  --   it is /ambiguous/.
   foldl1'    :: (a -> a -> a) -> c -> a
 
   -- | List the elements in non-decreasing order. (For sets, this will always
   --   be increasing order)
+  --
+  --   At set types, this function is /well-defined/.  At bag types, it
+  --   is /well-defined/ if no two equivalent elements exist in the bag;
+  --   otherwise it is /ambiguous/.
   toOrdSeq   :: Sequence seq => c -> seq a
 
   -- | Map a monotonic function across all elements of a collection.  The 
   --   function is required to satisfy the following precondition:
   --
   -- > forall x y. x < y ==> f x < f y
+  --
+  --   This function is /well-defined/, under the above precondition.
   unsafeMapMonotonic :: (a -> a) -> c -> c
 
 
@@ -431,9 +587,9 @@ class (Coll c a, OrdCollX c a) => OrdColl c a | c -> a where
 --   other two.  Usually, the combining function just returns its first or
 --   second argument, but it can combine elements in non-trivial ways.
 --
---   The combining function should usually be associative.  In any case, the
---   elements will be combined from left-to-right, but with an unspecified
---   associativity.
+--   The combining function should usually be associative.  Where the function
+--   involves a sequence of elements, the elements will be combined from
+--   left-to-right, but with an unspecified associativity.
 --
 --   For example, if @x == y == z@,
 --   then @fromSeqWith (+) [x,y,z]@ equals either
@@ -444,12 +600,20 @@ class (Coll c a, OrdCollX c a) => OrdColl c a | c -> a where
 class (Coll c a, SetX c a) => Set c a | c -> a where
 
   -- | Same as 'fromSeq' but with a combining function to resolve duplicates.  
+  --
+  --   This function is /well-defined/ under the \"with\" precondition
+  --   if the combining function is associative.  Otherwise it is /ambiguous/.
   fromSeqWith     :: Sequence seq => (a -> a -> a) -> seq a -> c
 
   -- | Same as 'insert' but with a combining function to resolve duplicates.
+  --
+  --   This function is /well-defined/ under the \"with\" precondition.
   insertWith      :: (a -> a -> a) -> a -> c -> c
 
   -- | Same as 'insertSeq' but with a combining function to resolve duplicates.
+  --
+  --   This function is /well-defined/ under the \"with\" precondition
+  --   if the combining function is associative.  Otherwise it is /ambiguous/.
   insertSeqWith   :: Sequence seq => (a -> a -> a) -> seq a -> c -> c
 
   -- | Left biased union.
@@ -457,6 +621,8 @@ class (Coll c a, SetX c a) => Set c a | c -> a where
   --   /Axioms:/
   --
   -- * @unionl = unionWith (\\x y -> x)@
+  --
+  --   This function is always /well-defined/.
   unionl          :: c -> c -> c
  
   -- | Right biased union.
@@ -464,15 +630,24 @@ class (Coll c a, SetX c a) => Set c a | c -> a where
   --   /Axioms:/
   --
   -- * @unionr = unionWith (\\x y -> y)@
+  --
+  --  This function is always /well-defined/.
   unionr          :: c -> c -> c
 
   -- | Same as 'union', but with a combining function to resolve duplicates.    
+  --
+  --   This function is /well-defined/ under the \"with\" precondition.
   unionWith       :: (a -> a -> a) -> c -> c -> c
 
   -- | Same as 'unionSeq', but with a combining function to resolve duplicates.
+  --
+  --   This function is /well-defined/ under the \"with\" precondition
+  --   if the combining function is associative.  Otherwise it is /ambiguous/.
   unionSeqWith    :: Sequence seq => (a -> a -> a) -> seq (c) -> c
 
   -- | Same as 'intersection', but with a combining function to resolve duplicates.
+  --
+  --  This function is /well-defined/ under the \"with\" precondition.
   intersectionWith   :: (a -> a -> a) -> c -> c -> c
 
 
