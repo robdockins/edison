@@ -41,7 +41,7 @@
 module Data.Edison.Seq (
 -- * Superclass aliases
 -- ** Functor aliases
-, map
+  map
 -- ** Monad aliases
 , singleton
 , concatMap
@@ -64,7 +64,7 @@ import Data.Edison.Prelude
 
 -- | Return the result of applying a function to
 --   every element of a sequence.  Identical
---   to 'fmap'.
+--   to @fmap@ from @Functor@.
 --
 -- > map f <x0,...,xn-1> = <f x0,...,f xn-1>
 --
@@ -82,7 +82,8 @@ map        :: Sequence s => (a -> b) -> s a -> s b
 map = fmap
 
 
--- | Create a singleton sequence.  Identical to 'return'.
+-- | Create a singleton sequence.  Identical to @return@
+--   from @Monad@.
 --
 -- > singleton x = <x>
 --
@@ -99,7 +100,7 @@ singleton = return
 
 -- | Apply a sequence-producing function to every element
 --   of a sequence and flatten the result. 'concatMap'
---   is the bind (>>=) operation of the sequence monad with the
+--   is the bind @(>>=)@ operation of from @Monad@ with the
 --   arguments in the reverse order.
 -- 
 -- > concatMap f xs = concat (map f xs)
@@ -117,7 +118,8 @@ concatMap  :: Sequence s => (a -> s b) -> s a -> s b
 concatMap = flip (>>=)
 
 
--- | The empty sequence.  Identical to 'mzero'.
+-- | The empty sequence.  Identical to @mzero@
+--   from @MonadPlus@.
 -- 
 -- > empty = <>
 --
@@ -129,7 +131,8 @@ empty = mzero
 
 
 -- | Append two sequence, with the first argument on the left
---   and the second argument on the right.  Identical to 'mplus'.
+--   and the second argument on the right.  Identical to @mplus@
+--   from @MonadPlus@.
 -- 
 -- > append <x0,...,xn-1> <y0,...,ym-1> = <x0,...,xn-1,y0,...,ym-1>
 --
