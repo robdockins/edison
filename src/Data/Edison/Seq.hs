@@ -60,6 +60,8 @@ class (Functor s, MonadPlus s) => Sequence s where
   -- 
   -- > empty = <>
   --
+  --   This function is always /well-defined/.
+  --  
   --   Default running time: @O( 1 )@
   empty     :: s a
 
@@ -70,6 +72,8 @@ class (Functor s, MonadPlus s) => Sequence s where
   -- /Axioms:/
   --
   -- * @singleton x = lcons x empty = rcons x empty@
+  --
+  --   This function is always /well-defined/.
   --
   --   Default running time: @O( 1 )@
   singleton    :: a -> s a
@@ -82,6 +86,8 @@ class (Functor s, MonadPlus s) => Sequence s where
   --
   -- * @lcons x xs = append (singleton x) xs@
   --
+  --   This function is always /well-defined/.
+  --
   --   Default running time: @O( 1 )@
   lcons     :: a -> s a -> s a
 
@@ -92,6 +98,8 @@ class (Functor s, MonadPlus s) => Sequence s where
   -- /Axioms:/
   --
   -- * @rcons x xs = append xs (singleton x)@
+  --
+  --   This function is always /well-defined/.
   --
   --   Default running time: @O( n )@
   rcons     :: a -> s a -> s a
@@ -105,6 +113,8 @@ class (Functor s, MonadPlus s) => Sequence s where
   --
   -- * @append xs ys = foldr lcons ys xs@
   --
+  --   This function is always /well-defined/.
+  --
   --   Default running time: @O( n )@
   append    :: s a -> s a -> s a
 
@@ -115,6 +125,8 @@ class (Functor s, MonadPlus s) => Sequence s where
   -- /Axioms:/
   --
   -- * @fromList xs = foldr lcons empty xs@
+  --
+  --   This function is always /well-defined/.
   --
   --   Default running time: @O( n )@
   fromList  :: [a] -> s a
@@ -130,6 +142,8 @@ class (Functor s, MonadPlus s) => Sequence s where
   --
   -- * @n \<= 0   ==> copy n x = empty@
   --
+  --   This function is always /well-defined/.
+  --
   --   Default running time: @O( n )@
   copy      :: Int -> a -> s a
 
@@ -141,6 +155,8 @@ class (Functor s, MonadPlus s) => Sequence s where
   -- * @lview empty = fail@
   --
   -- * @lview (lcons x xs) = return (x,xs)@
+  --
+  --   This function is always /well-defined/.
   --
   --   Default running time: @O( 1 )@
   lview     :: (Monad m) => s a -> m (a, s a)
@@ -154,6 +170,8 @@ class (Functor s, MonadPlus s) => Sequence s where
   --
   -- * @lhead (lcons x xs) = x@
   --
+  --   This function is always /well-defined/.
+  --
   --   Default running time: @O( 1 )@
   lhead     :: s a -> a
 
@@ -165,6 +183,8 @@ class (Functor s, MonadPlus s) => Sequence s where
   -- * @lheadM empty = fail@
   --
   -- * @lheadM (lcons x xs) = return x@
+  --
+  --   This function is always /well-defined/.
   --
   --   Default running time: @O( 1 )@
   lheadM    :: (Monad m) => s a -> m a 
@@ -178,6 +198,8 @@ class (Functor s, MonadPlus s) => Sequence s where
   --
   -- * @ltail (lcons x xs) = xs@
   --
+  --   This function is always /well-defined/.
+  --
   --   Default running time: @O( 1 )@
   ltail     :: s a -> s a
 
@@ -189,6 +211,8 @@ class (Functor s, MonadPlus s) => Sequence s where
   -- * @ltailM empty = fail@
   --
   -- * @ltailM (lcons x xs) = return xs@
+  --
+  --   This function is always /well-defined/.
   --
   --   Default running time: @O( 1 )@
   ltailM    :: (Monad m) => s a -> m (s a)
@@ -202,6 +226,8 @@ class (Functor s, MonadPlus s) => Sequence s where
   --
   -- * @rview (rcons x xs) = return (x,xs)@
   --
+  --   This function is always /well-defined/.
+  --
   --   Default running time: @O( n )@
   rview     :: (Monad m) => s a -> m (a, s a)
 
@@ -213,6 +239,8 @@ class (Functor s, MonadPlus s) => Sequence s where
   -- * @rhead empty = undefined@
   --
   -- * @rhead (rcons x xs) = x@
+  --
+  --   This function is always /well-defined/.
   --
   --   Default running time: @O( n )@
   rhead     :: s a -> a 
@@ -226,6 +254,8 @@ class (Functor s, MonadPlus s) => Sequence s where
   --
   -- * @rheadM (rcons x xs) = return x@
   --
+  --   This function is always /well-defined/.
+  --
   --   Default running time: @O( n )@
   rheadM    :: (Monad m) => s a -> m a
 
@@ -237,6 +267,8 @@ class (Functor s, MonadPlus s) => Sequence s where
   -- * @rtail empty = undefined@
   --
   -- * @rtail (rcons x xs) = xs@
+  --
+  --   This function is always /well-defined/.
   --
   --   Default running time: @O( n )@
   rtail     :: s a -> s a
@@ -250,6 +282,8 @@ class (Functor s, MonadPlus s) => Sequence s where
   --
   -- * @rtailM (rcons x xs) = return xs@
   --
+  --   This function is always /well-defined/.
+  --
   --   Default running time: @O( n )@
   rtailM    :: (Monad m) => s a -> m (s a)
 
@@ -260,6 +294,8 @@ class (Functor s, MonadPlus s) => Sequence s where
   -- /Axioms:/
   --
   -- * @null xs = (size xs == 0)@
+  --
+  --   This function is always /well-defined/.
   --
   --   Default running time: @O( 1 )@
   null      :: s a -> Bool
@@ -274,6 +310,8 @@ class (Functor s, MonadPlus s) => Sequence s where
   --
   -- * @size (lcons x xs) = 1 + size xs@
   --
+  --   This function is always /well-defined/.
+  --
   --   Default running time: @O( n )@
   size      :: s a -> Int
 
@@ -287,6 +325,8 @@ class (Functor s, MonadPlus s) => Sequence s where
   --
   -- * @toList (lcons x xs) = x : toList xs@
   --
+  --   This function is always /well-defined/.
+  --
   --   Default running time: @O( n )@
   toList    :: s a -> [a]
 
@@ -297,6 +337,8 @@ class (Functor s, MonadPlus s) => Sequence s where
   -- /Axioms:/
   --
   -- * @concat xss = foldr append empty xss@
+  --
+  --   This function is always /well-defined/.
   --
   --   Default running time: @O( n + m )@
   --    where @n@ is the length of the input sequence and @m@ is
@@ -313,6 +355,8 @@ class (Functor s, MonadPlus s) => Sequence s where
   --
   -- * @reverse (lcons x xs) = rcons x (reverse xs)@
   --
+  --   This function is always /well-defined/.
+  --
   --   Default running time: @O( n )@
   reverse      :: s a -> s a
 
@@ -323,6 +367,8 @@ class (Functor s, MonadPlus s) => Sequence s where
   -- /Axioms:/
   --
   -- * @reverseOnto xs ys = append (reverse xs) ys@
+  --
+  --   This function is always /well-defined/.
   --
   --   Default running time: @O( n )@
   reverseOnto  :: s a -> s a -> s a
@@ -338,6 +384,8 @@ class (Functor s, MonadPlus s) => Sequence s where
   --
   -- * @map f (lcons x xs) = lcons (f x) (map f xs)@
   --
+  --   This function is always /well-defined/.
+  --
   --   Default running time: @O( t * n )@
   --     where @t@ is the running time of @f@
   map        :: (a -> b) -> s a -> s b
@@ -352,6 +400,8 @@ class (Functor s, MonadPlus s) => Sequence s where
   -- /Axioms:/
   --
   -- * @concatMap f xs = concat (map f xs)@
+  --
+  --   This function is always /well-defined/.
   --
   --   Default running time: @O( t * n + m )@
   --     where @n@ is the length of the input sequence, @m@ is the
@@ -370,6 +420,8 @@ class (Functor s, MonadPlus s) => Sequence s where
   --
   -- * @foldr f c (lcons x xs) = f x (foldr f c xs)@
   --
+  --   This function is always /well-defined/.
+  --
   --   Default running time: @O( t * n)@
   --     where @t@ is the running time of @f@
   foldr     :: (a -> b -> b) -> b -> s a -> b
@@ -380,6 +432,8 @@ class (Functor s, MonadPlus s) => Sequence s where
   -- /Axioms:/
   --
   -- * forall a. f a _|_ = _|_ ==> foldr f x xs = foldr' f x xs
+  --
+  --   This function is always /well-defined/.
   --
   --   Default running time: @O( t * n)@
   --     where @t@ is the running time of @f@
@@ -397,6 +451,8 @@ class (Functor s, MonadPlus s) => Sequence s where
   --
   -- * @foldl f c (lcons x xs) = foldl f (f c x) xs@
   --
+  --   This function is always /well-defined/.
+  --
   --   Default running time: @O( t * n )@
   --     where @t@ is the running time of @f@
   foldl     :: (b -> a -> b) -> b -> s a -> b
@@ -406,6 +462,8 @@ class (Functor s, MonadPlus s) => Sequence s where
   -- /Axioms:/
   --
   -- * forall a. f _|_ a = _|_ ==> foldl f z xs = foldl' f z xs
+  --
+  --   This function is always /well-defined/.
   -- 
   --   Default running time: @O( t * n )@
   --     where @t@ is the running time of @f@
@@ -426,6 +484,8 @@ class (Functor s, MonadPlus s) => Sequence s where
   --
   -- * @foldr1 f (rcons x xs) = foldr f x xs@
   --
+  --   This function is always /well-defined/.
+  --
   --   Default running time: @O( t * n )@
   --     where @t@ is the running time of @f@
   foldr1    :: (a -> a -> a) -> s a -> a  
@@ -435,6 +495,8 @@ class (Functor s, MonadPlus s) => Sequence s where
   -- /Axioms:/
   --
   -- * forall a. f a _|_ = _|_ ==> foldr1 f xs = foldr1' f xs
+  --
+  --   This function is always /well-defined/.
   --
   --   Default running time: @O( t * n )@
   --     where @t@ is the running time of @f@
@@ -455,6 +517,8 @@ class (Functor s, MonadPlus s) => Sequence s where
   --
   -- * @foldl1 f (lcons x xs) = foldl f x xs@
   --
+  --   This function is always /well-defined/.
+  --
   --   Default running time: @O( t * n )@
   --     where @t@ is the running time of @f@
   foldl1    :: (a -> a -> a) -> s a -> a  
@@ -464,6 +528,8 @@ class (Functor s, MonadPlus s) => Sequence s where
   -- /Axioms:/
   --
   -- * forall a. f _|_ a = _|_ ==> foldl1 f xs = foldl1' f xs
+  --
+  --   This function is always /well-defined/.
   -- 
   --   Default running time: @O( t * n )@
   --     where @t@ is the running time of @f@
@@ -477,16 +543,22 @@ class (Functor s, MonadPlus s) => Sequence s where
   --
   -- * @reducer f c xs = foldr f c xs@ for associative @f@
   -- 
+  --   @reducer f@ is well-defined iff @f@ is an associative function.
+  --
   --   Default running time: @O( t * n )@
   --     where @t@ is the running time of @f@
   reducer   :: (a -> a -> a) -> a -> s a -> a
 
   -- | Strict variant of 'reducer'.
   --
+  --   See 'reduce1' for additional notes.
+  --
   -- /Axioms:/
   --
   -- * @forall a. f a _|_ = _|_ && forall a. f _|_ a = _|_ ==>
   --          reducer f x xs = reducer' f x xs@
+  --
+  --   @reducer' f@ is well-defined iff @f@ is an associative function.
   --
   --   Default running time: @O( t * n )@
   --     where @t@ is the running time of @f@
@@ -500,28 +572,34 @@ class (Functor s, MonadPlus s) => Sequence s where
   --
   -- * @reducel f c xs = foldl f c xs@ for associative @f@
   --
+  --   @reducel f@ is well-defined iff @f@ is an associative function.
+  --
   --   Default running time: @O( t * n )@
   --     where @t@ is the running time of @f@
   reducel   :: (a -> a -> a) -> a -> s a -> a
 
   -- | Strict variant of 'reducel'.
   --
+  --   See 'reduce1' for additional notes.
+  --
   -- /Axioms:/
   --
   -- * @forall a. f a _|_ = _|_ && forall a. f _|_ a = _|_ ==>
   --          reducel f x xs = reducel' f x xs@
   --
+  --   @reducel' f@ is well-defined iff @f@ is an associative function.
+  --
   --   Default running time: @O( t * n )@
   --     where @t@ is the running time of @f@
   reducel'  :: (a -> a -> a) -> a -> s a -> a
 
-  -- | reduce is similar to fold, but combines elements in a balanced fashion.
+  -- | A reduce is similar to a fold, but combines elements in a balanced fashion.
   --   The combining function should usually be associative.  If the combining
   --   function is associative, the various reduce functions yield the same
   --   results as the corresponding folds.
   --
   --   What is meant by \"in a balanced fashion\"?  We mean that
-  --   @reduce1 (%) \<x0,x1,...,xn-1>@ equals some complete parenthsization of
+  --   @reduce1 (%) \<x0,x1,...,xn-1>@ equals some complete parenthesization of
   --   @x0 % x1 % ... % xn-1@ such that the nesting depth of parentheses
   --   is @O( log n )@.  The precise shape of this parenthesization is
   --   unspecified.
@@ -535,8 +613,8 @@ class (Functor s, MonadPlus s) => Sequence s where
   --   Although the exact value of i is unspecified it tends toward @n\/2@
   --   so that the depth of calls to @f@ is at most logarithmic.
   --
-  --   Note that these are the only sequence operations for which different
-  --   implementations are permitted to yield different answers.  Also
+  --   Note that @reduce@* are some of the only sequence operations for which
+  --   different implementations are permitted to yield different answers.  Also
   --   note that a single implementation may choose different parenthisizations
   --   for different sequences, even if they are the same length.  This will
   --   typically happen when the sequences were constructed differently.
@@ -553,6 +631,8 @@ class (Functor s, MonadPlus s) => Sequence s where
   --
   -- * @reduce1 f xs = foldr1 f xs = foldl1 f xs@ for associative @f@
   --
+  --   @reduce1 f@ is well-defined iff @f@ is an associative function.
+  --
   --   Default running time: @O( t * n )@
   --     where @t@ is the running time of @f@
   reduce1   :: (a -> a -> a) -> s a -> a  
@@ -563,6 +643,8 @@ class (Functor s, MonadPlus s) => Sequence s where
   --
   -- * @forall a. f a _|_ = _|_ && forall a. f _|_ a = _|_ ==>
   --          reduce1 f xs = reduce1' f xs@
+  --
+  --   @reduce1' f@ is well-defined iff @f@ is an associative function.
   --
   --   Default running time: @O( t * n )@
   --     where @t@ is the running time of @f@
@@ -582,6 +664,8 @@ class (Functor s, MonadPlus s) => Sequence s where
   --
   -- * @size xs == i ==> take i (append xs ys) = xs@
   --
+  --   This function is always /well-defined/.
+  --
   --   Default running time: @O( i )@
   take        :: Int -> s a -> s a
 
@@ -598,6 +682,8 @@ class (Functor s, MonadPlus s) => Sequence s where
   -- * @i > size xs  ==> drop i xs = empty@
   --
   -- * @size xs == i ==> drop i (append xs ys) = ys@
+  --
+  --   This function is always /well-defined/.
   --
   --   Default running time: @O( i )@
   drop        :: Int -> s a -> s a
@@ -616,6 +702,8 @@ class (Functor s, MonadPlus s) => Sequence s where
   --
   -- * @splitAt i xs = (take i xs,drop i xs)@
   --
+  --   This function is always /well-defined/.
+  --
   --   Default running time: @O( i )@
   splitAt     :: Int -> s a -> (s a, s a)
 
@@ -630,6 +718,8 @@ class (Functor s, MonadPlus s) => Sequence s where
   -- /Axioms:/
   --
   -- * @subseq i len xs = take len (drop i xs)@
+  --
+  --   This function is always /well-defined/.
   --
   --   Default running time: @O( i + len )@
   subseq      :: Int -> Int -> s a -> s a
@@ -649,6 +739,8 @@ class (Functor s, MonadPlus s) => Sequence s where
   --       then lcons x (filter p xs)
   --       else filter p xs@
   --
+  --   This function is always /well-defined/.
+  --
   --   Default running time: @O( t * n )@
   --     where @t@ is the running time of @p@
   filter      :: (a -> Bool) -> s a -> s a
@@ -663,6 +755,8 @@ class (Functor s, MonadPlus s) => Sequence s where
   -- /Axioms:/
   --
   -- * @partition p xs = (filter p xs, filter (not . p) xs)@
+  --
+  --   This function is always /well-defined/.
   --
   --   Default running time: @O( t * n )@
   --     where @t@ is the running time of @p@
@@ -681,6 +775,8 @@ class (Functor s, MonadPlus s) => Sequence s where
   --       then lcons x (takeWhile p xs)
   --       else empty@
   --
+  --   This function is always /well-defined/.
+  --
   --   Default running time: @O( t * n )@
   --     where @t@ is the running time of @p@
   takeWhile   :: (a -> Bool) -> s a -> s a
@@ -698,6 +794,8 @@ class (Functor s, MonadPlus s) => Sequence s where
   --      then dropWhile p xs
   --      else lcons x xs@
   --
+  --   This function is always /well-defined/.
+  --
   --   Default running time: @O( t * n )@
   --     where @t@ is the running time of @p@
   dropWhile   :: (a -> Bool) -> s a -> s a
@@ -712,6 +810,8 @@ class (Functor s, MonadPlus s) => Sequence s where
   --
   -- * @splitWhile p xs = (takeWhile p xs,dropWhile p xs)@
   --
+  --   This function is always /well-defined/.
+  --
   --   Default running time: @O( t * n )@
   --     where @t@ is the running time of @p@
   splitWhile  :: (a -> Bool) -> s a -> (s a, s a)
@@ -724,6 +824,8 @@ class (Functor s, MonadPlus s) => Sequence s where
   -- /Axioms:/
   --
   -- * @inBounds i xs = (0 \<= i && i \< size xs)@
+  --
+  --   This function is always /well-defined/.
   --
   --   Default running time: @O( i )@
   inBounds  :: Int -> s a -> Bool
@@ -741,6 +843,8 @@ class (Functor s, MonadPlus s) => Sequence s where
   --
   -- * @size xs == i ==> lookup i (append xs (lcons x ys)) = x@
   --
+  --   This function is always /well-defined/.
+  --
   --   Default running time: @O( i )@
   lookup    :: Int -> s a -> a
 
@@ -756,6 +860,8 @@ class (Functor s, MonadPlus s) => Sequence s where
   -- * @not (inBounds i xs) ==> lookupM i xs = fail@
   --
   -- * @size xs == i ==> lookupM i (append xs (lcons x ys)) = return x@
+  --
+  --   This function is always /well-defined/.
   --
   --   Default running time: @O( i )@
   lookupM   :: (Monad m) => Int -> s a -> m a
@@ -773,6 +879,8 @@ class (Functor s, MonadPlus s) => Sequence s where
   -- * @not (inBounds i xs) ==> lookupWithDefault d i xs = d@
   --
   -- * @size xs == i ==> lookupWithDefault d i (append xs (lcons x ys)) = x@
+  --
+  --   This function is always /well-defined/.
   --
   --   Default running time: @O( i )@
   lookupWithDefault  :: a -> Int -> s a -> a
@@ -792,6 +900,8 @@ class (Functor s, MonadPlus s) => Sequence s where
   -- * @size xs == i ==> update i y (append xs (lcons x ys)) =
   --      append xs (lcons y ys)@
   --
+  --   This function is always /well-defined/.
+  --
   --   Default running time: @O( i )@
   update    :: Int -> a -> s a -> s a
 
@@ -810,6 +920,8 @@ class (Functor s, MonadPlus s) => Sequence s where
   -- * @size xs == i ==> adjust f i (append xs (lcons x ys)) =
   --      append xs (cons (f x) ys)@
   --
+  --   This function is always /well-defined/.
+  --
   --   Default running time: @O( i + t )@
   --     where @t@ is the running time of @f@
   adjust    :: (a -> a) -> Int -> s a -> s a -- map a single element
@@ -824,6 +936,8 @@ class (Functor s, MonadPlus s) => Sequence s where
   -- * @mapWithIndex f empty = empty@
   --
   -- * @mapWithIndex f (rcons x xs) = rcons (f (size xs) x) (mapWithIndex f xs)@
+  --
+  --   This function is always /well-defined/.
   --
   --   Default running time: @O( t * n )@
   --     where @t@ is the running time of @f@
@@ -842,6 +956,8 @@ class (Functor s, MonadPlus s) => Sequence s where
   -- * @foldrWithIndex f c (rcons x xs) =
   --      foldrWithIndex f (f (size xs) x c) xs@
   --
+  --   This function is always /well-defined/.
+  --
   --   Default running time: @O( t * n )@
   --     where @t@ is the running time of @f@
   foldrWithIndex  :: (Int -> a -> b -> b) -> b -> s a -> b
@@ -852,6 +968,8 @@ class (Functor s, MonadPlus s) => Sequence s where
   --
   -- * @forall i a. f i a _|_ = _|_ ==> foldrWithIndex f x xs = 
   --       foldrWithIndex' f x xs@
+  --
+  --   This function is always /well-defined/.
   -- 
   --   Default running time: @O( t * n )@
   --     where @t@ is the running time of @f@
@@ -870,6 +988,8 @@ class (Functor s, MonadPlus s) => Sequence s where
   -- * @foldlWithIndex f c (rcons x xs) =
   --      f (foldlWithIndex f c xs) (size xs) x@
   --
+  --   This function is always /well-defined/.
+  --
   --   Default running time: @O( t * n )@
   --     where @t@ is the running time of @f@
   foldlWithIndex  :: (b -> Int -> a -> b) -> b -> s a -> b
@@ -880,6 +1000,8 @@ class (Functor s, MonadPlus s) => Sequence s where
   --
   -- * @forall i a. f _|_ i a = _|_ ==> foldlWithIndex f x xs = 
   --       foldlWithIndex' f x xs@
+  --
+  --   This function is always /well-defined/.
   --
   --   Default running time: @O( t * n )@
   --     where @t@ is the running time of @f@
@@ -896,6 +1018,8 @@ class (Functor s, MonadPlus s) => Sequence s where
   --
   -- * @zip xs ys = zipWith (,) xs ys@
   --
+  --   This function is always /well-defined/.
+  --
   --   Default running time: @O( min( n1, n2) )@
   zip         :: s a -> s b -> s (a,b)
 
@@ -908,6 +1032,8 @@ class (Functor s, MonadPlus s) => Sequence s where
   -- /Axioms:/
   --
   -- * @zip3 xs ys zs = zipWith3 (,,) xs ys zs@
+  --
+  --   This function is always /well-defined/.
   --
   --   Default running time: @O( min( n1, n2, n3 ) )@
   zip3        :: s a -> s b -> s c -> s (a,b,c)
@@ -926,6 +1052,8 @@ class (Functor s, MonadPlus s) => Sequence s where
   --
   -- * @(null xs || null ys) ==> zipWith xs ys = empty@
   --
+  --   This function is always /well-defined/.
+  --
   --   Default running time: @O( t * min( n1, n2 ) )@
   --     where @t@ is the running time of @f@
   zipWith     :: (a -> b -> c) -> s a -> s b -> s c
@@ -940,6 +1068,8 @@ class (Functor s, MonadPlus s) => Sequence s where
   -- * @zipWith3 (lcons x xs) (lcons y ys) (lcons z zs) =
   --      lcons (f x y z) (zipWith3 f xs ys zs)@
   --
+  --   This function is always /well-defined/.
+  --
   --   Default running time: @O( t * min( n1, n2, n3 ) )@
   --     where @t@ is the running time of @f@
   zipWith3    :: (a -> b -> c -> d) -> s a -> s b -> s c -> s d
@@ -951,6 +1081,8 @@ class (Functor s, MonadPlus s) => Sequence s where
   -- /Axioms:/
   --
   -- * @unzip xys = unzipWith fst snd xys@
+  --
+  --   This function is always /well-defined/.
   --
   --   Default running time: @O( n )@
   unzip       :: s (a,b) -> (s a, s b)
@@ -966,6 +1098,8 @@ class (Functor s, MonadPlus s) => Sequence s where
   --
   -- * @unzip3 xyzs = unzipWith3 fst3 snd3 thd3 xyzs@
   --
+  --   This function is always /well-defined/.
+  --
   --   Default running time: @O( n )@
   unzip3      :: s (a,b,c) -> (s a, s b, s c)
 
@@ -977,6 +1111,8 @@ class (Functor s, MonadPlus s) => Sequence s where
   -- /Axioms:/
   --
   -- * @unzipWith f g xs = (map f xs, map g xs)@
+  --
+  --   This function is always /well-defined/.
   --
   --   Default running time: @O( t * n )@
   --     where @t@ is the maximum running time
@@ -991,6 +1127,8 @@ class (Functor s, MonadPlus s) => Sequence s where
   -- /Axioms:/
   --
   -- * @unzipWith3 f g h xs = (map f xs,map g xs,map h xs)@
+  --
+  --   This function is always /well-defined/.
   --
   --   Default running time: @O( t * n )@
   --     where @t@ is the maximum running time
