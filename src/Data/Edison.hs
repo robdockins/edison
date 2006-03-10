@@ -98,8 +98,13 @@
 --   @fold@ is not commutative and associative, then the result of the fold is not
 --   well-defined.  To aid programmers, each API function is labeled /well-defined/ or
 --   /ambiguous/ in its documentation.  If a function is well-defined only under
---   some circumstances, that will also be explicitly stated.  /Well-defined/ in this
---   context does /not/ mean that applying the function will not result in bottom.
+--   some circumstances, that will also be explicitly stated.  \"Well-defined\" does
+--   /not/ mean that applying the function will not result in bottom.  It only means
+--   that all correct implementations of the operation will return indistinguishable
+--   results.  An instance of an abstract data type is considered indistinguishable
+--   from another if all possible applications of well-defined operations to both yield
+--   indistinguishable results.  In this context, we consider bottom to be distinguishable
+--   from non-bottom results, and indistinguishable from other bottom results.
 --
 --   /How to choose a fold:/
 --
