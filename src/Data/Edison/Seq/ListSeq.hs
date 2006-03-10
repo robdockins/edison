@@ -322,15 +322,14 @@ structuralInvariant = const True
 -- declare the instance
 
 instance S.Sequence [] where
-  {empty = empty; singleton = singleton; lcons = lcons; rcons = rcons;
-   append = append; null = null;
+  {lcons = lcons; rcons = rcons; null = null;
    lview = lview; lhead = lhead; ltail = ltail;
    lheadM = lheadM; ltailM = ltailM;
    rview = rview; rhead = rhead; rtail = rtail;
    rheadM = rheadM; rtailM = rtailM;
-   size = size; concat = concat; reverse = reverse; map = map;
+   size = size; concat = concat; reverse = reverse;
    reverseOnto = reverseOnto; fromList = fromList; toList = toList;
-   concatMap = concatMap; foldr = foldr; foldr' = foldr';
+   foldr = foldr; foldr' = foldr';
    foldl = foldl; foldl' = foldl'; foldr1 = foldr1; foldr1' = foldr1';
    foldl1 = foldl1; foldl1' = foldl1'; reducer = reducer; reducel = reducel;
    reduce1 = reduce1; reducel' = reducel'; reducer' = reducer';

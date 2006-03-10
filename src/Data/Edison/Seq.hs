@@ -27,9 +27,30 @@
 --   implementations may differ for some methods.  The documentation for
 --   each implementation will list those methods for which the running time
 --   differs from these.
+--
+--   A description of each Sequence function appears below.  In most cases
+--   psudeocode is also provided. Obviously, the psudeocode is illustrative only.
+--   
+--   Sequences are represented in psudecode between angle brackets:
+--
+-- > <x0,x1,x2...,xn-1>
+--
+--   Such that @x0@ is at the left (front) of the sequence and
+--   @xn-1@ is at the right (rear) of the sequence.
 
 module Data.Edison.Seq (
-  Sequence (..)
+-- * Superclass aliases
+-- ** Functor aliases
+, map
+-- ** Monad aliases
+, singleton
+, concatMap
+-- ** MonadPlus aliases
+, empty
+, append
+
+-- * The Sequence class
+, Sequence (..)
 ) where
 
 import Prelude hiding (concat,reverse,map,concatMap,foldr,foldl,foldr1,foldl1,
@@ -41,42 +62,94 @@ import qualified Control.Monad.Identity as ID
 import Data.Edison.Prelude
 
 
+-- | Return the result of applying a function to
+--   every element of a sequence.  Identical
+--   to 'fmap'.
+--
+-- > map f <x0,...,xn-1> = <f x0,...,f xn-1>
+--
+-- /Axioms:/
+--
+-- * @map f empty = empty@
+--
+-- * @map f (lcons x xs) = lcons (f x) (map f xs)@
+--
+--   This function is always /well-defined/.
+--
+--   Default running time: @O( t * n )@
+--     where @t@ is the running time of @f@
+map        :: Sequence s => (a -> b) -> s a -> s b
+map = fmap
+
+
+-- | Create a singleton sequence.  Identical to 'return'.
+--
+-- > singleton x = <x>
+--
+-- /Axioms:/
+--
+-- * @singleton x = lcons x empty = rcons x empty@
+--
+--   This function is always /well-defined/.
+--
+--   Default running time: @O( 1 )@
+singleton   :: Sequence s => a -> s a
+singleton = return
+
+
+-- | Apply a sequence-producing function to every element
+--   of a sequence and flatten the result. 'concatMap'
+--   is the bind (>>=) operation of the sequence monad with the
+--   arguments in the reverse order.
+-- 
+-- > concatMap f xs = concat (map f xs)
+--
+-- /Axioms:/
+--
+-- * @concatMap f xs = concat (map f xs)@
+--
+--   This function is always /well-defined/.
+--
+--   Default running time: @O( t * n + m )@
+--     where @n@ is the length of the input sequence, @m@ is the
+--     length of the output sequence, and @t@ is the running time of @f@
+concatMap  :: Sequence s => (a -> s b) -> s a -> s b
+concatMap = flip (>>=)
+
+
+-- | The empty sequence.  Identical to 'mzero'.
+-- 
+-- > empty = <>
+--
+--   This function is always /well-defined/.
+--  
+--   Default running time: @O( 1 )@
+empty       :: Sequence s => s a
+empty = mzero
+
+
+-- | Append two sequence, with the first argument on the left
+--   and the second argument on the right.  Identical to 'mplus'.
+-- 
+-- > append <x0,...,xn-1> <y0,...,ym-1> = <x0,...,xn-1,y0,...,ym-1>
+--
+-- /Axioms:/
+--
+-- * @append xs ys = foldr lcons ys xs@
+--
+--   This function is always /well-defined/.
+--
+--   Default running time: @O( n )@
+append    :: Sequence s => s a -> s a -> s a
+append = mplus
+
+
+
 -- | The 'Sequence' class defines an interface for datatypes which
 --   implement sequences.  A description for each function is
---   given below.  In most cases psudeocode is also provided.
---   Obviously, the psudeocode is illustrative only.
---   
---   Sequences are represented in psudecode between angle brackets:
---
--- > <x0,x1,x2...,xn-1>
---
---   Such that @x0@ is at the left (front) of the sequence and
---   @xn-1@ is at the right (rear) of the sequence.
-
-
+--   given below.  
 class (Functor s, MonadPlus s) => Sequence s where
 
-  -- | The empty sequence
-  -- 
-  -- > empty = <>
-  --
-  --   This function is always /well-defined/.
-  --  
-  --   Default running time: @O( 1 )@
-  empty     :: s a
-
-  -- | Create a singleton sequence
-  --
-  -- > singleton x = <x>
-  --
-  -- /Axioms:/
-  --
-  -- * @singleton x = lcons x empty = rcons x empty@
-  --
-  --   This function is always /well-defined/.
-  --
-  --   Default running time: @O( 1 )@
-  singleton    :: a -> s a
 
   -- | Add a new element to the front\/left of a sequence
   --
@@ -104,19 +177,6 @@ class (Functor s, MonadPlus s) => Sequence s where
   --   Default running time: @O( n )@
   rcons     :: a -> s a -> s a
 
-  -- | Append two sequence, with the first argument on the left
-  --   and the second argument on the right.
-  -- 
-  -- > append <x0,...,xn-1> <y0,...,ym-1> = <x0,...,xn-1,y0,...,ym-1>
-  --
-  -- /Axioms:/
-  --
-  -- * @append xs ys = foldr lcons ys xs@
-  --
-  --   This function is always /well-defined/.
-  --
-  --   Default running time: @O( n )@
-  append    :: s a -> s a -> s a
 
   -- | Convert a list into a sequence
   -- 
@@ -373,40 +433,6 @@ class (Functor s, MonadPlus s) => Sequence s where
   --   Default running time: @O( n )@
   reverseOnto  :: s a -> s a -> s a
 
-  -- | Return the result of applying a function to
-  --   every element of a sequence.
-  --
-  -- > map f <x0,...,xn-1> = <f x0,...,f xn-1>
-  --
-  -- /Axioms:/
-  --
-  -- * @map f empty = empty@
-  --
-  -- * @map f (lcons x xs) = lcons (f x) (map f xs)@
-  --
-  --   This function is always /well-defined/.
-  --
-  --   Default running time: @O( t * n )@
-  --     where @t@ is the running time of @f@
-  map        :: (a -> b) -> s a -> s b
-
-  -- | Apply a sequence-producing function to every element
-  --   of a sequence and flatten the result.  Note that 'concatMap'
-  --   is the bind (>>=) operation of the sequence monad with the
-  --   arguments in the reverse order.
-  -- 
-  -- > concatMap f xs = concat (map f xs)
-  --
-  -- /Axioms:/
-  --
-  -- * @concatMap f xs = concat (map f xs)@
-  --
-  --   This function is always /well-defined/.
-  --
-  --   Default running time: @O( t * n + m )@
-  --     where @n@ is the length of the input sequence, @m@ is the
-  --     length of the output sequence, and @t@ is the running time of @f@
-  concatMap  :: (a -> s b) -> s a -> s b
 
   -- | Combine all the elements of a sequence into a single value,
   --   given a combining function and an initial value.  The function

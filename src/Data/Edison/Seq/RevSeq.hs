@@ -47,7 +47,7 @@ import Prelude hiding (concat,reverse,map,concatMap,foldr,foldl,foldr1,foldl1,
                        zip,zip3,zipWith,zipWith3,unzip,unzip3,null)
 
 import Data.Edison.Prelude
-import qualified Data.Edison.Seq as S ( Sequence(..) )
+import qualified Data.Edison.Seq as S
 import qualified Data.Edison.Seq.ListSeq as L
 import Data.Edison.Seq.Defaults -- only used by concatMap
 import Control.Monad
@@ -290,13 +290,13 @@ structuralInvariant (N i s) = i == ((S.size s) - 1)
 -- instances
 
 instance S.Sequence s => S.Sequence (Rev s) where
-  {empty = empty; singleton = singleton; lcons = lcons; rcons = rcons;
-   append = append; lview = lview; lhead = lhead; ltail = ltail;
+  {lcons = lcons; rcons = rcons;
+   lview = lview; lhead = lhead; ltail = ltail;
    lheadM = lheadM; ltailM = ltailM; rheadM = rheadM; rtailM = rtailM;
    rview = rview; rhead = rhead; rtail = rtail; null = null;
    size = size; concat = concat; reverse = reverse; 
    reverseOnto = reverseOnto; fromList = fromList; toList = toList;
-   map = map; concatMap = concatMap; foldr = foldr; foldr' = foldr';
+   foldr = foldr; foldr' = foldr';
    foldl = foldl; foldl' = foldl'; foldr1 = foldr1; foldr1' = foldr1';
    foldl1 = foldl1; foldl1' = foldl1'; reducer = reducer; reducer' = reducer';
    reducel = reducel; reducel' = reducel'; reduce1 = reduce1; 
