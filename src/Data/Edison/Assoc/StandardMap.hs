@@ -17,8 +17,10 @@ module Data.Edison.Assoc.StandardMap (
     -- * AssocX operations
     empty,singleton,fromSeq,insert,insertSeq,union,unionSeq,delete,deleteAll,
     deleteSeq,null,size,member,count,lookup,lookupM,lookupAll,
-    lookupWithDefault,adjust,adjustAll,adjustOrInsert,map,
-    fold,fold',fold1,fold1',filter,partition,elements,structuralInvariant,
+    lookupAndDelete,lookupAndDeleteM,lookupAndDeleteAll,
+    lookupWithDefault,adjust,adjustAll,adjustOrInsert,adjustAllOrInsert,
+    adjustOrDelete,adjustOrDeleteAll,
+    map,fold,fold',fold1,fold1',filter,partition,elements,structuralInvariant,
 
     -- * FiniteMapX operations
     fromSeqWith,fromSeqWithKey,insertWith,insertWithKey,insertSeqWith,
@@ -83,9 +85,15 @@ lookup            :: Ord k => k -> FM k a -> a
 lookupAll         :: (Ord k,S.Sequence seq) => k -> FM k a -> seq a
 lookupM           :: (Ord k,Monad m) => k -> FM k a -> m a
 lookupWithDefault :: Ord k => a -> k -> FM k a -> a
+lookupAndDelete   :: Ord k => k -> FM k a -> (a, FM k a)
+lookupAndDeleteM  :: (Ord k,Monad m) => k -> FM k a -> m (a, FM k a)
+lookupAndDeleteAll :: (Ord k,S.Sequence seq) => k -> FM k a -> (seq a,FM k a)
 adjust            :: Ord k => (a->a) -> k -> FM k a -> FM k a
 adjustAll         :: Ord k => (a->a) -> k -> FM k a -> FM k a
-adjustOrInsert    :: Ord k => (Maybe a -> a) -> k -> FM k a -> FM k a
+adjustOrInsert    :: Ord k => (a -> a) -> a -> k -> FM k a -> FM k a
+adjustAllOrInsert :: Ord k => (a -> a) -> a -> k -> FM k a -> FM k a
+adjustOrDelete    :: Ord k => (a -> Maybe a) -> k -> FM k a -> FM k a
+adjustOrDeleteAll :: Ord k => (a -> Maybe a) -> k -> FM k a -> FM k a
 map               :: (Ord k,Functor (FM k)) => (a -> b) -> FM k a -> FM k b
 fold              :: Ord k => (a -> b -> b) -> b -> FM k a -> b
 fold1             :: Ord k => (a -> a -> a) -> FM k a -> a
@@ -191,9 +199,15 @@ lookup k m         = case lookupM k m of
 lookupM            = DM.lookup
 lookupAll          = lookupAllUsingLookupM
 lookupWithDefault  = DM.findWithDefault
+lookupAndDelete    = lookupAndDeleteDefault
+lookupAndDeleteM   = lookupAndDeleteMDefault
+lookupAndDeleteAll = lookupAndDeleteAllDefault
 adjust             = DM.adjust
 adjustAll          = DM.adjust
 adjustOrInsert     = adjustOrInsertUsingMember
+adjustAllOrInsert  = adjustOrInsertUsingMember
+adjustOrDelete     = DM.update
+adjustOrDeleteAll  = DM.update
 map                = fmap
 fold               = DM.fold
 fold' f x xs       = L.foldl' (flip f) x (DM.elems xs)
@@ -283,9 +297,13 @@ instance Ord k => A.AssocX (FM k) k where
    delete = delete; deleteAll = deleteAll; deleteSeq = deleteSeq;
    null = null; size = size; member = member; count = count;
    lookup = lookup; lookupM = lookupM; lookupAll = lookupAll;
+   lookupAndDelete = lookupAndDelete; lookupAndDeleteM = lookupAndDeleteM;
+   lookupAndDeleteAll = lookupAndDeleteAll;
    lookupWithDefault = lookupWithDefault; adjust = adjust;
    adjustAll = adjustAll; adjustOrInsert = adjustOrInsert;
-   map = map; fold = fold; fold' = fold'; fold1 = fold1; fold1' = fold1';
+   adjustAllOrInsert = adjustAllOrInsert;
+   adjustOrDelete = adjustOrDelete; adjustOrDeleteAll = adjustOrDeleteAll;
+   fold = fold; fold' = fold'; fold1 = fold1; fold1' = fold1';
    filter = filter; partition = partition; elements = elements;
    structuralInvariant = structuralInvariant; instanceName m = moduleName}
 

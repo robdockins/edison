@@ -17,8 +17,10 @@ module Data.Edison.Assoc.TernaryTrie (
     -- * AssocX operations
     empty,singleton,fromSeq,insert,insertSeq,union,unionSeq,delete,deleteAll,
     deleteSeq,null,size,member,count,lookup,lookupM,lookupAll,
-    lookupWithDefault,adjust,adjustAll,adjustOrInsert,map,
-    fold,fold',fold1,fold1',filter,partition,elements,structuralInvariant,
+    lookupAndDelete,lookupAndDeleteM,lookupAndDeleteAll,
+    lookupWithDefault,adjust,adjustAll,adjustOrInsert,adjustAllOrInsert,
+    adjustOrDelete,adjustOrDeleteAll,    
+    map,fold,fold',fold1,fold1',filter,partition,elements,structuralInvariant,
 
     -- * Assoc operations
     toSeq,keys,mapWithKey,foldWithKey,foldWithKey',filterWithKey,partitionWithKey,
@@ -71,10 +73,16 @@ count         :: Ord k => [k] -> FM k a -> Int
 lookup        :: Ord k => [k] -> FM k a -> a
 lookupM       :: (Ord k, Monad rm) => [k] -> FM k a -> rm a
 lookupAll     :: (Ord k,S.Sequence seq) => [k] -> FM k a -> seq a
-lookupWithDefault :: Ord k => a -> [k] -> FM k a -> a
+lookupAndDelete    :: Ord k => [k] -> FM k a -> (a, FM k a)
+lookupAndDeleteM   :: (Ord k, Monad rm) => [k] -> FM k a -> rm (a, FM k a)
+lookupAndDeleteAll :: (Ord k, S.Sequence seq) => [k] -> FM k a -> (seq a,FM k a)
+lookupWithDefault  :: Ord k => a -> [k] -> FM k a -> a
 adjust        :: Ord k => (a -> a) -> [k] -> FM k a -> FM k a
 adjustAll     :: Ord k => (a -> a) -> [k] -> FM k a -> FM k a
-adjustOrInsert :: Ord k => (Maybe a -> a) -> [k] -> FM k a -> FM k a
+adjustOrInsert    :: Ord k => (a -> a) -> a -> [k] -> FM k a -> FM k a
+adjustAllOrInsert :: Ord k => (a -> a) -> a -> [k] -> FM k a -> FM k a
+adjustOrDelete    :: Ord k => (a -> Maybe a) -> [k] -> FM k a -> FM k a
+adjustOrDeleteAll :: Ord k => (a -> Maybe a) -> [k] -> FM k a -> FM k a
 map           :: Ord k => (a -> b) -> FM k a -> FM k b
 fold          :: Ord k => (a -> b -> b) -> b -> FM k a -> b
 fold1         :: Ord k => (a -> a -> a) -> FM k a -> a
@@ -175,6 +183,27 @@ addToFM [] combiner (FM n fmb)
   = FM (combiner n) fmb
 addToFM xs combiner (FM n fmb)
   = FM n (addToFMB xs combiner fmb)
+
+lookupAndDelFromFMB :: (Ord k) => z -> (v -> FMB k v -> z) -> [k] -> FMB k v -> z
+lookupAndDelFromFMB onFail cont xs E = onFail
+lookupAndDelFromFMB onFail cont nk@(x:xs) (I size k v l m@(FMB' fmbm) r)
+  = case compare x k of
+        LT -> lookupAndDelFromFMB onFail (\w l' -> cont w (mkBalancedFMB k v l' m r)) nk l
+        GT -> lookupAndDelFromFMB onFail (\w r' -> cont w (mkBalancedFMB k v l m r')) nk r
+        EQ -> case xs of
+                [] -> case v of
+                        Nothing -> onFail
+                        Just w  -> case fmbm of
+                                      E -> cont w (appendFMB l r)
+                                      _ -> cont w (I size k Nothing l m r)
+                _  -> lookupAndDelFromFMB onFail (\w m' -> cont w (I size k v l (FMB' m') r)) xs fmbm
+lookupAndDelFromFMB _ _ _ _ = error "TernaryTrie.lookupAndDelFromFMB: bug!"
+
+lookupAndDelFromFM :: (Ord k) => z -> (v -> FM k v -> z) -> [k] -> FM k v -> z
+lookupAndDelFromFM onFail cont [] (FM Nothing fmb)  = onFail
+lookupAndDelFromFM onFail cont [] (FM (Just v) fmb) = cont v (FM Nothing fmb)
+lookupAndDelFromFM onFail cont xs (FM n fmb) =
+   lookupAndDelFromFMB onFail (\w fmb' -> cont w (FM n fmb')) xs fmb
 
 
 delFromFMB :: (Ord k) => [k] -> FMB k v -> FMB k v
@@ -484,6 +513,22 @@ lookupM xs (FM _ fmb)
 
 lookupAll = lookupAllUsingLookupM
 
+lookupAndDelete =
+    lookupAndDelFromFM 
+      (error "TernaryTrie.lookupAndDelete: lookup failed")
+      (,)
+
+lookupAndDeleteM = 
+    lookupAndDelFromFM
+      (fail  "TernaryTrie.lookupAndDeleteM: lookup failed")
+      (\w m -> return (w,m))
+
+lookupAndDeleteAll k m =
+    lookupAndDelFromFM
+      (S.empty,m)
+      (\w m' -> (S.singleton w,m'))
+      k m
+
 lookupWithDefault = lookupWithDefaultUsingLookupM
 
 adjust f k
@@ -493,10 +538,19 @@ adjust f k
 
 adjustAll = adjust
 
-adjustOrInsert f k 
+adjustOrInsert f z k 
   = addToFM k (\mv -> case mv of
-                        Nothing -> Just (f Nothing)
-                        Just v  -> Just (f (Just v)))
+                        Nothing -> Just z
+                        Just v  -> Just (f v))
+
+adjustAllOrInsert = adjustOrInsert
+
+adjustOrDelete f k
+  = addToFM k (\mv -> case mv of
+                        Nothing -> Nothing
+                        Just v  -> f v)
+
+adjustOrDeleteAll = adjustOrDelete
 
 map f
   = mapVFM (\mv -> case mv of
@@ -672,9 +726,13 @@ instance Ord k  => A.AssocX (FM k) [k] where
    delete = delete; deleteAll = deleteAll; deleteSeq = deleteSeq; 
    null = null; size = size; member = member; count = count; 
    lookup = lookup; lookupM = lookupM; lookupAll = lookupAll; 
+   lookupAndDelete = lookupAndDelete; lookupAndDeleteM = lookupAndDeleteM;
+   lookupAndDeleteAll = lookupAndDeleteAll;
    lookupWithDefault = lookupWithDefault; adjust = adjust; 
    adjustAll = adjustAll; adjustOrInsert = adjustOrInsert;
-   map = map; fold = fold; fold' = fold'; fold1 = fold1; fold1' = fold1';
+   adjustAllOrInsert = adjustAllOrInsert;
+   adjustOrDelete = adjustOrDelete; adjustOrDeleteAll = adjustOrDeleteAll;
+   fold = fold; fold' = fold'; fold1 = fold1; fold1' = fold1';
    filter = filter; partition = partition; elements = elements;
    structuralInvariant = structuralInvariant; instanceName m = moduleName}
 

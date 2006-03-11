@@ -163,8 +163,38 @@ subsetEqUsingMember :: FiniteMap m k => m a -> m b -> Bool
 subsetEqUsingMember m1 m2 = foldWithKey mem True m1
   where mem k _ b = member k m2 && b
 
-adjustOrInsertUsingMember :: AssocX m k => (Maybe a -> a) -> k -> m a -> m a
-adjustOrInsertUsingMember f k m =
+lookupAndDeleteDefault :: AssocX m k => k -> m a -> (a, m a)
+lookupAndDeleteDefault k m =
+  case lookupM k m of
+     Nothing -> error (instanceName m ++ ".lookupAndDelete: lookup failed")
+     Just x  -> (x, delete k m)
+
+lookupAndDeleteMDefault :: (Monad rm, AssocX m k) => k -> m a -> rm (a, m a)
+lookupAndDeleteMDefault k m =
+  case lookupM k m of
+     Nothing -> fail (instanceName m ++ ".lookupAndDelete: lookup failed")
+     Just x  -> return (x, delete k m)
+
+lookupAndDeleteAllDefault :: (S.Sequence seq, AssocX m k) => k -> m a -> (seq a,m a)
+lookupAndDeleteAllDefault k m = (lookupAll k m,deleteAll k m)
+
+adjustOrInsertUsingMember :: AssocX m k => (a -> a) -> a -> k -> m a -> m a
+adjustOrInsertUsingMember f z k m =
   if member k m
-     then adjust (f . Just) k m
-     else insert k (f Nothing) m
+     then adjust f k m
+     else insert k z m
+
+adjustOrDeleteDefault :: AssocX m k => (a -> Maybe a) -> k -> m a -> m a
+adjustOrDeleteDefault f k m =
+  let (elem,m') = lookupAndDelete k m
+  in case f elem of
+     Nothing -> m'
+     Just x  -> insert k x m'
+
+adjustOrDeleteAllDefault :: AssocX m k => (a -> Maybe a) -> k -> m a -> m a
+adjustOrDeleteAllDefault f k m =
+  let (elems,m') = lookupAndDeleteAll k m
+      adjSeq = S.map f elems
+      ins Nothing  m = m
+      ins (Just x) m = insert k x m
+  in L.foldr ins m' adjSeq

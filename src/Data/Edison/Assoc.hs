@@ -17,6 +17,9 @@
 --   of 'Functor' as a superclass of every associative collection.
 
 module Data.Edison.Assoc (
+    -- * Superclass aliases
+    map,    
+
     -- * Non-observable associative collections
     AssocX(..),
     OrdAssocX(..),
@@ -55,6 +58,13 @@ import Data.Edison.Prelude
 
 import Data.Edison.Seq(Sequence)
 import Data.Edison.Seq.ListSeq()
+
+
+-- | Apply a function to the elements of every binding in the associative
+--   collection.  Identical to @fmap@ from @Functor@.
+map :: AssocX m k => (a -> b) -> m a -> m b
+map = fmap
+
 
 -- | The root class of the associative collection hierarchy.
 class (Eq k,Functor m) => AssocX m k | m -> k where
@@ -130,6 +140,23 @@ class (Eq k,Functor m) => AssocX m k | m -> k where
   -- | Return all elements bound by the given key in an unspecified order.
   lookupAll      :: Sequence seq => k -> m a -> seq a
 
+  -- | Find the element associated with the given key; return the element
+  --   and the collection with that element deleted.  Signals an error if
+  --   the given key is not bound.  If more than one element is bound by the
+  --   given key, it is unspecified which is deleted and returned.
+  lookupAndDelete :: k -> m a -> (a, m a)
+
+  -- | Find the element associated with the given key; return the element
+  --   and the collection with that element deleted.  Calls @fail@ if
+  --   the given key is not bound.  If more than one element is bound by the
+  --   given key, it is unspecified which is deleted and returned.
+  lookupAndDeleteM :: (Monad rm) => k -> m a -> rm (a, m a)
+
+  -- | Find all elements bound by the given key; return a sequence containing
+  --   all such bound elements in an unspecified order and the collection
+  --   with all such elements deleted.
+  lookupAndDeleteAll :: (Sequence seq) => k -> m a -> (seq a,m a)
+
   -- | Return the element associated with the given key.  If no such element
   --   is found, return the default.
   lookupWithDefault  :: a    -- ^ default element
@@ -149,16 +176,29 @@ class (Eq k,Functor m) => AssocX m k | m -> k where
   adjustAll      :: (a -> a) -> k -> m a -> m a
 
   -- | Searches for a matching key in the collection.  If the key is found,
-  --   the given function is called with @Just x@ where @x@ is the current
-  --   value of the binding.  If the key is not found, the function is called
-  --   with @Nothing@.  The returned value is then bound to the key.  If the 
-  --   given key is bound more than once in the collection, it is unspecified
+  --   the given function is called to adjust the value.  If the key is not 
+  --   found, a new binding is inserted with the given element. If the given
+  --   key is bound more than once in the collection, it is unspecified
   --   which element is adjusted.
-  adjustOrInsert :: (Maybe a -> a) -> k -> m a -> m a
+  adjustOrInsert    :: (a -> a) -> a -> k -> m a -> m a
 
-  -- | Apply a function to the elements of every binding in the associative
-  --   collection.  It will ordinarily be the same as 'fmap' from the Functor instance.
-  map            :: (a -> b) -> m a -> m b
+  -- | Searches for all matching keys in the collection.  If the key is found,
+  --   the given function is applied to all its elements to adjust their values.
+  --   If the key is not found, a new binding is inserted with the given element.
+  adjustAllOrInsert :: (a -> a) -> a -> k -> m a -> m a
+
+  -- | Change or delete a single binding for the given key by applying a function
+  --   to its element.  If the function returns @Nothing@, then the binding
+  --   will be deleted.  If the key binds more than one element, it is unspecified which
+  --   will be modified.  If the key is not found in the collection, it is returned
+  --   unchanged.
+  adjustOrDelete    :: (a -> Maybe a) -> k -> m a -> m a
+
+  -- | Change or delete all bindings for the given key by applying a function to
+  --   its elements.  For any element where the function returns @Nothing@, the
+  --   corresponding binding is deleted.  If the key is not found in the collection,
+  --   it is returned unchanged.
+  adjustOrDeleteAll :: (a -> Maybe a) -> k -> m a -> m a
 
   -- | Combine all the elements in the associative collection, given a combining
   --   function and an initial value.  The elements are processed in an
@@ -543,23 +583,6 @@ toList = toSeq
 keysList = keys
 toOrdList = toOrdSeq
 unionListWithKey = unionSeqWithKey
-
-
-{- maybe add later
-  -- | Change or delete a single binding for the given key by applying a function
-  --   to its element.  If the function returns @Nothing@, then the binding
-  --   will be deleted.  If the key binds more than one element, it is unspecified which
-  --   will be modified.  If the key is not found in the collection, it is returned
-  --   unchanged.
-  adjustOrDelete :: (a -> Maybe a) -> k -> m a -> m a
-
-  -- | Change or delete all bindings for the given key by applying a function to
-  --   its elements.  For any element where the function returns @Nothing@, the
-  --   corresponding binding is deleted.  If the key is not found in the collection,
-  --   it is returned unchanged.
-  adjustOrDeleteAll :: (a -> Maybe a) -> k -> m a -> m a
--}
-
 
 {-
 Leave out until somebody asks for:

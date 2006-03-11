@@ -22,8 +22,10 @@ module Data.Edison.Assoc.AssocList (
     -- * AssocX operations
     empty,singleton,fromSeq,insert,insertSeq,union,unionSeq,delete,deleteAll,
     deleteSeq,null,size,member,count,lookup,lookupM,lookupAll,
-    lookupWithDefault,adjust,adjustAll,adjustOrInsert,map,
-    fold,fold',fold1,fold1',filter,partition,elements,structuralInvariant,
+    lookupAndDelete,lookupAndDeleteM,lookupAndDeleteAll,
+    lookupWithDefault,adjust,adjustAll,adjustOrInsert,adjustAllOrInsert,
+    adjustOrDelete,adjustOrDeleteAll,
+    map,fold,fold',fold1,fold1',filter,partition,elements,structuralInvariant,
 
     -- * OrdAssocX operations
     minView, minElem, deleteMin, unsafeInsertMin, maxView, maxElem, deleteMax,
@@ -80,10 +82,16 @@ count         :: Eq k => k -> FM k a -> Int
 lookup        :: Eq k => k -> FM k a -> a
 lookupM       :: (Eq k, Monad rm) => k -> FM k a -> rm a
 lookupAll     :: (Eq k,S.Sequence seq) => k -> FM k a -> seq a
-lookupWithDefault :: Eq k => a -> k -> FM k a -> a
-adjust        :: Eq k => (a -> a) -> k -> FM k a -> FM k a
-adjustAll     :: Eq k => (a -> a) -> k -> FM k a -> FM k a
-adjustOrInsert :: Eq k => (Maybe a -> a) -> k -> FM k a -> FM k a
+lookupAndDelete    :: Eq k => k -> FM k a -> (a,FM k a)
+lookupAndDeleteM   :: (Eq k,Monad rm)   => k -> FM k a -> rm (a,FM k a)
+lookupAndDeleteAll :: (Eq k,S.Sequence seq) => k -> FM k a -> (seq a,FM k a)
+lookupWithDefault  :: Eq k => a -> k -> FM k a -> a
+adjust             :: Eq k => (a -> a) -> k -> FM k a -> FM k a
+adjustAll          :: Eq k => (a -> a) -> k -> FM k a -> FM k a
+adjustOrInsert     :: Eq k => (a -> a) -> a -> k -> FM k a -> FM k a
+adjustAllOrInsert  :: Eq k => (a -> a) -> a -> k -> FM k a -> FM k a
+adjustOrDelete     :: Eq k => (a -> Maybe a) -> k -> FM k a -> FM k a
+adjustOrDeleteAll  :: Eq k => (a -> Maybe a) -> k -> FM k a -> FM k a
 map           :: Eq k => (a -> b) -> FM k a -> FM k b
 fold          :: Eq k => (a -> b -> b) -> b -> FM k a -> b
 fold1         :: Eq k => (a -> a -> a) -> FM k a -> a
@@ -287,6 +295,20 @@ lookupAll key E = S.empty
 lookupAll key (I k x m) | key == k  = S.singleton x 
                         | otherwise = lookupAll key m
 
+lookupAndDelete key m = runIdentity (lookupAndDeleteM key m)
+
+lookupAndDeleteM key E = fail "AssocList.lookupAndDeleteM: lookup failed"
+lookupAndDeleteM key (I k x m)
+   | key == k  = return (x,delete k m)
+   | otherwise = lookupAndDeleteM key m >>= 
+                    \ (z, m') -> return (z, I k x m')
+
+lookupAndDeleteAll key m = 
+   case lookupAndDeleteM key m of
+      Nothing     -> (S.empty,m)
+      Just (z,m') -> (S.singleton z,m')
+
+
 lookupWithDefault d key E = d
 lookupWithDefault d key (I k x m) | key == k = x
                                   | otherwise = lookupWithDefault d key m
@@ -300,11 +322,15 @@ adjust f key (I k x m) | key == k  = I key (f x) m
 
 adjustAll = adjust
 
-adjustOrInsert f key E = singleton key (f Nothing)
-adjustOrInsert f key (I k x m)
-    | key == k  = I key (f (Just x)) m
-    | otherwise = I k x (adjustOrInsert f key m)
+adjustOrInsert f z key E = singleton key z
+adjustOrInsert f z key (I k x m)
+    | key == k  = I key (f x) m
+    | otherwise = I k x (adjustOrInsert f z key m)
 
+adjustAllOrInsert = adjustOrInsert
+
+adjustOrDelete = adjustOrDeleteDefault
+adjustOrDeleteAll = adjustOrDeleteAllDefault
 
 map f E = E
 map f (I k x m) = I k (f x) (map f m)
@@ -476,9 +502,13 @@ instance Eq k  => A.AssocX (FM k) k where
    delete = delete; deleteAll = deleteAll; deleteSeq = deleteSeq; 
    null = null; size = size; member = member; count = count; 
    lookup = lookup; lookupM = lookupM; lookupAll = lookupAll; 
+   lookupAndDelete = lookupAndDelete; lookupAndDeleteM = lookupAndDeleteM;
+   lookupAndDeleteAll = lookupAndDeleteAll;
    lookupWithDefault = lookupWithDefault; adjust = adjust; 
    adjustAll = adjustAll; adjustOrInsert = adjustOrInsert;
-   map = map; fold = fold; fold' = fold'; fold1 = fold1; fold1' = fold1';
+   adjustAllOrInsert = adjustAllOrInsert;
+   adjustOrDelete = adjustOrDelete; adjustOrDeleteAll = adjustOrDeleteAll;
+   fold = fold; fold' = fold'; fold1 = fold1; fold1' = fold1';
    filter = filter; partition = partition; elements = elements;
    structuralInvariant = structuralInvariant; instanceName m = moduleName}
 

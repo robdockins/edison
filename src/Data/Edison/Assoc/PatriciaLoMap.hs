@@ -22,7 +22,8 @@ module Data.Edison.Assoc.PatriciaLoMap (
     -- * AssocX operations
     empty,singleton,fromSeq,insert,insertSeq,union,unionSeq,delete,deleteAll,
     deleteSeq,null,size,member,count,lookup,lookupM,lookupAll,
-    lookupWithDefault,adjust,adjustAll,adjustOrInsert,map,
+    lookupAndDelete,lookupAndDeleteM,lookupAndDeleteAll,
+    lookupWithDefault,adjust,adjustAll,adjustOrInsert,adjustAllOrInsert,map,
     fold,fold',fold1,fold1',filter,partition,elements,structuralInvariant,
 
     -- * Assoc operations
@@ -174,6 +175,32 @@ lookupM k (L j x)
   | otherwise = fail "PatriciaLoMap.lookup: lookup failed"
 lookupM k (B p m t0 t1) = if zeroBit k m then lookupM k t0 else lookupM k t1
 
+doLookupAndDelete :: z -> (a -> FM a -> z) -> Int -> FM a -> z
+doLookupAndDelete onFail cont k E = onFail
+doLookupAndDelete onFail cont k (L j x)
+     | j == k    = cont x E
+     | otherwise = onFail
+doLookupAndDelete onFail cont k (B p m t0 t1)
+     | zeroBit k m = doLookupAndDelete onFail (\x t0' -> cont x (makeB p m t0' t1)) k t0
+     | otherwise   = doLookupAndDelete onFail (\x t1' -> cont x (makeB p m t0 t1')) k t1
+
+lookupAndDelete :: Int -> FM a -> (a, FM a)
+lookupAndDelete        = doLookupAndDelete 
+                           (error "PatriciaLoMap.lookupAndDelete: lookup failed") 
+                           (,)
+
+lookupAndDeleteM :: Monad m => Int -> FM a -> m (a, FM a)
+lookupAndDeleteM       = doLookupAndDelete 
+                           (fail "PatriciaLoMap.lookupAndDelete: lookup failed")
+                           (\x m -> return (x,m))
+
+lookupAndDeleteAll :: S.Sequence seq => Int -> FM a -> (seq a,FM a)
+lookupAndDeleteAll k m = doLookupAndDelete
+                           (S.empty, m)
+                           (\x m' -> (S.singleton x,m'))
+                           k m
+
+
 adjust :: (a -> a) -> Int -> FM a -> FM a
 adjust f k E = E
 adjust f k t@(L j x) = if k == j then L k (f x) else t
@@ -184,8 +211,17 @@ adjust f k t@(B p m t0 t1) =
     else t
 
 -- FIXME can we do better than this?
-adjustOrInsert :: (Maybe a -> a) -> Int -> FM a -> FM a
+adjustOrInsert :: (a -> a) -> a -> Int -> FM a -> FM a
 adjustOrInsert = adjustOrInsertUsingMember
+
+adjustAllOrInsert :: (a -> a) -> a -> Int -> FM a -> FM a
+adjustAllOrInsert = adjustOrInsertUsingMember
+
+adjustOrDelete :: (a -> Maybe a) -> Int -> FM a -> FM a
+adjustOrDelete = adjustOrDeleteDefault
+
+adjustOrDeleteAll :: (a -> Maybe a) -> Int -> FM a -> FM a
+adjustOrDeleteAll = adjustOrDeleteDefault
 
 map :: (a -> b) -> FM a -> FM b
 map f E = E
@@ -514,10 +550,14 @@ instance A.AssocX FM Int where
    insertSeq = insertSeq; union = union; unionSeq = unionSeq; 
    delete = delete; deleteAll = deleteAll; deleteSeq = deleteSeq; 
    null = null; size = size; member = member; count = count; 
-   lookup = lookup; lookupM = lookupM; lookupAll = lookupAll; 
-   lookupWithDefault = lookupWithDefault; adjust = adjust; 
+   lookup = lookup; lookupM = lookupM; lookupAll = lookupAll;
+   lookupAndDelete = lookupAndDelete; lookupAndDeleteM = lookupAndDeleteM;
+   lookupAndDeleteAll = lookupAndDeleteAll;
+   lookupWithDefault = lookupWithDefault; adjust = adjust;
    adjustAll = adjustAll; adjustOrInsert = adjustOrInsert;
-   map = map; fold = fold; fold' = fold'; fold1 = fold1; fold1' = fold1';
+   adjustAllOrInsert = adjustAllOrInsert;
+   adjustOrDelete = adjustOrDelete; adjustOrDeleteAll = adjustOrDeleteAll;
+   fold = fold; fold' = fold'; fold1 = fold1; fold1' = fold1';
    filter = filter; partition = partition; elements = elements;
    structuralInvariant = structuralInvariant; instanceName m = moduleName}
 
