@@ -90,21 +90,23 @@
 --
 --   /Notes on ambiguous functions:/
 --
---   Edison also contains a class of functions which are labeled \"ambiguous\".  These
+--   Edison also contains some functions which are labeled \"ambiguous\".  These
 --   functions cannot violate the structural integrity of a data structure, but, under
 --   some conditions, the result of applying an ambiguous function is not well defined.
 --   For example, the 'AssocX' class contains the @fold@ function, which folds over the
 --   elements in the set in an arbitrary order.  If the combining function passed to
 --   @fold@ is not commutative and associative, then the result of the fold is not
---   well-defined.  To aid programmers, each API function is labeled /well-defined/ or
---   /ambiguous/ in its documentation.  If a function is well-defined only under
---   some circumstances, that will also be explicitly stated.  \"Well-defined\" does
+--   well defined; by this, we mean that there are a number of possible results that
+--   the implementation could return.  To aid programmers, each API function is labeled
+--   /ambiguous/ or /unambiguous/ in its documentation.  If a function is unambiguous only
+--   under some circumstances, that will also be explicitly stated.  \"Unambiguous\" does
 --   /not/ mean that applying the function will not result in bottom.  It only means
 --   that all correct implementations of the operation will return indistinguishable
---   results.  An instance of an abstract data type is considered indistinguishable
---   from another if all possible applications of well-defined operations to both yield
---   indistinguishable results.  In this context, we consider bottom to be distinguishable
---   from non-bottom results, and indistinguishable from other bottom results.
+--   results (if the operation terminates).  For concrete data types, indistinguishable
+--   means structural equality.  An instance of an abstract data type is considered
+--   indistinguishable from another if all possible applications of unambiguous operations
+--   to both yield indistinguishable results.  In this context, we consider bottom to be
+--   distinguishable from non-bottom results, and indistinguishable from other bottom results.
 --
 --   /How to choose a fold:/
 --
