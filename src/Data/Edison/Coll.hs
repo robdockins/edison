@@ -371,7 +371,8 @@ class CollX c a => Coll c a | c -> a where
 
   -- | List the elements of the collection in an unspecified order.
   --
-  --   This function is always /ambiguous/.
+  --   This function is /ambiguous/ iff the collection contains more
+  --   than one element.
   toSeq      :: Sequence seq => c -> seq a
 
   -- | Lookup one element equal to the given element.  If no elements
