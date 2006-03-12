@@ -417,23 +417,23 @@ class CollX c a => Coll c a | c -> a where
 
   -- | Fold over all the elements in a collection in an unspecified order.
   --
-  --   @fold f@ is /unambiguous/ iff @f@ is a commutative, associative function.
+  --   @fold f@ is /unambiguous/ iff @f@ is fold-commutative.
   fold       :: (a -> b -> b) -> b -> c -> b
 
   -- | A strict variant of 'fold'.
   --
-  --   @fold' f@ is /unambiguous/ iff @f@ is a commutative, associative function.
+  --   @fold' f@ is /unambiguous/ iff @f@ is fold-commutative.
   fold'      :: (a -> b -> b) -> b -> c -> b
 
   -- | Fold over all the elements in a collection in an unspecified order.
   --   An error is signaled if the collection is empty.
   --
-  --   @fold1 f@ is /unambiguous/ iff @f@ is a commutative, associative function.
+  --   @fold1 f@ is /unambiguous/ iff @f@ is fold-commutative.
   fold1      :: (a -> a -> a) -> c -> a
 
   -- | A strict variant of 'fold1'.
   --
-  --   @fold1' f@ is /unambiguous/ iff @f@ is a commutative, associative function.
+  --   @fold1' f@ is /unambiguous/ iff @f@ is fold-commutative.
   fold1'     :: (a -> a -> a) -> c -> a
 
   -- | Remove all elements not satisfying the predicate.
@@ -498,7 +498,7 @@ class (Coll c a, OrdCollX c a) => OrdColl c a | c -> a where
   --   associativity. (For sets, this will always be increasing order)
   --
   --   This function is /unambiguous/ if the combining function is
-  --   associative and commutative, at all set types, and at bag types
+  --   fold-commutative, at all set types, and at bag types
   --   where no two equivalent elements exist in the bag.  Otherwise
   --   it is /ambiguous/.
   foldr      :: (a -> b -> b) -> b -> c -> b
@@ -506,7 +506,7 @@ class (Coll c a, OrdCollX c a) => OrdColl c a | c -> a where
   -- | A strict variant of 'foldr'.
   --
   --   This function is /unambiguous/ if the combining function is
-  --   associative and commutative, at all set types, and at bag types
+  --   fold-commutative, at all set types, and at bag types
   --   where no two equivalent elements exist in the bag.  Otherwise
   --   it is /ambiguous/.
   foldr'     :: (a -> b -> b) -> b -> c -> b
@@ -515,7 +515,7 @@ class (Coll c a, OrdCollX c a) => OrdColl c a | c -> a where
   --   associativity. (For sets, this will always be increasing order)
   --
   --   This function is /unambiguous/ if the combining function is
-  --   associative and commutative, at all set types, and at bag types
+  --   fold-commutative, at all set types, and at bag types
   --   where no two equivalent elements exist in the bag.  Otherwise
   --   it is /ambiguous/.
   foldl      :: (b -> a -> b) -> b -> c -> b
@@ -523,7 +523,7 @@ class (Coll c a, OrdCollX c a) => OrdColl c a | c -> a where
   -- | A strict variant of 'foldl'.
   --
   --   This function is /unambiguous/ if the combining function is
-  --   associative and commutative, at all set types, and at bag types
+  --   fold-commutative, at all set types, and at bag types
   --   where no two equivalent elements exist in the bag.  Otherwise
   --   it is /ambiguous/.
   foldl'     :: (b -> a -> b) -> b -> c -> b
@@ -533,12 +533,17 @@ class (Coll c a, OrdCollX c a) => OrdColl c a | c -> a where
   --   (For sets, this will always be increasing order)
   --
   --   This function is /unambiguous/ if the combining function is
-  --   associative and commutative, at all set types, and at bag types
+  --   fold-commutative, at all set types, and at bag types
   --   where no two equivalent elements exist in the bag.  Otherwise
   --   it is /ambiguous/.
   foldr1     :: (a -> a -> a) -> c -> a
 
   -- | A strict variant of 'foldr1'.
+  --
+  --   This function is /unambiguous/ if the combining function is
+  --   fold-commutative, at all set types, and at bag types
+  --   where no two equivalent elements exist in the bag.  Otherwise
+  --   it is /ambiguous/.
   foldr1'    :: (a -> a -> a) -> c -> a
 
   -- | Fold across the elements in non-decreasing order with left
@@ -546,7 +551,7 @@ class (Coll c a, OrdCollX c a) => OrdColl c a | c -> a where
   --   (For sets, this will always be increasing order)
   --
   --   This function is /unambiguous/ if the combining function is
-  --   associative and commutative, at all set types, and at bag types
+  --   fold-commutative, at all set types, and at bag types
   --   where no two equivalent elements exist in the bag.  Otherwise
   --   it is /ambiguous/.
   foldl1     :: (a -> a -> a) -> c -> a
@@ -554,7 +559,7 @@ class (Coll c a, OrdCollX c a) => OrdColl c a | c -> a where
   -- | A strict variant of 'foldl1'.
   --
   --   This function is /unambiguous/ if the combining function is
-  --   associative and commutative, at all set types, and at bag types
+  --   fold-commutative, at all set types, and at bag types
   --   where no two equivalent elements exist in the bag.  Otherwise
   --   it is /ambiguous/.
   foldl1'    :: (a -> a -> a) -> c -> a
@@ -572,7 +577,7 @@ class (Coll c a, OrdCollX c a) => OrdColl c a | c -> a where
   --
   -- > forall x y. x < y ==> f x < f y
   --
-  --   This function is /unambiguous/, under the above precondition.
+  --   This function is /unambiguous/, under the precondition.
   unsafeMapMonotonic :: (a -> a) -> c -> c
 
 
