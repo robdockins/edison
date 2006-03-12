@@ -73,6 +73,22 @@
 --   complexities; if so, the differences will be given in the documentation for
 --   the individual implementation module.
 --
+--   /Notes on Eq and Ord instances:/
+--
+--   Many Edison data structures require @Eq@ or @Ord@ contexts to define equivalence
+--   and\/or total ordering on elements or keys.  Edison makes the following assumptions
+--   about these instances:
+--
+--   * An @Eq@ instance correctly defines an equivalence relation (but not necessarily
+--     structural equality); that is, we assume @(==)@ (considered as a
+--     relation) is reflexive, symmetric and transitive.
+--
+--   * An @Ord@ instance correctly and consistently defines a total order.
+--
+--   These assumptions correspond to the usual meanings assigned to these classes.  If
+--   an Edison data structure is used with an @Eq@ or @Ord@ instance which violates these
+--   assumptions, then the behavior of that data structure is undefined.
+--
 --   /Notes on unsafe functions:/
 --
 --   There are a number of different notions of what constitutes an unsafe function.
@@ -93,25 +109,36 @@
 --   Edison also contains some functions which are labeled \"ambiguous\".  These
 --   functions cannot violate the structural integrity of a data structure, but, under
 --   some conditions, the result of applying an ambiguous function is not well defined.
---   For example, the 'AssocX' class contains the @fold@ function, which folds over the
---   elements in the set in an arbitrary order.  If the combining function passed to
---   @fold@ is not commutative and associative, then the result of the fold is not
---   well defined; by this, we mean that there are a number of possible results that
---   the implementation could return.  To aid programmers, each API function is labeled
---   /ambiguous/ or /unambiguous/ in its documentation.  If a function is unambiguous only
---   under some circumstances, that will also be explicitly stated.  \"Unambiguous\" does
---   /not/ mean that applying the function will not result in bottom.  It only means
---   that all correct implementations of the operation will return indistinguishable
---   results (if the operation terminates).  For concrete data types, indistinguishable
---   means structural equality.  An instance of an abstract data type is considered
---   indistinguishable from another if all possible applications of unambiguous operations
---   to both yield indistinguishable results.  In this context, we consider bottom to be
---   distinguishable from non-bottom results, and indistinguishable from other bottom results.
+--   For ambiguous functions, the result of applying the function may depend on otherwise
+--   unobservable internal state of the data structure, such as the actual shape of a
+--   balanced tree.  For example, the 'AssocX' class contains the @fold@ function, which
+--   folds over the elements in the collection in an arbitrary order.  If the combining
+--   function passed to @fold@ is not fold-commutative (see below), then the result of
+--   the fold can will depend on the actual order that elements are presented to the
+--   combining function, which is not defined.
+--
+--   To aid programmers, each API function is labeled /ambiguous/ or /unambiguous/ in its
+--   documentation.  If a function is unambiguous only under some circumstances,
+--   that will also be explicitly stated.
+--
+--   \"Unambiguous\" does /not/ mean that applying the function will not result in bottom.
+--   It only means that all correct implementations of the operation will return
+--   \"indistinguishable\" results (if the operation terminates).  For concrete data types,
+--   indistinguishable means structural equality.  An instance of an abstract data type
+--   is considered indistinguishable from another if all possible applications of unambiguous
+--   operations to both yield indistinguishable results.  In this context, we consider bottom
+--   to be distinguishable from non-bottom results, and indistinguishable from other
+--   bottom results.
+--
+--   A higher-order unambiguous operation may be rendered ambiguous if passed a function which
+--   does not respect referential integrity (one containing @unsafePerformIO@ for example).
+--   Only do something like this if you are 110% sure you know what you are doing, and maybe
+--   not even then.
 --
 --   /How to choose a fold:/
 --
 --   /Folds/ are an important class of operations on data structures in a functional
---   language; they perform essentially the same function that iterators perform in
+--   language; they perform essentially the same role that iterators perform in
 --   imperative languages.  Edison provides a dizzying array of folds which (hopefully)
 --   correspond to all the various ways a programmer might want to fold over a data
 --   structure.  However, it can be difficult to know which fold to choose for a
@@ -127,6 +154,64 @@
 --   implementers the option to provide additional strictness if it improves performance.
 --   For associative collections, only use with @WithKey@ folds if you need the value
 --   of the key.
+--
+--   /Painfully detailed information about ambiguous folds:/
+--
+--   All of the folds that are listed ambiguous are ambiguous because they do not or cannot
+--   guarantee a stable order with which the folding function will be applied.  However,
+--   some functions are order insensitive, and the result will be unambiguous regardless
+--   of the fold order chosen.  Here we formalize this property, which we call
+--   \"fold commutativity\".
+--
+--   We say @f :: a -> b -> b@ is fold-commutative iff @f@ is unambiguous and
+--
+-- >    forall z, w :: b; m, n :: a
+-- >
+-- >       w = z ==> f m (f n w) = f n (f m z)
+-- >
+--
+--   where @=@ means indistinguishability.
+--
+--   This property is sufficient to ensure that, for any collection of elements to
+--   fold over, folds over all permutations of those elements will generate 
+--   indistinguishable results.  In other words, an ambiguous fold applied to a
+--   fold-commutative combining function becomes /unambiguous/.
+--
+--   Some fold combining functions take their arguments in the reverse order.  We
+--   straightforwardly extend the notion of fold commutativity to such functions
+--   by reversing the arguments.  More formally, we say @g :: b -> a -> b@ is fold
+--   commutative iff @flip g :: a -> b -> b@ is fold commutative.
+--
+--   For folds which take both a key and an element value, we extend the notion of fold
+--   commutativity by considering the key and element to be a single, uncurried argument.
+--   More formally, we say @g :: k -> a -> b -> b@ is fold commutative iff
+--
+-- >    \(k,x) z -> g k x z :: (k,a) -> b -> b
+--
+--   is fold commutative according to the above definition.
+--
+--   Note that for @g :: a -> a -> a@, if @g@ is unambiguous,
+--   commutative, and associative, then @g@ is fold-commutative.
+--
+--   Proof:
+--
+-- >    let w = z, then
+-- >    g m (g n w) = g m (g n z)     g is unambiguous
+-- >                = g (g n z) m     commutative property of g
+-- >                = g n (g z m)     associative property of g
+-- >                = g n (g m z)     commutative property of g
+--
+--   Qed.
+--
+--   Thus, many common numeric combining functions, including @(+)@ and @(*)@ at
+--   integral types, are fold commutative and can be safely used with ambiguous
+--   folds.
+--
+--   /Be aware/ however, that @(+)@ and @(*)@ at floating point types are only
+--   /approximately/ commutative and associative due to rounding errors; using
+--   ambiguous folds with these operations may result in subtle differences in
+--   the results.  As always, be aware of the limitations and numeric
+--   properties of floating point representations.
 --
 --   /About this module:/
 --  
