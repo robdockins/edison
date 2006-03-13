@@ -44,7 +44,7 @@ module Data.Edison.Assoc.AssocList (
     -- * FiniteMapX operations
     fromSeqWith,fromSeqWithKey,insertWith,insertWithKey,insertSeqWith,
     insertSeqWithKey,unionl,unionr,unionWith,unionSeqWith,intersectionWith,
-    difference,subset,subsetEq,
+    difference,properSubset,subsetEq,
 
     -- * FiniteMap operations
     unionWithKey,unionSeqWithKey,intersectionWithKey,
@@ -117,7 +117,7 @@ unionSeqWith     :: (Eq k,S.Sequence seq) =>
                         (a -> a -> a) -> seq (FM k a) -> FM k a
 intersectionWith :: Eq k => (a -> b -> c) -> FM k a -> FM k b -> FM k c
 difference       :: Eq k => FM k a -> FM k b -> FM k a
-subset           :: Eq k => FM k a -> FM k b -> Bool    
+properSubset     :: Eq k => FM k a -> FM k b -> Bool    
 subsetEq         :: Eq k => FM k a -> FM k b -> Bool    
 
 toSeq            :: (Eq k,S.Sequence seq) => FM k a -> seq (k,a)
@@ -488,7 +488,7 @@ fromSeqWith = fromSeqWithUsingInsertSeqWith
 fromSeqWithKey = fromSeqWithKeyUsingInsertSeqWithKey
 intersectionWith = intersectionWithUsingLookupM
 difference = differenceUsingDelete
-subset = subsetUsingSubsetEq
+properSubset = properSubsetUsingSubsetEq
 subsetEq = subsetEqUsingMember
 unionWithKey = unionWithKeyUsingInsertWithKey
 unionSeqWithKey = unionSeqWithKeyUsingFoldr
@@ -529,7 +529,8 @@ instance Eq k => A.FiniteMapX (FM k) k where
    insertSeqWith = insertSeqWith; insertSeqWithKey = insertSeqWithKey; 
    unionl = unionl; unionr = unionr; unionWith = unionWith; 
    unionSeqWith = unionSeqWith; intersectionWith = intersectionWith; 
-   difference = difference; subset = subset; subsetEq = subsetEq}
+   difference = difference; properSubset = properSubset;
+   subsetEq = subsetEq}
 
 instance Ord k => A.OrdFiniteMapX (FM k) k
 

@@ -32,7 +32,7 @@ module Data.Edison.Assoc.PatriciaLoMap (
     -- * FiniteMapX operations
     fromSeqWith,fromSeqWithKey,insertWith,insertWithKey,insertSeqWith,
     insertSeqWithKey,unionl,unionr,unionWith,unionSeqWith,intersectionWith,
-    difference,subset,subsetEq,
+    difference,properSubset,subsetEq,
 
     -- * FiniteMap operations
     unionWithKey,unionSeqWithKey,intersectionWithKey,
@@ -380,8 +380,8 @@ difference s@(B _ _ _ _) E = s
 difference s@(L k x) t = if member k t then E else s
 difference E t = E
 
-subset :: FM a -> FM b -> Bool
-subset s t = case subset' s t of {LT -> True; _ -> False}
+properSubset :: FM a -> FM b -> Bool
+properSubset s t = case subset' s t of {LT -> True; _ -> False}
 
 subset' s@(B p m s0 s1) t@(B q n t0 t1)
   | m < n    = GT
@@ -573,7 +573,8 @@ instance A.FiniteMapX FM Int where
    insertSeqWith = insertSeqWith; insertSeqWithKey = insertSeqWithKey; 
    unionl = unionl; unionr = unionr; unionWith = unionWith; 
    unionSeqWith = unionSeqWith; intersectionWith = intersectionWith; 
-   difference = difference; subset = subset; subsetEq = subsetEq}
+   difference = difference; properSubset = properSubset;
+   subsetEq = subsetEq}
 
 instance A.FiniteMap FM Int where
   {unionWithKey = unionWithKey; unionSeqWithKey = unionSeqWithKey; 

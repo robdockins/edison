@@ -622,14 +622,14 @@ class AssocX m k => FiniteMapX m k | m -> k where
   --   in the first.
   --
   --   This function is always /unambiguous/.
-  subset             :: m a -> m b -> Bool    
+  properSubset       :: m a -> m b -> Bool
 
   -- | Test whether the set of keys in the first finite map is a subset of
   --   the set of keys of the second; that is, if every key present in the first
   --   finite map is also present in the second.
   --
   --   This function is always /unambiguous/.
-  subsetEq           :: m a -> m b -> Bool    
+  subsetEq           :: m a -> m b -> Bool
 
 -- | Finite maps where the keys additionally have an ordering relation.
 --   This class introduces no new methods.
