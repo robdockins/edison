@@ -1,14 +1,7 @@
 strictify folds for TernaryTrie
-structuralInvariant for MyersStack
+structuralInvariant for MyersStack (get a copy of the relevant paper...)
 structuralInvariant for PatriciaLoMap
 complete test coverage for Assoc
 add docs to the implementations to help decide when to use which ones
 put together some kind of benchmarking
-
-check on FiniteMapX '*With' function docs -- copied from SetX and probably wrong
-move adjustOrInsert :: (Maybe a -> a) -> k -> m a -> m a to
-     adjustWithDefault :: a -> (a -> a) -> k -> m a -> m a ???
-figure out adjustOrDelete(All)
-
-make Sequence and AssocX functions which copy superclasses into alises
 use 'assert' to check preconditions?
