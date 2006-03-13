@@ -83,7 +83,8 @@
 --     structural equality); that is, we assume @(==)@ (considered as a
 --     relation) is reflexive, symmetric and transitive.
 --
---   * An @Ord@ instance correctly and consistently defines a total order.
+--   * An @Ord@ instance correctly defines a total order which is consistent with
+--     the @Eq@ instance for that type.
 --
 --   These assumptions correspond to the usual meanings assigned to these classes.  If
 --   an Edison data structure is used with an @Eq@ or @Ord@ instance which violates these
