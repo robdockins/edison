@@ -151,8 +151,8 @@ differenceUsingOrdLists xs ys = unsafeFromOrdList (diff (toOrdList xs) (toOrdLis
 properSubsetUsingOrdLists :: OrdSet c a => c -> c -> Bool
 properSubsetUsingOrdLists xs ys = properSubsetOnOrdLists (toOrdList xs) (toOrdList ys)
 
-subsetEqUsingOrdLists :: OrdSet c a => c -> c -> Bool
-subsetEqUsingOrdLists xs ys = subsetEqOnOrdLists (toOrdList xs) (toOrdList ys)
+subsetUsingOrdLists :: OrdSet c a => c -> c -> Bool
+subsetUsingOrdLists xs ys = subsetOnOrdLists (toOrdList xs) (toOrdList ys)
 
 properSubsetOnOrdLists [] [] = False
 properSubsetOnOrdLists [] (_:_) = True
@@ -161,15 +161,15 @@ properSubsetOnOrdLists a@(x:xs) (y:ys) =
   case compare x y of
     LT -> False
     EQ -> properSubsetOnOrdLists xs ys
-    GT -> subsetEqOnOrdLists a ys
+    GT -> subsetOnOrdLists a ys
 
-subsetEqOnOrdLists [] _ = True
-subsetEqOnOrdLists (_:_) [] = False
-subsetEqOnOrdLists a@(x:xs) (y:ys) =
+subsetOnOrdLists [] _ = True
+subsetOnOrdLists (_:_) [] = False
+subsetOnOrdLists a@(x:xs) (y:ys) =
   case compare x y of
     LT -> False
-    EQ -> subsetEqOnOrdLists xs ys
-    GT -> subsetEqOnOrdLists a ys
+    EQ -> subsetOnOrdLists xs ys
+    GT -> subsetOnOrdLists a ys
 
 insertSeqWithUsingInsertWith :: (Set c a,S.Sequence seq) => (a -> a -> a) -> seq a -> c -> c
 insertSeqWithUsingInsertWith c xs s = S.foldr (insertWith c) s xs

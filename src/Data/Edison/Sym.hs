@@ -52,9 +52,9 @@ import qualified Data.Edison.Coll as A
 (!) :: S.Sequence seq => seq a -> P.Int -> a
 (!) = P.flip S.lookup
 
--- | Subset test operation.  Identical to 'C.subsetEq'.
+-- | Subset test operation.  Identical to 'C.subset'.
 (|=) :: C.SetX set a => set -> set -> P.Bool
-(|=) = C.subsetEq
+(|=) = C.subset
 
 -- | Set difference.  Identical to 'C.difference'.
 (\\) :: C.SetX set a => set -> set -> set

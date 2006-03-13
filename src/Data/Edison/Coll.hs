@@ -354,7 +354,7 @@ class CollX c a => SetX c a | c -> a where
   --   every element in the first set is also a member of the second set.
   --
   --   This function is always /unambiguous/.
-  subsetEq      :: c -> c -> Bool
+  subset        :: c -> c -> Bool
 
 
 -- | Sets where the elements also have an ordering relation.

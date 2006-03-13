@@ -385,9 +385,9 @@ prop_intersect_difference set xs ys =
 prop_subset_subsetEq :: SetTest Int set => 
 	set Int -> set Int -> set Int -> Bool
 prop_subset_subsetEq set xs ys =
-    properSubset xs ys == (subsetEq xs ys && xs /= ys)
+    properSubset xs ys == (subset xs ys && xs /= ys)
     &&
-    subsetEq xs ys == (intersection xs ys == xs)
+    subset xs ys == (intersection xs ys == xs)
 
 
 --------------------------------------------------------------------------

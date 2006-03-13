@@ -31,7 +31,7 @@ module Data.Edison.Coll.StandardSet (
     foldr1,foldr1',foldl1,foldl1',toOrdSeq,unsafeMapMonotonic,
 
     -- * SetX operations
-    intersection,difference,properSubset,subsetEq,
+    intersection,difference,properSubset,subset,
 
     -- * Set operations
     fromSeqWith,insertWith,insertSeqWith,unionl,unionr,unionWith,
@@ -114,7 +114,7 @@ toOrdSeq      :: (Ord a,S.Sequence seq) => Set a -> seq a
 intersection  :: Ord a => Set a -> Set a -> Set a
 difference    :: Ord a => Set a -> Set a -> Set a
 properSubset  :: Ord a => Set a -> Set a -> Bool
-subsetEq      :: Ord a => Set a -> Set a -> Bool
+subset        :: Ord a => Set a -> Set a -> Bool
 
 fromSeqWith   :: (Ord a,S.Sequence seq) => (a -> a -> a) -> seq a -> Set a
 insertWith    :: Ord a => (a -> a -> a) -> a -> Set a -> Set a
@@ -198,7 +198,7 @@ toOrdSeq           = S.fromList . DS.toAscList
 intersection       = DS.intersection
 difference         = DS.difference
 properSubset       = DS.isProperSubsetOf
-subsetEq           = DS.isSubsetOf
+subset             = DS.isSubsetOf
 
 fromSeqWith        = fromSeqWithUsingInsertWith
 insertWith f x set = case lookupM x set of 
@@ -244,7 +244,7 @@ instance Ord a => C.OrdColl (Set a) a where
 
 instance Ord a => C.SetX (Set a) a where
   {intersection = intersection; difference = difference;
-   properSubset = properSubset; subsetEq = subsetEq}
+   properSubset = properSubset; subset = subset}
 
 instance Ord a => C.Set (Set a) a where
   {fromSeqWith = fromSeqWith; insertWith = insertWith; 
