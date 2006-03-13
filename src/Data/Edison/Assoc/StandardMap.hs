@@ -25,7 +25,7 @@ module Data.Edison.Assoc.StandardMap (
     -- * FiniteMapX operations
     fromSeqWith,fromSeqWithKey,insertWith,insertWithKey,insertSeqWith,
     insertSeqWithKey,unionl,unionr,unionWith,unionSeqWith,intersectionWith,
-    difference,properSubset,subsetEq,
+    difference,properSubset,subset,
 
     -- * OrdAssocX operations
     minView, minElem, deleteMin, unsafeInsertMin, maxView, maxElem, deleteMax,
@@ -149,7 +149,7 @@ unionSeqWith      :: (Ord k,S.Sequence seq) =>
 intersectionWith  :: Ord k => (a -> b -> c) -> FM k a -> FM k b -> FM k c
 difference        :: Ord k => FM k a -> FM k b -> FM k a
 properSubset      :: Ord k => FM k a -> FM k b -> Bool
-subsetEq          :: Ord k => FM k a -> FM k b -> Bool
+subset            :: Ord k => FM k a -> FM k b -> Bool
 
 
 toSeq             :: (Ord k,S.Sequence seq) => FM k a -> seq (k,a)
@@ -262,7 +262,7 @@ unionSeqWith       = unionSeqWithUsingReduce
 intersectionWith   = DM.intersectionWith
 difference         = DM.difference
 properSubset       = DM.isProperSubmapOfBy (\_ _ -> True)
-subsetEq           = DM.isSubmapOfBy (\_ _ -> True)
+subset             = DM.isSubmapOfBy (\_ _ -> True)
 
 toSeq              = toSeqUsingFoldWithKey
 keys               = keysUsingFoldWithKey
@@ -325,7 +325,7 @@ instance Ord k => A.FiniteMapX (FM k) k where
    unionl = unionl; unionr = unionr; unionWith = unionWith;
    unionSeqWith = unionSeqWith; intersectionWith = intersectionWith;
    difference = difference; properSubset = properSubset;
-   subsetEq = subsetEq}
+   subset = subset}
 
 instance Ord k => A.OrdFiniteMapX (FM k) k
 

@@ -32,7 +32,7 @@ module Data.Edison.Assoc.PatriciaLoMap (
     -- * FiniteMapX operations
     fromSeqWith,fromSeqWithKey,insertWith,insertWithKey,insertSeqWith,
     insertSeqWithKey,unionl,unionr,unionWith,unionSeqWith,intersectionWith,
-    difference,properSubset,subsetEq,
+    difference,properSubset,subset,
 
     -- * FiniteMap operations
     unionWithKey,unionSeqWithKey,intersectionWithKey,
@@ -401,15 +401,15 @@ subset' (L k x) t = if member k t then LT else GT
 subset' E E = EQ
 subset' E _ = LT
 
-subsetEq :: FM a -> FM b -> Bool
-subsetEq s@(B p m s0 s1) t@(B q n t0 t1)
+subset :: FM a -> FM b -> Bool
+subset s@(B p m s0 s1) t@(B q n t0 t1)
   | m < n    = False
-  | m > n    = matchPrefix p q n && (if zeroBit p n then subsetEq s t0
-                                                     else subsetEq s t1)
-  | otherwise = (p == q) && subsetEq s0 t0 && subsetEq s1 t1
-subsetEq (B p m s0 s1) _ = False
-subsetEq (L k x) t = member k t
-subsetEq E t = True
+  | m > n    = matchPrefix p q n && (if zeroBit p n then subset s t0
+                                                     else subset s t1)
+  | otherwise = (p == q) && subset s0 t0 && subset s1 t1
+subset (B p m s0 s1) _ = False
+subset (L k x) t = member k t
+subset E t = True
 
 mapWithKey :: (Int -> a -> b) -> FM a -> FM b
 mapWithKey f E = E
@@ -574,7 +574,7 @@ instance A.FiniteMapX FM Int where
    unionl = unionl; unionr = unionr; unionWith = unionWith; 
    unionSeqWith = unionSeqWith; intersectionWith = intersectionWith; 
    difference = difference; properSubset = properSubset;
-   subsetEq = subsetEq}
+   subset = subset}
 
 instance A.FiniteMap FM Int where
   {unionWithKey = unionWithKey; unionSeqWithKey = unionSeqWithKey; 

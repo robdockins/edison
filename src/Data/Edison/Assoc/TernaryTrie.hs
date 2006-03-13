@@ -28,7 +28,7 @@ module Data.Edison.Assoc.TernaryTrie (
     -- * FiniteMapX operations
     fromSeqWith,fromSeqWithKey,insertWith,insertWithKey,insertSeqWith,
     insertSeqWithKey,unionl,unionr,unionWith,unionSeqWith,intersectionWith,
-    difference,properSubset,subsetEq,
+    difference,properSubset,subset,
 
     -- * FiniteMap operations
     unionWithKey,unionSeqWithKey,intersectionWithKey,
@@ -109,7 +109,7 @@ unionSeqWith     :: (Ord k,S.Sequence seq) =>
 intersectionWith :: Ord k => (a -> b -> c) -> FM k a -> FM k b -> FM k c
 difference       :: Ord k => FM k a -> FM k b -> FM k a
 properSubset     :: Ord k => FM k a -> FM k b -> Bool    
-subsetEq         :: Ord k => FM k a -> FM k b -> Bool    
+subset           :: Ord k => FM k a -> FM k b -> Bool    
 
 toSeq            :: (Ord k,S.Sequence seq) => FM k a -> seq ([k],a)
 keys             :: (Ord k,S.Sequence seq) => FM k a -> seq [k]
@@ -630,9 +630,9 @@ difference mx my
               Nothing -> v1
               Just _  -> Nothing) mx my
 
-properSubset = properSubsetUsingSubsetEq
+properSubset = properSubsetUsingSubset
 
-subsetEq (FM nx fmbx) (FM ny fmby)
+subset (FM nx fmbx) (FM ny fmby)
   = subsetEqM nx ny && subsetEqFMB fmbx fmby
   where
     subsetEqM Nothing _ = True
@@ -749,7 +749,7 @@ instance Ord k => A.FiniteMapX (FM k) [k] where
    unionl = unionl; unionr = unionr; unionWith = unionWith; 
    unionSeqWith = unionSeqWith; intersectionWith = intersectionWith; 
    difference = difference; properSubset = properSubset;
-   subsetEq = subsetEq}
+   subset = subset}
 
 instance Ord k => A.FiniteMap (FM k) [k] where
   {unionWithKey = unionWithKey; unionSeqWithKey = unionSeqWithKey; 

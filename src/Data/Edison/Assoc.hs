@@ -629,7 +629,7 @@ class AssocX m k => FiniteMapX m k | m -> k where
   --   finite map is also present in the second.
   --
   --   This function is always /unambiguous/.
-  subsetEq           :: m a -> m b -> Bool
+  subset             :: m a -> m b -> Bool
 
 -- | Finite maps where the keys additionally have an ordering relation.
 --   This class introduces no new methods.

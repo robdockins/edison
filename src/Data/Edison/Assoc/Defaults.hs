@@ -156,11 +156,11 @@ differenceUsingDelete :: FiniteMap m k => m a -> m b -> m a
 differenceUsingDelete m1 m2 = foldWithKey del m1 m2
   where del k _ m = delete k m
 
-properSubsetUsingSubsetEq :: FiniteMapX m k => m a -> m b -> Bool
-properSubsetUsingSubsetEq m1 m2 = subsetEq m1 m2 && size m1 < size m2
+properSubsetUsingSubset :: FiniteMapX m k => m a -> m b -> Bool
+properSubsetUsingSubset m1 m2 = subset m1 m2 && size m1 < size m2
 
-subsetEqUsingMember :: FiniteMap m k => m a -> m b -> Bool
-subsetEqUsingMember m1 m2 = foldWithKey mem True m1
+subsetUsingMember :: FiniteMap m k => m a -> m b -> Bool
+subsetUsingMember m1 m2 = foldWithKey mem True m1
   where mem k _ b = member k m2 && b
 
 lookupAndDeleteDefault :: AssocX m k => k -> m a -> (a, m a)
