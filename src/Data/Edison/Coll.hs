@@ -348,13 +348,13 @@ class CollX c a => SetX c a | c -> a where
   --   is not present in the first.
   --
   --   This function is always /unambiguous/.
-  subset      :: c -> c -> Bool    
+  properSubset  :: c -> c -> Bool
 
   -- | Test whether the first set is a subset of the second set; that is, if
   --   every element in the first set is also a member of the second set.
   --
   --   This function is always /unambiguous/.
-  subsetEq    :: c -> c -> Bool
+  subsetEq      :: c -> c -> Bool
 
 
 -- | Sets where the elements also have an ordering relation.

@@ -148,19 +148,19 @@ differenceUsingOrdLists xs ys = unsafeFromOrdList (diff (toOrdList xs) (toOrdLis
             GT -> diff a ys
         diff a _ = a
 
-subsetUsingOrdLists :: OrdSet c a => c -> c -> Bool
-subsetUsingOrdLists xs ys = subsetOnOrdLists (toOrdList xs) (toOrdList ys)
+properSubsetUsingOrdLists :: OrdSet c a => c -> c -> Bool
+properSubsetUsingOrdLists xs ys = properSubsetOnOrdLists (toOrdList xs) (toOrdList ys)
 
 subsetEqUsingOrdLists :: OrdSet c a => c -> c -> Bool
 subsetEqUsingOrdLists xs ys = subsetEqOnOrdLists (toOrdList xs) (toOrdList ys)
 
-subsetOnOrdLists [] [] = False
-subsetOnOrdLists [] (_:_) = True
-subsetOnOrdLists (_:_) [] = False
-subsetOnOrdLists a@(x:xs) (y:ys) =
+properSubsetOnOrdLists [] [] = False
+properSubsetOnOrdLists [] (_:_) = True
+properSubsetOnOrdLists (_:_) [] = False
+properSubsetOnOrdLists a@(x:xs) (y:ys) =
   case compare x y of
     LT -> False
-    EQ -> subsetOnOrdLists xs ys
+    EQ -> properSubsetOnOrdLists xs ys
     GT -> subsetEqOnOrdLists a ys
 
 subsetEqOnOrdLists [] _ = True
