@@ -447,7 +447,7 @@ class (Functor s, MonadPlus s) => Sequence s where
   --
   --   * @fold f c empty = c@
   --
-  --   * @f@ is fold-commutative ==> @fold f@ = @foldr f@ = @foldl f@
+  --   * @f is fold-commutative ==> fold f = foldr f = foldl f@
   --
   --   @fold f@ is /unambiguous/ iff @f@ is fold-commutative.
   --
@@ -460,7 +460,7 @@ class (Functor s, MonadPlus s) => Sequence s where
   --
   --   /Axioms:/
   --
-  --   * forall a. f a _|_ = _|_ ==> fold f x xs = fold' f x xs@
+  --   * @forall a. f a _|_ = _|_ ==> fold f x xs = fold' f x xs@
   --
   --   @fold f@ is /unambiguous/ iff @f@ is fold-commutative.
   --
@@ -474,7 +474,7 @@ class (Functor s, MonadPlus s) => Sequence s where
   --
   --   /Axioms:/
   --
-  --   * @f@ is fold-commutative ==> @fold1 f@ = @foldr1 f@ = @foldl1 f@
+  --   * @f is fold-commutative ==> fold1 f = foldr1 f = foldl1 f@
   --
   --   @fold1 f@ is /unambiguous/ iff @f@ is fold-commutative.
   --
