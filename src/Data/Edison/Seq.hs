@@ -438,6 +438,63 @@ class (Functor s, MonadPlus s) => Sequence s where
 
 
   -- | Combine all the elements of a sequence into a single value,
+  --   given a combining function and an initial value.  The order
+  --   in which the elements are applied to the combining function
+  --   is unspecified.  @fold@ is one of the few ambiguous sequence
+  --   functions.
+  --
+  --   /Axioms:/
+  --
+  --   * @fold f c empty = c@
+  --
+  --   * @f@ is fold-commutative ==> @fold f@ = @foldr f@ = @foldl f@
+  --
+  --   @fold f@ is /unambiguous/ iff @f@ is fold-commutative.
+  --
+  --   Default running type: @O( t * n )@
+  --     where @t@ is the running tome of @f@.
+  fold     :: (a -> b -> b) -> b -> s a -> b
+
+  -- | A strict variant of 'fold'.  @fold'@ is one of the few ambiguous
+  --   sequence functions.
+  --
+  --   /Axioms:/
+  --
+  --   * forall a. f a _|_ = _|_ ==> fold f x xs = fold' f x xs@
+  --
+  --   @fold f@ is /unambiguous/ iff @f@ is fold-commutative.
+  --
+  --   Default running type: @O( t * n )@
+  --     where @t@ is the running tome of @f@.
+  fold'    :: (a -> b -> b) -> b -> s a -> b
+
+  -- | Combine all the elements of a non-empty sequence into a
+  --   single value, given a combining function. Signals an error
+  --   if the sequence is empty.
+  --
+  --   /Axioms:/
+  --
+  --   * @f@ is fold-commutative ==> @fold1 f@ = @foldr1 f@ = @foldl1 f@
+  --
+  --   @fold1 f@ is /unambiguous/ iff @f@ is fold-commutative.
+  --
+  --   Default running type: @O( t * n )@
+  --     where @t@ is the running tome of @f@.
+  fold1    :: (a -> a -> a) -> s a -> a
+
+  -- | A strict variant of 'fold1'.
+  --
+  -- /Axioms:/
+  --
+  -- * @forall a. f a _|_ = _|_ ==> fold1' f xs = fold1 f xs@
+  --
+  --   @fold1' f@ is /unambiguous/ iff @f@ is fold-commutative.
+  --
+  --   Default running time: @O( t * n )@
+  --     where @t@ is the running time of @f@
+  fold1'   :: (a -> a -> a) -> s a -> a
+
+  -- | Combine all the elements of a sequence into a single value,
   --   given a combining function and an initial value.  The function
   --   is applied with right nesting.
   -- 
@@ -451,20 +508,19 @@ class (Functor s, MonadPlus s) => Sequence s where
   --
   --   This function is always /unambiguous/.
   --
-  --   Default running time: @O( t * n)@
+  --   Default running time: @O( t * n )@
   --     where @t@ is the running time of @f@
   foldr     :: (a -> b -> b) -> b -> s a -> b
-
 
   -- | Strict variant of 'foldr'.  
   --
   -- /Axioms:/
   --
-  -- * forall a. f a _|_ = _|_ ==> foldr f x xs = foldr' f x xs
+  -- * @forall a. f a _|_ = _|_ ==> foldr f x xs = foldr' f x xs@
   --
   --   This function is always /unambiguous/.
   --
-  --   Default running time: @O( t * n)@
+  --   Default running time: @O( t * n )@
   --     where @t@ is the running time of @f@
   foldr'    :: (a -> b -> b) -> b -> s a -> b
 

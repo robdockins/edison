@@ -31,8 +31,8 @@ module Data.Edison.Seq.SimpleQueue (
     -- * Sequence Operations
     empty,singleton,lcons,rcons,append,lview,lhead,ltail,rview,rhead,rtail,
     lheadM,ltailM,rheadM,rtailM,
-    null,size,concat,reverse,reverseOnto,fromList,toList,
-    map,concatMap,foldr,foldr',foldl,foldl',foldr1,foldr1',foldl1,foldl1',
+    null,size,concat,reverse,reverseOnto,fromList,toList,map,concatMap,
+    fold,fold',fold1,fold1',foldr,foldr',foldl,foldl',foldr1,foldr1',foldl1,foldl1',
     reducer,reducer',reducel,reducel',reduce1,reduce1',
     copy,inBounds,lookup,lookupM,lookupWithDefault,update,adjust,
     mapWithIndex,foldrWithIndex,foldlWithIndex,foldrWithIndex',foldlWithIndex',
@@ -83,6 +83,10 @@ fromList       :: [a] -> Seq a
 toList         :: Seq a -> [a]
 map            :: (a -> b) -> Seq a -> Seq b
 concatMap      :: (a -> Seq b) -> Seq a -> Seq b
+fold           :: (a -> b -> b) -> b -> Seq a -> b
+fold'          :: (a -> b -> b) -> b -> Seq a -> b
+fold1          :: (a -> a -> a) -> Seq a -> a
+fold1'         :: (a -> a -> a) -> Seq a -> a
 foldr          :: (a -> b -> b) -> b -> Seq a -> b
 foldl          :: (b -> a -> b) -> b -> Seq a -> b
 foldr1         :: (a -> a -> a) -> Seq a -> a
@@ -220,6 +224,10 @@ revfoldl f e (x:xs) = f (revfoldl f e xs) x
 revfoldl' f e [] = e
 revfoldl' f e (x:xs) = e `seq` f (revfoldl' f e xs) x
 
+fold   f e (Q xs ys) = L.foldr f (L.foldr f e ys) xs
+fold'  f e (Q xs ys) = L.foldl' (flip f) (L.foldl' (flip f) e ys) xs
+fold1  = fold1UsingFold
+fold1' = fold1'UsingFold'
 
 foldr  f e (Q xs ys) = L.foldr  f (revfoldr  f e ys) xs
 foldr' f e (Q xs ys) = L.foldr' f (revfoldr' f e ys) xs
@@ -301,14 +309,14 @@ instance S.Sequence Seq where
    rview = rview; rhead = rhead; rtail = rtail; null = null;
    size = size; concat = concat; reverse = reverse; 
    reverseOnto = reverseOnto; fromList = fromList; toList = toList;
-   foldr = foldr; foldr' = foldr';
-   foldl = foldl; foldl' = foldl'; foldr1 = foldr1; foldr1' = foldr1';
-   foldl1 = foldl1; foldl1' = foldl1'; reducer = reducer; reducer' = reducer';
-   reducel = reducel; reducel' = reducel'; reduce1 = reduce1; 
-   reduce1' = reduce1'; copy = copy; inBounds = inBounds; lookup = lookup;
+   fold = fold; fold' = fold'; fold1 = fold1; fold1' = fold1';
+   foldr = foldr; foldr' = foldr'; foldl = foldl; foldl' = foldl';
+   foldr1 = foldr1; foldr1' = foldr1'; foldl1 = foldl1; foldl1' = foldl1';
+   reducer = reducer; reducer' = reducer'; reducel = reducel;
+   reducel' = reducel'; reduce1 = reduce1; reduce1' = reduce1';
+   copy = copy; inBounds = inBounds; lookup = lookup;
    lookupM = lookupM; lookupWithDefault = lookupWithDefault;
-   update = update; adjust = adjust;
-   mapWithIndex = mapWithIndex;
+   update = update; adjust = adjust; mapWithIndex = mapWithIndex;
    foldrWithIndex = foldrWithIndex; foldrWithIndex' = foldrWithIndex';
    foldlWithIndex = foldlWithIndex; foldlWithIndex' = foldlWithIndex';
    take = take; drop = drop; splitAt = splitAt; subseq = subseq;

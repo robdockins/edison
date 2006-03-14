@@ -111,6 +111,18 @@ foldl1UsingLists f xs = L.foldl1 f (toList xs)
 foldl1'UsingLists :: Sequence s => (a -> a -> a) -> s a -> a
 foldl1'UsingLists f xs = L.foldl1' f (toList xs)
 
+fold1UsingFold :: Sequence s => (a -> a -> a) -> s a -> a
+fold1UsingFold f xs =
+    case lview xs of
+      Nothing      -> error $ instanceName xs ++ ".fold1: empty sequence"
+      Just (x, xs) -> fold f x xs
+
+fold1'UsingFold' :: Sequence s => (a -> a -> a) -> s a -> a
+fold1'UsingFold' f xs =
+    case lview xs of
+      Nothing      -> error $ instanceName xs ++ ".fold1': empty sequence"
+      Just (x, xs) -> fold' f x xs
+
 foldr1UsingLview :: Sequence s => (a -> a -> a) -> s a -> a
 foldr1UsingLview f xs = 
     case lview xs of

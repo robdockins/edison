@@ -19,8 +19,8 @@ module Data.Edison.Seq.ListSeq (
     -- * Sequence Operations
     empty,singleton,lcons,rcons,append,lview,lhead,lheadM,ltail,ltailM,
     rview,rhead,rheadM,rtail,rtailM,
-    null,size,concat,reverse,reverseOnto,fromList,toList,
-    map,concatMap,foldr,foldr',foldl,foldl',foldr1,foldr1',foldl1,foldl1',
+    null,size,concat,reverse,reverseOnto,fromList,toList,map,concatMap,
+    fold,fold',fold1,fold1',foldr,foldr',foldl,foldl',foldr1,foldr1',foldl1,foldl1',
     reducer,reducer',reducel,reducel',reduce1,reduce1',
     copy,inBounds,lookup,lookupM,lookupWithDefault,update,adjust,
     mapWithIndex,foldrWithIndex,foldrWithIndex',foldlWithIndex,foldlWithIndex',
@@ -69,6 +69,10 @@ fromList       :: [a] -> [a]
 toList         :: [a] -> [a]
 map            :: (a -> b) -> [a] -> [b]
 concatMap      :: (a -> [b]) -> [a] -> [b]
+fold           :: (a -> b -> b) -> b -> [a] -> b
+fold'          :: (a -> b -> b) -> b -> [a] -> b
+fold1          :: (a -> a -> a) -> [a] -> a
+fold1'         :: (a -> a -> a) -> [a] -> a
 foldr          :: (a -> b -> b) -> b -> [a] -> b
 foldl          :: (b -> a -> b) -> b -> [a] -> b
 foldr1         :: (a -> a -> a) -> [a] -> a
@@ -172,6 +176,15 @@ toList xs = xs
 map = Data.List.map
 
 concatMap = Data.List.concatMap
+
+fold  = foldr
+fold' f = foldl' (flip f)
+
+fold1 f []      = error "ListSeq.fold1: empty sequence"
+fold1 f (x:xs)  = foldr f x xs
+
+fold1' f []     = error "ListSeq.fold1': empty sequence"
+fold1' f (x:xs) = foldl' f x xs
 
 foldr = Data.List.foldr
 foldl = Data.List.foldl
@@ -329,11 +342,12 @@ instance S.Sequence [] where
    rheadM = rheadM; rtailM = rtailM;
    size = size; concat = concat; reverse = reverse;
    reverseOnto = reverseOnto; fromList = fromList; toList = toList;
-   foldr = foldr; foldr' = foldr';
-   foldl = foldl; foldl' = foldl'; foldr1 = foldr1; foldr1' = foldr1';
-   foldl1 = foldl1; foldl1' = foldl1'; reducer = reducer; reducel = reducel;
-   reduce1 = reduce1; reducel' = reducel'; reducer' = reducer';
-   reduce1' = reduce1'; copy = copy; inBounds = inBounds; lookup = lookup;
+   fold = fold; fold' = fold'; fold1 = fold1; fold1' = fold1';
+   foldr = foldr; foldr' = foldr'; foldl = foldl; foldl' = foldl';
+   foldr1 = foldr1; foldr1' = foldr1'; foldl1 = foldl1; foldl1' = foldl1';
+   reducer = reducer; reducel = reducel; reduce1 = reduce1;
+   reducel' = reducel'; reducer' = reducer'; reduce1' = reduce1';
+   copy = copy; inBounds = inBounds; lookup = lookup;
    lookupM = lookupM; lookupWithDefault = lookupWithDefault;
    update = update; adjust = adjust; mapWithIndex = mapWithIndex; 
    foldrWithIndex = foldrWithIndex; foldrWithIndex' = foldrWithIndex';

@@ -236,6 +236,14 @@ prop_fold seq xs =
     foldr (:) [99] xs == toList xs ++ [99]
     &&
     foldl (flip (:)) [99] xs == Prelude.reverse (toList xs) ++ [99]
+    &&
+    fold (+) 0 xs == foldr (+) 0 xs
+    &&
+    fold' (+) 0 xs == foldr' (+) 0 xs
+    &&
+    if (not . null) xs then fold1 (+) xs == foldr1 (+) xs else True
+    &&
+    if (not . null) xs then fold1' (+) xs == foldr1 (+) xs else True
 
 prop_strict_fold :: SeqTest Int seq => seq Int -> seq Int -> Bool
 prop_strict_fold seq xs =
