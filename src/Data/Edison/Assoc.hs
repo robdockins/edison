@@ -17,8 +17,8 @@
 --   of 'Functor' as a superclass of every associative collection.
 --
 --   In almost all cases, associative collections make no guarantees about
---   behaviour with respect to the actual keys stored and (in the case of
---   observable maps) which keys can be retrieved.  We adopt the convetion
+--   behavior with respect to the actual keys stored and (in the case of
+--   observable maps) which keys can be retrieved.  We adopt the convention
 --   that methods which create associative collections are /unambiguous/
 --   with respect to the key storage behavior, but that methods which can
 --   observe keys are /ambiguous/ with respect to the actual keys returned.
@@ -30,7 +30,7 @@
 
 module Data.Edison.Assoc (
     -- * Superclass aliases
-    map,    
+    map,
 
     -- * Non-observable associative collections
     AssocX(..),
@@ -94,17 +94,16 @@ class (Eq k,Functor m) => AssocX m k | m -> k where
   singleton      :: k -> a -> m a
 
   -- | Create an associative collection from a  list of bindings. Which element
-  --   and key are kept in the case of duplicates is unspecified.
+  --   and key are kept in the case of duplicate keys is unspecified.
   --
   --   This function is /ambiguous/ at finite map types if the sequence
-  --   contains more than one equivalant key.  Otherwise it is /unambiguous/.
+  --   contains more than one equivalent key.  Otherwise it is /unambiguous/.
   fromSeq        :: Sequence seq => seq (k,a) -> m a
 
   -- | Add a binding to an associative collection.  For finite maps, 'insert'
-  --   keeps the new element in the case of duplicate keys.  Which key is kept
-  --   is unspecified.
+  --   keeps the new element in the case of duplicate keys.
   --
-  --   This function is /ambiguous/.
+  --   This function is /unambiguous/.
   insert         :: k -> a -> m a -> m a
 
   -- | Add a sequence of bindings to a collection.  For finite maps, which key
@@ -113,17 +112,17 @@ class (Eq k,Functor m) => AssocX m k | m -> k where
   --   elements in the list will be given preference.
   --
   --   This function is /ambiguous/ at finite map types if the sequence contains
-  --   more than one equivalant key.  Otherwise it is /unambiguous/.
+  --   more than one equivalent key.  Otherwise it is /unambiguous/.
   insertSeq      :: Sequence seq => seq (k,a) -> m a -> m a
 
-  -- | Merge two associative collections.  For finite maps, which element and which
-  --   key to keep in the case of duplicate keys is unspecified.
+  -- | Merge two associative collections.  For finite maps, which element
+  --   to keep in the case of duplicate keys is unspecified.
   --
   --   This function is /ambiguous/ at finite map types if the map keys are not
   --   disjoint.  Otherwise it is /unambiguous/.
   union          :: m a -> m a -> m a
 
-  -- | Merge a sequence of associative collections.  Which element and which key
+  -- | Merge a sequence of associative collections.  Which element
   --   to keep in the case of duplicate keys is unspecified.
   --
   --   This function is /ambiguous/ at finite map types if the map keys are not
@@ -149,8 +148,8 @@ class (Eq k,Functor m) => AssocX m k | m -> k where
   --   it is unspecified which bindings will be removed.
   --
   --   This function is /ambiguous/ at finite relation types if any key appears both
-  --   in the sequence and in the finite relation AND the number of occurances in
-  --   the sequence is less than the number of occurances in the finite relation.
+  --   in the sequence and in the finite relation AND the number of occurrences in
+  --   the sequence is less than the number of occurrences in the finite relation.
   --   Otherwise it is /unambiguous/.
   deleteSeq      :: Sequence seq => seq k -> m a -> m a
 
@@ -172,7 +171,7 @@ class (Eq k,Functor m) => AssocX m k | m -> k where
   --
   --   This function is always /unambiguous/.
   member         :: k -> m a -> Bool
- 
+
   -- | Returns the number of bindings with the given key.  For finite maps
   --   this will always return 0 or 1.
   --
@@ -186,7 +185,7 @@ class (Eq k,Functor m) => AssocX m k | m -> k where
   --   This function is /ambiguous/ at finite relation types if the key appears
   --   more than once in the finite relation.  Otherwise, it is /unambiguous/.
   lookup         :: k -> m a -> a
- 
+
   -- | Find the element associated with the given key.  Calls 'fail' if the
   --   given key is not bound.  If more than one element is bound by the given
   --   key, it is unspecified which is returned.
@@ -204,7 +203,7 @@ class (Eq k,Functor m) => AssocX m k | m -> k where
   -- | Find the element associated with the given key; return the element
   --   and the collection with that element deleted.  Signals an error if
   --   the given key is not bound.  If more than one element is bound by the
-  --   given key, it is unspecified which is deleted and returned
+  --   given key, it is unspecified which is deleted and returned.
   --
   --   This function is /ambiguous/ at finite relation types if the key appears
   --   more than once in the finite relation.  Otherwise, it is /unambiguous/.
@@ -247,14 +246,14 @@ class (Eq k,Functor m) => AssocX m k | m -> k where
   adjust         :: (a -> a) -> k -> m a -> m a
 
   -- | Change all bindings for the given key by applying a function to its
-  --   elements.  If the key is not found in the collection, it is returned 
+  --   elements.  If the key is not found in the collection, it is returned
   --   unchanged.
   --
   --   This function is always /unambiguous/.
   adjustAll      :: (a -> a) -> k -> m a -> m a
 
   -- | Searches for a matching key in the collection.  If the key is found,
-  --   the given function is called to adjust the value.  If the key is not 
+  --   the given function is called to adjust the value.  If the key is not
   --   found, a new binding is inserted with the given element. If the given
   --   key is bound more than once in the collection, it is unspecified
   --   which element is adjusted.
@@ -319,13 +318,13 @@ class (Eq k,Functor m) => AssocX m k | m -> k where
   --
   --   This function is always /unambiguous/.
   filter         :: (a -> Bool) -> m a -> m a
- 
+
   -- | Split an associative collection into those bindings which satisfy the
   --   given predicate, and those which do not.
   --
   --   This function is always /unambiguous/.
   partition      :: (a -> Bool) -> m a -> (m a, m a)
-  
+
   -- | Returns all the elements in an associative collection, in an unspecified
   --   order.
   --
@@ -348,27 +347,27 @@ class (Eq k,Functor m) => AssocX m k | m -> k where
 --   relation.
 class (AssocX m k, Ord k) => OrdAssocX m k | m -> k where
   -- | Remove the binding with the minimum key, and return its element together
-  --   with the remaining associative collection.  Calls 'fail' if the 
+  --   with the remaining associative collection.  Calls 'fail' if the
   --   associative collection is empty.  Which binding is removed if there
   --   is more than one minimum is unspecified.
   --
   --   This function is /ambiguous/ at finite relation types if the finite relation
-  --   contains more than one minimum key.
+  --   contains more than one minimum key.  Otherwise it is /unambiguous/.
   minView            :: (Monad rm) => m a -> rm (a, m a)
 
   -- | Find the binding with the minimum key and return its element. Signals
-  --   and error if the associative collection is empty.  Which element is chosen
+  --   an error if the associative collection is empty.  Which element is chosen
   --   if there is more than one minimum is unspecified.
   --
   --   This function is /ambiguous/ at finite relation types if the finite relation
-  --   contains more than one minimum key.
+  --   contains more than one minimum key.  Otherwise it is /unambiguous/.
   minElem            :: m a -> a
 
   -- | Remove the binding with the minimum key and return the remaining
   --   associative collection, or return empty if it is already empty.
   --
   --   This function is /ambiguous/ at finite relation types if the finite relation
-  --   contains more than one minimum key.
+  --   contains more than one minimum key.  Otherwise it is /unambiguous/.
   deleteMin          :: m a -> m a
 
   -- | Insert a binding into an associative collection with the precondition
@@ -384,7 +383,7 @@ class (AssocX m k, Ord k) => OrdAssocX m k | m -> k where
   --   is more than one maximum is unspecified.
   --
   --   This function is /ambiguous/ at finite relation types if the finite relation
-  --   contains more than one minimum key.
+  --   contains more than one minimum key.  Otherwise it is /unambiguous/.
   maxView            :: (Monad rm) => m a -> rm (a, m a)
 
   -- | Find the binding with the maximum key and return its element.  Signals
@@ -392,14 +391,14 @@ class (AssocX m k, Ord k) => OrdAssocX m k | m -> k where
   --   if there is more than one maximum is unspecified.
   --
   --   This function is /ambiguous/ at finite relation types if the finite relation
-  --   contains more than one minimum key.
+  --   contains more than one minimum key.  Otherwise it is /unambiguous/.
   maxElem            :: m a -> a
 
   -- | Remove the binding with the maximum key and return the remaining
   --   associative collection, or return empty if it is already empty.
   --
   --   This function is /ambiguous/ at finite relation types if the finite relation
-  --   contains more than one minimum key.
+  --   contains more than one minimum key.  Otherwise it is /unambiguous/.
   deleteMax          :: m a -> m a
 
   -- | Insert a binding into an associative collection with the precondition
@@ -413,14 +412,14 @@ class (AssocX m k, Ord k) => OrdAssocX m k | m -> k where
   --   order by key with right associativity.  For finite maps, the order
   --   is increasing.
   --
-  --   @foldr f@ is /unambiguous/ if @f@ is fold-commutative, at finite 
+  --   @foldr f@ is /unambiguous/ if @f@ is fold-commutative, at finite
   --   map types, or at finite relation types if the relation contains no
   --   duplicate keys.  Otherwise it is /ambiguous/.
   foldr              :: (a -> b -> b) -> b -> m a -> b
 
   -- | A strict variant of 'foldr'.
   --
-  --   @foldr' f@ is /unambiguous/ if @f@ is fold-commutative, at finite 
+  --   @foldr' f@ is /unambiguous/ if @f@ is fold-commutative, at finite
   --   map types, or at finite relation types if the relation contains no
   --   duplicate keys.  Otherwise it is /ambiguous/.
   foldr'             :: (a -> b -> b) -> b -> m a -> b
@@ -429,7 +428,7 @@ class (AssocX m k, Ord k) => OrdAssocX m k | m -> k where
   --   order by key with left associativity.  For finite maps, the order
   --   is increasing.
   --
-  --   @foldl f@ is /unambiguous/ if @f@ is fold-commutative, at finite 
+  --   @foldl f@ is /unambiguous/ if @f@ is fold-commutative, at finite
   --   map types, or at finite relation types if the relation contains no
   --   duplicate keys.  Otherwise it is /ambiguous/.
   foldl              :: (b -> a -> b) -> b -> m a -> b
@@ -459,7 +458,7 @@ class (AssocX m k, Ord k) => OrdAssocX m k | m -> k where
   foldr1'            :: (a -> a -> a) -> m a -> a
 
   -- | Fold across the elements of an associative collection in non-decreasing
-  --   order by key with left associativity.  Signals an error if the 
+  --   order by key with left associativity.  Signals an error if the
   --   associative collection is empty.  For finite maps, the order is
   --   increasing.
   --
@@ -512,7 +511,7 @@ class (AssocX m k, Ord k) => OrdAssocX m k | m -> k where
   filterGE           :: k -> m a -> m a
 
   -- | Split an associative collection into two sub-collections, containing
-  --   those bindings whose keys are @\<@ the given key and those which are @>=@.  
+  --   those bindings whose keys are @\<@ the given key and those which are @>=@.
   --
   --   This function is always /unambiguous/.
   partitionLT_GE     :: k -> m a -> (m a, m a)
@@ -562,14 +561,14 @@ class AssocX m k => FiniteMapX m k | m -> k where
   -- | Same as 'insertSeq', but with a combining function to resolve duplicates.
   --
   --   This function is /unambiguous/.
-  insertSeqWith      :: Sequence seq => 
+  insertSeqWith      :: Sequence seq =>
                            (a -> a -> a) -> seq (k,a) -> m a -> m a
 
   -- | Same as 'insertSeq', but with a combining function to resolve duplicates;
   --   the combining function takes the key in addition to the two elements.
   --
   --   This function is /unambiguous/.
-  insertSeqWithKey   :: Sequence seq => 
+  insertSeqWithKey   :: Sequence seq =>
                            (k -> a -> a -> a) -> seq (k,a) -> m a -> m a
 
   -- | Left biased union.
@@ -589,7 +588,7 @@ class AssocX m k => FiniteMapX m k | m -> k where
   --
   --   This function is /unambiguous/.
   unionr             :: m a -> m a -> m a
- 
+
   -- | Same as 'union', but with a combining function to resolve duplicates.
   --
   --   This function is /unambiguous/.
@@ -658,7 +657,7 @@ class AssocX m k => Assoc m k | m -> k where
   --   returned, unless the @Eq@ instance on keys corresponds to
   --   indistinguisability.
   keys              :: Sequence seq => m a -> seq k
-  
+
   -- | Apply a function to every element in an associative collection.  The
   --   mapped function additionally takes the value of the key.
   --
@@ -681,7 +680,7 @@ class AssocX m k => Assoc m k | m -> k where
   --   @foldWithKey' f@ is /unambiguous/ iff @f@ is fold-commutative and
   --   the @Eq@ instance on keys corresponds to indistinguisability.
   foldWithKey'      :: (k -> a -> b -> b) -> b -> m a -> b
-  
+
   -- | Extract all bindings from an associative collection which satisfy the
   --   given predicate.
   --
@@ -704,7 +703,7 @@ class AssocX m k => Assoc m k | m -> k where
 class (Assoc m k, OrdAssocX m k) => OrdAssoc m k | m -> k where
   -- | Delete the binding with the minimum key from an associative
   --   collection and return the key, the element and the remaining
-  --   associative collection.  Calls 'fail' if the associative collection 
+  --   associative collection.  Calls 'fail' if the associative collection
   --   is empty.  Which binding is chosen if there are multiple minimum keys
   --   is unspecified.
   --
@@ -727,7 +726,7 @@ class (Assoc m k, OrdAssocX m k) => OrdAssoc m k | m -> k where
 
   -- | Delete the binding with the maximum key from an associative
   --   collection and return the key, the element and the remaining
-  --   associative collection.  Calls 'fail' if the associative collection 
+  --   associative collection.  Calls 'fail' if the associative collection
   --   is empty.  Which binding is chosen if there are multiple maximum keys
   --   is unspecified.
   --
@@ -763,7 +762,8 @@ class (Assoc m k, OrdAssocX m k) => OrdAssoc m k | m -> k where
   --   @foldrWithKey' f@ is /ambiguous/ at finite relation types if
   --   the relation contains more than one equivalent key and
   --   @f@ is not fold-commutative OR if the @Eq@ instance on keys
-  --   does not correspond to indistingusihability.
+  --   does not correspond to indistingusihability.  Otherwise it
+  --   is /unambiguous/.
   foldrWithKey'   :: (k -> a -> b -> b) -> b -> m a -> b
 
   -- | Fold over all bindings in an associative collection in non-decreasing
@@ -773,7 +773,8 @@ class (Assoc m k, OrdAssocX m k) => OrdAssoc m k | m -> k where
   --   @foldlWithKey f@ is /ambiguous/ at finite relation types if
   --   the relation contains more than one equivalent key and
   --   @f@ is not fold-commutative OR if the @Eq@ instance on keys
-  --   does not correspond to indistingusihability.
+  --   does not correspond to indistingusihability. Otherwise it
+  --   is /unambiguous/.
   foldlWithKey    :: (b -> k -> a -> b) -> b -> m a -> b
 
   -- | A strict variant of 'foldlWithKey'.
@@ -781,7 +782,8 @@ class (Assoc m k, OrdAssocX m k) => OrdAssoc m k | m -> k where
   --   @foldlWithKey' f@ is /ambiguous/ at finite relation types if
   --   the relation contains more than one equivalent key and
   --   @f@ is not fold-commutative OR if the @Eq@ instance on keys
-  --   does not correspond to indistinguishability.
+  --   does not correspond to indistinguishability.  Otherwise it
+  --   is /unambiguous/.
   foldlWithKey'   :: (b -> k -> a -> b) -> b -> m a -> b
 
   -- | Extract the bindings of an associative collection into a sequence, where
@@ -799,24 +801,24 @@ class (Assoc m k, FiniteMapX m k) => FiniteMap m k | m -> k where
   --   The combining function additionally takes the key.  Which key is kept
   --   and passed into the combining function is unspecified.
   --
-  --   This function is /unambiguous/ unless the @Eq@ instance on keys
-  --   does not correspond to indistinguishability.
+  --   This function is /unambiguous/ provided that the @Eq@ instance on keys
+  --   corresponds to indistinguishability.
   unionWithKey      :: (k -> a -> a -> a) -> m a -> m a -> m a
 
   -- | Same as 'unionSeq', but with a combining function to resolve duplicates.
   --   The combining function additionally takes the key.  Which key is
   --   kept and passed into the combining function is unspecified.
   --
-  --   This function is /unambiguous/ unless the @Eq@ instance on keys
-  --   does not correspond to indistinguishability.
+  --   This function is /unambiguous/ provided that the @Eq@ instance on keys
+  --   corresponds to indistinguishability.
   unionSeqWithKey   :: Sequence seq => (k -> a -> a -> a) -> seq (m a) -> m a
 
   -- | Same as 'intersectionWith', except that the combining function
   --   additionally takes the key value for each binding.  Which key is
   --   kept and passed into the combining function is unspecified.
   --
-  --   This function is /unambiguous/ unless the @Eq@ instance on keys
-  --   does not correspond to indistinguishability.
+  --   This function is /unambiguous/ provided the @Eq@ instance on keys
+  --   corresponds to indistinguishability.
   intersectionWithKey  :: (k -> a -> b -> c) -> m a -> m b -> m c
 
 -- | Finite maps with observable keys where the keys additionally
@@ -835,9 +837,9 @@ elementsList      :: AssocX m k => m a -> [a]
 unsafeFromOrdList :: OrdAssocX m k => [(k,a)] -> m a
 fromListWith      :: FiniteMapX m k => (a -> a -> a) -> [(k,a)] -> m a
 fromListWithKey   :: FiniteMapX m k => (k -> a -> a -> a) -> [(k,a)] -> m a
-insertListWith    :: FiniteMapX m k => 
+insertListWith    :: FiniteMapX m k =>
                          (a -> a -> a) -> [(k,a)] -> m a -> m a
-insertListWithKey :: FiniteMapX m k => 
+insertListWithKey :: FiniteMapX m k =>
                          (k -> a -> a -> a) -> [(k,a)] -> m a -> m a
 unionListWith     :: FiniteMapX m k => (a -> a -> a) -> [m a] -> m a
 toList            :: Assoc m k => m a -> [(k,a)]
