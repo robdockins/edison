@@ -35,18 +35,20 @@ import qualified Data.Edison.Seq.RevSeq as Rev
 -- Just a utility class to help propigate the class contexts
 -- we need down into the quick check properties
 
-class (Eq (seq a),Arbitrary (seq a),Show (seq a),Sequence seq) => SeqTest a seq
+class ( Eq (seq a), Arbitrary (seq a)
+      , Show (seq a), Read (seq a)
+      , Sequence seq ) => SeqTest a seq
 
-instance (Eq a,Arbitrary a,Show a) => SeqTest a []
-instance (Eq a,Arbitrary a,Show a) => SeqTest a BQ.Seq
-instance (Eq a,Arbitrary a,Show a) => SeqTest a BS.Seq
-instance (Eq a,Arbitrary a,Show a) => SeqTest a JL.Seq
-instance (Eq a,Arbitrary a,Show a) => SeqTest a MS.Seq
-instance (Eq a,Arbitrary a,Show a) => SeqTest a RL.Seq
-instance (Eq a,Arbitrary a,Show a) => SeqTest a SQ.Seq
-instance (Eq a,Arbitrary a,Show a) => SeqTest a BRL.Seq
-instance (Eq a,Arbitrary a,Show a,SeqTest a seq) => SeqTest a (Sized.Sized seq)
-instance (Eq a,Arbitrary a,Show a,SeqTest a seq) => SeqTest a (Rev.Rev seq)
+instance (Eq a,Arbitrary a,Show a,Read a) => SeqTest a []
+instance (Eq a,Arbitrary a,Show a,Read a) => SeqTest a BQ.Seq
+instance (Eq a,Arbitrary a,Show a,Read a) => SeqTest a BS.Seq
+instance (Eq a,Arbitrary a,Show a,Read a) => SeqTest a JL.Seq
+instance (Eq a,Arbitrary a,Show a,Read a) => SeqTest a MS.Seq
+instance (Eq a,Arbitrary a,Show a,Read a) => SeqTest a RL.Seq
+instance (Eq a,Arbitrary a,Show a,Read a) => SeqTest a SQ.Seq
+instance (Eq a,Arbitrary a,Show a,Read a) => SeqTest a BRL.Seq
+instance (Eq a,Arbitrary a,Show a,Read a,SeqTest a seq) => SeqTest a (Sized.Sized seq)
+instance (Eq a,Arbitrary a,Show a,Read a,SeqTest a seq) => SeqTest a (Rev.Rev seq)
 
 
 ---------------------------------------------------------
@@ -125,6 +127,7 @@ seqTests seq = TestLabel ("Sequence test "++(instanceName seq)) . TestList $
   , qcTest $ prop_unzip3_unzipWith3 seq
   , qcTest $ prop_concat seq
   , qcTest $ prop_concatMap seq
+  , qcTest $ prop_show_read seq
   ]
 
 (===) :: (Eq (seq a),Sequence seq) => seq a -> seq a -> Bool
@@ -441,3 +444,6 @@ prop_concatMap :: (SeqTest (seq Int) seq, SeqTest Int seq) =>
 prop_concatMap seq xs = forAll (genss seq) check
   where check xss = concatMap f xs === concat (map f xs)
             where f i = lookupWithDefault empty i xss
+
+prop_show_read :: (SeqTest Int seq) => seq Int -> seq Int -> Bool
+prop_show_read seq xs = xs === read (show xs)
