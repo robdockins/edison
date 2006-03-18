@@ -19,6 +19,7 @@ import Control.Monad.Identity
 import Data.Edison.Coll
 import qualified Data.Edison.Seq as S
 import qualified Data.Edison.Seq.ListSeq as L
+import Data.Edison.Seq.Defaults (dropMatch)
 
 insertSeqUsingUnion :: (CollX c a,S.Sequence seq) => seq a -> c -> c
 insertSeqUsingUnion xs c = union (fromSeq xs) c
@@ -206,6 +207,19 @@ intersectionWithUsingOrdLists c xs ys = unsafeFromOrdList (inter (toOrdList xs) 
 unsafeMapMonotonicUsingFoldr :: (OrdColl cin a, OrdCollX cout b) => (a -> b) -> (cin -> cout)
 unsafeMapMonotonicUsingFoldr f xs = foldr (unsafeInsertMin . f) empty xs
 
+showUsingToOrdList :: (OrdColl c a,Show a) => c -> String
+showUsingToOrdList xs = concat ["(",instanceName xs,".unsafeFromOrdSeq ",show (toOrdList xs),")"]
 
+readsPrecUsingUnsafeFromOrdSeq :: (OrdColl c a, Read a) => Int -> ReadS c
+readsPrecUsingUnsafeFromOrdSeq i xs =
+    let result = do
+            inner <- dropMatch (concat ["(",instanceName x,".unsafeFromOrdSeq "]) xs
+            (l,')':rest) <- readsPrec i inner
+            return (unsafeFromOrdSeq (l `asTypeOf` list_a),rest)
 
+        -- play games with the typechecker so we don't have to use
+        -- extensions for scoped type variables
+        ~[(x,_)] = result
+        list_a = toOrdList x
 
+    in result

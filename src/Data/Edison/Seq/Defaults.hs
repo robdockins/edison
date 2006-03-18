@@ -468,7 +468,11 @@ readsPrecUsingFromList i xs =
           list <- dropMatch (concat ["(",instanceName x,".fromList "]) xs
           (l,')':rest) <- readsPrec i list
           return (fromList l,rest)
+
+       -- play games with the typechecker so we don't have to use
+       -- extensions for scoped type variables
        ~[(x,_)] = result
+
    in result
 
 

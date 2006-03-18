@@ -36,12 +36,12 @@ import qualified Data.Edison.Coll.StandardSet as SS
 -- A utility class to propigate class contexts down
 -- to the quick check properites
 
-class (Eq (set a), Arbitrary (set a), Show (set a),
+class (Eq (set a), Arbitrary (set a),
+       Show (set a),
        OrdSet (set a) a) => SetTest a set
 
 instance (Ord a, Show a, Arbitrary a) => SetTest a US.Set
 instance (Ord a, Show a, Arbitrary a) => SetTest a SS.Set
-
 
 --------------------------------------------------------
 -- List all permutations of set types to test
@@ -50,6 +50,7 @@ allSetTests :: Test
 allSetTests = TestList
    [ setTests (empty :: Ord a => US.Set a)
    , setTests (empty :: Ord a => SS.Set a)
+   , qcTest $ prop_show_read (empty :: Ord a => US.Set a)
    ]
 
 
@@ -426,3 +427,7 @@ prop_intersectWith set xs ys =
 prop_unsafeMapMonotonic :: SetTest Int set => set Int -> set Int -> Bool
 prop_unsafeMapMonotonic set xs =
     toOrdList (unsafeMapMonotonic (2*) xs) == Prelude.map (2*) (toOrdList xs)
+
+prop_show_read :: (SetTest Int set,Read (set Int),Show (set Int)) 
+               => set Int -> set Int -> Bool
+prop_show_read set xs = xs === read (show xs)

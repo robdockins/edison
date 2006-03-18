@@ -124,7 +124,7 @@ unsafeMapMonotonic :: Ord a => (a -> a) -> Set a -> Set a
 
 moduleName = "Data.Edison.Coll.UnbalancedSet"
 
-data Set a = E | T (Set a) a (Set a)  deriving (Show)
+data Set a = E | T (Set a) a (Set a)
 
 -- invariants:
 --   * Binary Search Tree order
@@ -402,8 +402,12 @@ instance Ord a => C.OrdSet (Set a) a
 instance Ord a => Eq (Set a) where
   xs == ys = C.toOrdList xs == C.toOrdList ys
 
---instance (Ord a, Show a) => Show (Set a) where
---  show xs = show (C.toOrdList xs)
+instance (Ord a, Show a) => Show (Set a) where
+   show = showUsingToOrdList
+
+instance (Ord a, Read a) => Read (Set a) where
+   readsPrec = readsPrecUsingUnsafeFromOrdSeq
+
 
 instance (Ord a, Arbitrary a) => Arbitrary (Set a) where
   arbitrary = do xs <- arbitrary

@@ -31,6 +31,9 @@ module Data.Edison.Coll.MinHeap (
     foldr1,foldr1',foldl1,foldl1',toOrdSeq,
     unsafeMapMonotonic,
 
+    -- * Other supported operations
+    toColl,fromColl,
+
     -- * Documentation
     moduleName
 ) where
@@ -40,6 +43,7 @@ import Data.Edison.Prelude
 import qualified Data.Edison.Coll as C
 import qualified Data.Edison.Seq as S
 import Data.Edison.Coll.Defaults
+import Data.Edison.Seq.Defaults (dropMatch)
 import Control.Monad
 import Test.QuickCheck
 
@@ -111,12 +115,16 @@ toOrdSeq :: (C.OrdColl h a,Ord a,S.Sequence s) => Min h a -> s a
 unsafeMapMonotonic :: (C.OrdColl h a,Ord a) => 
       (a -> a) -> Min h a -> Min h a
 
--- export?
+fromColl :: C.OrdColl h a => h -> Min h a
+fromColl = fromPrim
+
+toColl :: C.OrdColl h a => Min h a -> h
+toColl = toPrim
+
 fromPrim xs = case C.minView xs of
                 Nothing -> E
                 Just (x, xs') -> M x xs'
 
--- export?
 toPrim E = C.empty
 toPrim (M x xs) = C.unsafeInsertMin x xs
 
@@ -357,8 +365,14 @@ instance (C.OrdColl h a, Ord a) => C.OrdColl (Min h a) a where
 
 -- instance Eq is derived
 
-instance (C.OrdColl h a, Show a) => Show (Min h a) where
-  show xs = show (C.toOrdList xs)
+instance (C.OrdColl h a, Show h) => Show (Min h a) where
+   show xs = concat ["(",moduleName,".fromColl ",show (toColl xs),")"]
+
+instance (C.OrdColl h a, Read h) => Read (Min h a) where
+   readsPrec i xs = do
+      inner <- dropMatch (concat ["(",moduleName,".fromColl "]) xs
+      (coll,')':rest) <- readsPrec i inner
+      return (fromColl coll,rest)
 
 instance (C.OrdColl h a,Arbitrary h,Arbitrary a) => Arbitrary (Min h a) where
   arbitrary = do xs <- arbitrary

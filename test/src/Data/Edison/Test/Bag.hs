@@ -34,14 +34,15 @@ import qualified Data.Edison.Coll.MinHeap as Min
 -- A utility classe to propigate class contexts down
 -- to the quick check properties
 
-class (Eq (bag a),Arbitrary (bag a),Show (bag a),
+class (Eq (bag a), Arbitrary (bag a),
+       Show (bag a), Read (bag a),
        OrdColl (bag a) a) => BagTest a bag
 
-instance (Ord a, Show a, Arbitrary a) => BagTest a LPH.Heap
-instance (Ord a, Show a, Arbitrary a) => BagTest a LH.Heap
-instance (Ord a, Show a, Arbitrary a) => BagTest a SkH.Heap
-instance (Ord a, Show a, Arbitrary a) => BagTest a SpH.Heap
-instance (Ord a, Show a, Arbitrary a, BagTest a bag)
+instance (Ord a, Show a, Read a, Arbitrary a) => BagTest a LPH.Heap
+instance (Ord a, Show a, Read a, Arbitrary a) => BagTest a LH.Heap
+instance (Ord a, Show a, Read a, Arbitrary a) => BagTest a SkH.Heap
+instance (Ord a, Show a, Read a, Arbitrary a) => BagTest a SpH.Heap
+instance (Ord a, Show a, Read a, Arbitrary a, BagTest a bag)
    => BagTest a (Min.Min (bag a))
 
 --------------------------------------------------------------
@@ -94,6 +95,7 @@ bagTests bag = TestLabel ("Bag test "++(instanceName bag)) . TestList $
    , qcTest $ prop_toOrdSeq bag
    , qcTest $ prop_unsafeAppend bag
    , qcTest $ prop_unsafeMapMonotonic bag -- 30
+   , qcTest $ prop_read_show bag
    ]
 
 ----------------------------------------------------
@@ -370,3 +372,7 @@ prop_unsafeAppend bag i xs ys =
 prop_unsafeMapMonotonic :: BagTest Int bag => bag Int -> bag Int -> Bool
 prop_unsafeMapMonotonic bag xs =
     toOrdList (unsafeMapMonotonic (2*) xs) == Prelude.map (2*) (toOrdList xs)
+
+prop_read_show :: BagTest Int bag 
+               => bag Int -> bag Int -> Bool
+prop_read_show bag xs = xs === read (show xs)
