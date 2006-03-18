@@ -1,11 +1,25 @@
+Changes in 1.2rc3
+  * introduce the ambiguous/unambiguous concept and document
+    all API operations
+  * factor out methods which "mirror" superclass methods and
+    make them alises instead
+  * add lookupAndDelete* methods to associated collections
+  * change the type of adjustOrDelete* in associated collections
+  * rename subset/subsetEq to properSubset/subset
+  * add matching Read and Show instances for all concrete datastructures
+  * add properSubmap{By} submap{By} and sameMap{By} to the
+    associated collection API
+  * add Eq instances for concrete associated collections
+
 
 Changes in 1.2rc2
+
   * add strict variants of all folds and reduces
   * reverse argument orders to 'rcons' and 'lookup*' in
     Sequence
-  * Add symbolic operators for lcons, rcons, append, and lookup
+  * add symbolic operators for lcons, rcons, append, and lookup
     from the Sequence API
-  * Add symbolic operators for subsetEq, difference, intersection
+  * add symbolic operators for subsetEq, difference, intersection
     and union from the set API
   * rename 'single' to 'singleton' in all APIs
   * reaame 'intersect' to 'intersection' in Collection and
@@ -15,10 +29,10 @@ Changes in 1.2rc2
 
 Changes in 1.2rc1
 
-  * Modules re-organized into a hierarchy
-  * User's guide distributed throughout source code
+  * modules re-organized into a hierarchy
+  * user's guide distributed throughout source code
     as Haddock comments
-  * Use cabal for build system
+  * use cabal for build system
   * add Data.Edison module to re-export typeclasses
   * reorder 'lookup*' and 'find*' methods for 
     Collections and Associated Collections
