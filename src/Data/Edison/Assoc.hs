@@ -44,6 +44,11 @@ module Data.Edison.Assoc (
     FiniteMap(..),
     OrdFiniteMap,
 
+    -- * Specilizations of submap operations
+    submap,
+    properSubmap,
+    sameMap,
+
     -- * Specializations of sequence operations to lists
     fromList,
     insertList,
@@ -78,6 +83,21 @@ import Data.Edison.Seq.ListSeq()
 --   This function is always /unambiguous/.
 map :: AssocX m k => (a -> b) -> m a -> m b
 map = fmap
+
+-- | Specialization of 'submapBy' where the comparison function is
+--   given by @(==)@.
+submap :: (Eq a,FiniteMapX m k) => m a -> m a -> Bool
+submap = submapBy (==)
+
+-- | Specialization of 'properSubmapBy' where the comparison function
+--   is given by @(==)@.
+properSubmap :: (Eq a, FiniteMapX m k) => m a -> m a -> Bool
+properSubmap = properSubmapBy (==)
+
+-- | Specialization of 'sameMapBy' where the comparison function is
+--   given by @(==)@.
+sameMap :: (Eq a,FiniteMapX m k) => m a -> m a -> Bool
+sameMap = sameMapBy (==)
 
 
 -- | The root class of the associative collection hierarchy.
@@ -629,6 +649,30 @@ class AssocX m k => FiniteMapX m k | m -> k where
   --
   --   This function is always /unambiguous/.
   subset             :: m a -> m b -> Bool
+
+  -- | Test whether the first map is a submap of the second map given a comparison
+  --   function on elements; that is, if every key present in the first map is also
+  --   present in the second map and the comparison function returns true when applied
+  --   two the bound elements.
+  --
+  --   This function is always /unambiguous/.
+  submapBy           :: (a -> a -> Bool) -> m a -> m a -> Bool
+
+  -- | Test whether the first map is a proper submap of the second map given a comparison
+  --   function on elements; that is, if every key present in the first map is also
+  --   present in the second map and the comparison function returns true when applied
+  --   two the bound elements AND there exiss some key in the second finite map which
+  --   is not present in the first.
+  --
+  --   This function is always /unambiguous/.
+  properSubmapBy     :: (a -> a -> Bool) -> m a -> m a -> Bool
+
+  -- | Test whether the first map is the \"same\" map as the second map given a comparison
+  --   function on elements; that is, if the first and second maps have the same set of keys
+  --   and the comparison function returns true when applied to corresponding elements.
+  --
+  --   This function is always /unambiguous/.
+  sameMapBy          :: (a -> a -> Bool) -> m a -> m a -> Bool
 
 -- | Finite maps where the keys additionally have an ordering relation.
 --   This class introduces no new methods.

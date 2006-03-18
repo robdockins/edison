@@ -25,7 +25,8 @@ module Data.Edison.Assoc.StandardMap (
     -- * FiniteMapX operations
     fromSeqWith,fromSeqWithKey,insertWith,insertWithKey,insertSeqWith,
     insertSeqWithKey,unionl,unionr,unionWith,unionSeqWith,intersectionWith,
-    difference,properSubset,subset,
+    difference,properSubset,subset,properSubmapBy,submapBy,sameMapBy,
+    properSubmap,submap,sameMap,
 
     -- * OrdAssocX operations
     minView, minElem, deleteMin, unsafeInsertMin, maxView, maxElem, deleteMax,
@@ -150,7 +151,12 @@ intersectionWith  :: Ord k => (a -> b -> c) -> FM k a -> FM k b -> FM k c
 difference        :: Ord k => FM k a -> FM k b -> FM k a
 properSubset      :: Ord k => FM k a -> FM k b -> Bool
 subset            :: Ord k => FM k a -> FM k b -> Bool
-
+properSubmapBy    :: Ord k => (a -> a -> Bool) -> FM k a -> FM k a -> Bool
+submapBy          :: Ord k => (a -> a -> Bool) -> FM k a -> FM k a -> Bool
+sameMapBy         :: Ord k => (a -> a -> Bool) -> FM k a -> FM k a -> Bool
+properSubmap      :: (Ord k,Eq a) => FM k a -> FM k a -> Bool
+submap            :: (Ord k,Eq a) => FM k a -> FM k a -> Bool
+sameMap           :: (Ord k,Eq a) => FM k a -> FM k a -> Bool
 
 toSeq             :: (Ord k,S.Sequence seq) => FM k a -> seq (k,a)
 keys              :: (Ord k,S.Sequence seq) => FM k a -> seq k
@@ -263,6 +269,12 @@ intersectionWith   = DM.intersectionWith
 difference         = DM.difference
 properSubset       = DM.isProperSubmapOfBy (\_ _ -> True)
 subset             = DM.isSubmapOfBy (\_ _ -> True)
+properSubmapBy     = DM.isProperSubmapOfBy
+submapBy           = DM.isSubmapOfBy
+sameMapBy          = sameMapByUsingSubmapBy
+properSubmap       = A.properSubmap
+submap             = A.submap
+sameMap            = A.sameMap
 
 toSeq              = toSeqUsingFoldWithKey
 keys               = keysUsingFoldWithKey
@@ -324,8 +336,9 @@ instance Ord k => A.FiniteMapX (FM k) k where
    insertSeqWith = insertSeqWith; insertSeqWithKey = insertSeqWithKey;
    unionl = unionl; unionr = unionr; unionWith = unionWith;
    unionSeqWith = unionSeqWith; intersectionWith = intersectionWith;
-   difference = difference; properSubset = properSubset;
-   subset = subset}
+   difference = difference; properSubset = properSubset; subset = subset;
+   properSubmapBy = properSubmapBy; submapBy = submapBy;
+   sameMapBy = sameMapBy}
 
 instance Ord k => A.OrdFiniteMapX (FM k) k
 

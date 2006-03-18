@@ -215,11 +215,10 @@ readsPrecUsingUnsafeFromOrdSeq i xs =
     let result = do
             inner <- dropMatch (concat ["(",instanceName x,".unsafeFromOrdSeq "]) xs
             (l,')':rest) <- readsPrec i inner
-            return (unsafeFromOrdSeq (l `asTypeOf` list_a),rest)
+            return (unsafeFromOrdList l,rest)
 
         -- play games with the typechecker so we don't have to use
         -- extensions for scoped type variables
         ~[(x,_)] = result
-        list_a = toOrdList x
 
     in result

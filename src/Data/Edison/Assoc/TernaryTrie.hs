@@ -28,7 +28,8 @@ module Data.Edison.Assoc.TernaryTrie (
     -- * FiniteMapX operations
     fromSeqWith,fromSeqWithKey,insertWith,insertWithKey,insertSeqWith,
     insertSeqWithKey,unionl,unionr,unionWith,unionSeqWith,intersectionWith,
-    difference,properSubset,subset,
+    difference,properSubset,subset,properSubmapBy,submapBy,sameMapBy,
+    properSubmap,submap,sameMap,
 
     -- * FiniteMap operations
     unionWithKey,unionSeqWithKey,intersectionWithKey,
@@ -43,14 +44,12 @@ module Data.Edison.Assoc.TernaryTrie (
 import Prelude hiding (null,map,lookup,foldr,foldl,foldr1,foldl1,filter)
 import qualified Prelude
 import Data.Edison.Prelude
-import qualified Data.Edison.Assoc as A ( AssocX(..), Assoc(..), FiniteMapX(..), FiniteMap(..) )
+import qualified Data.Edison.Assoc as A
 import qualified Data.Edison.Seq as S
 import qualified Data.List as L
 import Control.Monad.Identity
 import Data.Edison.Assoc.Defaults
 import Test.QuickCheck (Arbitrary(..), variant)
-
-import Debug.Trace
 
 import Maybe (isNothing)
 
@@ -110,6 +109,12 @@ intersectionWith :: Ord k => (a -> b -> c) -> FM k a -> FM k b -> FM k c
 difference       :: Ord k => FM k a -> FM k b -> FM k a
 properSubset     :: Ord k => FM k a -> FM k b -> Bool    
 subset           :: Ord k => FM k a -> FM k b -> Bool    
+properSubmapBy   :: Ord k => (a -> a -> Bool) -> FM k a -> FM k a -> Bool
+submapBy         :: Ord k => (a -> a -> Bool) -> FM k a -> FM k a -> Bool
+sameMapBy        :: Ord k => (a -> a -> Bool) -> FM k a -> FM k a -> Bool
+properSubmap     :: (Ord k, Eq a) => FM k a -> FM k a -> Bool
+submap           :: (Ord k, Eq a) => FM k a -> FM k a -> Bool
+sameMap          :: (Ord k, Eq a) => FM k a -> FM k a -> Bool
 
 toSeq            :: (Ord k,S.Sequence seq) => FM k a -> seq ([k],a)
 keys             :: (Ord k,S.Sequence seq) => FM k a -> seq [k]
@@ -128,16 +133,13 @@ moduleName = "Data.Edison.Assoc.TernaryTrie"
 
 data FM k a
   = FM !(Maybe a) !(FMB k a)
-          deriving (Show)
 
 data FMB k v
   = E
   | I !Int !k !(Maybe v) !(FMB k v) !(FMB' k v) !(FMB k v)
-          deriving (Show)
 
 data FMB' k v
   = FMB' !(FMB k v)
-      deriving (Show)
 
 balance :: Int
 balance = 6
@@ -658,6 +660,13 @@ subset (FM nx fmbx) (FM ny fmby)
              && subsetEqFMB rx ry
 
 
+submapBy = submapByUsingLookupM
+properSubmapBy = properSubmapByUsingSubmapBy
+sameMapBy = sameMapByUsingSubmapBy
+properSubmap = A.properSubmap
+submap = A.submap
+sameMap = A.sameMap
+
 -- Assoc
 
 toSeq = toSeqUsingFoldWithKey
@@ -748,15 +757,26 @@ instance Ord k => A.FiniteMapX (FM k) [k] where
    insertSeqWith = insertSeqWith; insertSeqWithKey = insertSeqWithKey; 
    unionl = unionl; unionr = unionr; unionWith = unionWith; 
    unionSeqWith = unionSeqWith; intersectionWith = intersectionWith; 
-   difference = difference; properSubset = properSubset;
-   subset = subset}
+   difference = difference; properSubset = properSubset; subset = subset;
+   properSubmapBy = properSubmapBy; submapBy = submapBy;
+   sameMapBy = sameMapBy}
 
 instance Ord k => A.FiniteMap (FM k) [k] where
   {unionWithKey = unionWithKey; unionSeqWithKey = unionSeqWithKey; 
    intersectionWithKey = intersectionWithKey}
 
 instance Ord k => Functor (FM k) where
-  fmap =  map
+  fmap = map
+
+instance (Ord k, Show k, Show a) => Show (FM k a) where
+  show = showUsingToList
+
+instance (Ord k, Read k, Read a) => Read (FM k a) where
+  readsPrec = readsPrecUsingFromList
+
+instance (Ord k, Eq a) => Eq (FM k a) where
+  (==) = sameMap
+
 
 --
 -- Test code follows

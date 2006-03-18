@@ -19,6 +19,7 @@ import Data.Maybe (fromJust)
 import Data.Edison.Assoc
 import qualified Data.Edison.Seq as S
 import qualified Data.Edison.Seq.ListSeq as L
+import Data.Edison.Seq.Defaults (dropMatch)
 
 singletonUsingInsert :: (Assoc m k) => k -> a -> m a
 singletonUsingInsert k v = insert k v empty
@@ -157,11 +158,28 @@ differenceUsingDelete m1 m2 = foldWithKey del m1 m2
   where del k _ m = delete k m
 
 properSubsetUsingSubset :: FiniteMapX m k => m a -> m b -> Bool
-properSubsetUsingSubset m1 m2 = subset m1 m2 && size m1 < size m2
+properSubsetUsingSubset m1 m2 = size m1 < size m2 && subset m1 m2
 
 subsetUsingMember :: FiniteMap m k => m a -> m b -> Bool
 subsetUsingMember m1 m2 = foldWithKey mem True m1
   where mem k _ b = member k m2 && b
+
+submapByUsingLookupM :: FiniteMap m k 
+                     => (a -> a -> Bool) -> m a -> m a -> Bool
+submapByUsingLookupM  f m1 m2 = foldWithKey aux True m1
+  where aux k x b =
+          case lookupM k m2 of
+             Nothing -> False
+             Just y  -> f x y && b
+
+properSubmapByUsingSubmapBy :: FiniteMapX m k 
+                            => (a -> a -> Bool) -> m a -> m a -> Bool
+properSubmapByUsingSubmapBy f m1 m2 = size m1 < size m2 && submapBy f m1 m2
+
+sameMapByUsingSubmapBy :: FiniteMapX m k
+                       => (a -> a -> Bool) -> m a -> m a -> Bool
+sameMapByUsingSubmapBy f m1 m2 = size m1 == size m2 && submapBy f m1 m2
+
 
 lookupAndDeleteDefault :: AssocX m k => k -> m a -> (a, m a)
 lookupAndDeleteDefault k m =
@@ -198,3 +216,36 @@ adjustOrDeleteAllDefault f k m =
       ins Nothing  m = m
       ins (Just x) m = insert k x m
   in L.foldr ins m' adjSeq
+
+showUsingToList :: (Show k, Show a, Assoc m k) => m a -> String
+showUsingToList xs = concat ["(",instanceName xs,".fromSeq ",show (toList xs),")"]
+
+readsPrecUsingFromList :: (Read k, Read a, AssocX m k) => Int -> ReadS (m a)
+readsPrecUsingFromList i xs =
+   let result = do
+          inner <- dropMatch (concat ["(",instanceName x,".fromSeq "]) xs
+          (l,')':rest) <- readsPrec i inner
+          return (fromList l,rest)
+
+       -- play games with the typechecker so we don't have to use
+       -- extensions for scoped type variables
+       ~[(x,_)] = result
+
+   in result
+
+showUsingToOrdList :: (Show k,Show a,OrdAssoc m k) => m a -> String
+showUsingToOrdList xs = concat ["(",instanceName xs,".unsafeFromOrdSeq ",show (toOrdList xs),")"]
+
+
+readsPrecUsingUnsafeFromOrdSeq :: (Read k,Read a,OrdAssoc m k) => Int -> ReadS (m a)
+readsPrecUsingUnsafeFromOrdSeq i xs =
+   let result = do
+          inner <- dropMatch (concat ["(",instanceName x,".unsafeFromOrdSeq "]) xs
+          (l,')':rest) <- readsPrec i inner
+          return (unsafeFromOrdList l,rest)
+
+       -- play games with the typechecker so we don't have to use
+       -- extensions for scoped type variables
+       ~[(x,_)] = result
+
+   in result

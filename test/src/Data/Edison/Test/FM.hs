@@ -23,8 +23,9 @@ import qualified Data.Edison.Assoc.PatriciaLoMap as PLM
 -- A utility class to propigate class contexts down
 -- to the quick check properties
 
-class (Ord k, Show k,Arbitrary k,
-       Arbitrary (fm a), Show (fm a),FiniteMap fm k) 
+class (Ord k, Show k, Arbitrary k,
+       Arbitrary (fm a), Show (fm a),
+       Eq (fm a), FiniteMap fm k)
         => FMTest k a fm | fm -> k 
 
 instance (Ord a, Show a, Arbitrary a,
@@ -47,7 +48,10 @@ allFMTests = TestList
    [ fmTests (empty :: (Ord a) => SM.FM Int a)
    , fmTests (empty :: (Ord a) => AL.FM Int a)
    , fmTests (empty :: (Ord a) => PLM.FM a)
-   , fmTests (empty :: (Ord a) => TT.FM [Int] a)
+   , fmTests (empty :: (Ord a) => TT.FM Int a)
+   , qcTest $ prop_show_read (empty :: (Ord a) => AL.FM Int a)
+   , qcTest $ prop_show_read (empty :: (Ord a) => PLM.FM a)
+   , qcTest $ prop_show_read (empty :: (Ord a) => TT.FM Int a)
    ]
 
 ----------------------------------------------------------------
@@ -80,6 +84,15 @@ removeDups ((k,v):kvs) = (k,v) : removeDups (L.filter ((/= k) . fst) kvs)
 
 si :: AssocX fm k => fm a -> Bool
 si = structuralInvariant
+
+(===) :: (Eq (fm a), AssocX fm k) => fm a -> fm a -> Bool
+(===) m1 m2 = 
+    structuralInvariant m1
+    &&
+    structuralInvariant m2
+    &&
+    m1 == m2
+
 
 -----------------------------------------------------------------
 -- AssocX operations
@@ -217,6 +230,12 @@ prop_Difference fm xs ys
 	  | x < y     = x == z &&
 	                check xs     (y:ys) zs
 	  | otherwise = check xs     ys     (z:zs)
+
+
+prop_show_read :: (FMTest k Int fm, Read (fm Int)) => 
+	fm Int -> fm Int -> Bool
+prop_show_read fm xs = xs === read (show xs)
+
 
 {-
     -- Methods still to be tested:

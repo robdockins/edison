@@ -44,7 +44,8 @@ module Data.Edison.Assoc.AssocList (
     -- * FiniteMapX operations
     fromSeqWith,fromSeqWithKey,insertWith,insertWithKey,insertSeqWith,
     insertSeqWithKey,unionl,unionr,unionWith,unionSeqWith,intersectionWith,
-    difference,properSubset,subset,
+    difference,properSubset,subset,properSubmapBy,submapBy,sameMapBy,
+    properSubmap,submap,sameMap,
 
     -- * FiniteMap operations
     unionWithKey,unionSeqWithKey,intersectionWithKey,
@@ -119,6 +120,12 @@ intersectionWith :: Eq k => (a -> b -> c) -> FM k a -> FM k b -> FM k c
 difference       :: Eq k => FM k a -> FM k b -> FM k a
 properSubset     :: Eq k => FM k a -> FM k b -> Bool    
 subset           :: Eq k => FM k a -> FM k b -> Bool    
+properSubmapBy   :: Eq k => (a -> a -> Bool) -> FM k a -> FM k a -> Bool
+submapBy         :: Eq k => (a -> a -> Bool) -> FM k a -> FM k a -> Bool
+sameMapBy        :: Eq k => (a -> a -> Bool) -> FM k a -> FM k a -> Bool
+properSubmap     :: (Eq k, Eq a) => FM k a -> FM k a -> Bool
+submap           :: (Eq k, Eq a) => FM k a -> FM k a -> Bool
+sameMap          :: (Eq k, Eq a) => FM k a -> FM k a -> Bool
 
 toSeq            :: (Eq k,S.Sequence seq) => FM k a -> seq (k,a)
 keys             :: (Eq k,S.Sequence seq) => FM k a -> seq k
@@ -173,7 +180,7 @@ toOrdSeq          :: (Ord k,S.Sequence seq) => FM k a -> seq (k,a)
 moduleName = "Data.Edison.Assoc.AssocList"
 
 
-data FM k a = E | I k a (FM k a) deriving (Show)
+data FM k a = E | I k a (FM k a)
 
 -- no invariants
 structuralInvariant :: Eq k => FM k a -> Bool
@@ -490,6 +497,12 @@ intersectionWith = intersectionWithUsingLookupM
 difference = differenceUsingDelete
 properSubset = properSubsetUsingSubset
 subset = subsetUsingMember
+properSubmapBy = properSubmapByUsingSubmapBy
+submapBy = submapByUsingLookupM
+sameMapBy = sameMapByUsingSubmapBy
+properSubmap = A.properSubmap
+submap = A.submap
+sameMap = A.sameMap
 unionWithKey = unionWithKeyUsingInsertWithKey
 unionSeqWithKey = unionSeqWithKeyUsingFoldr
 intersectionWithKey = intersectionWithKeyUsingLookupM
@@ -529,8 +542,9 @@ instance Eq k => A.FiniteMapX (FM k) k where
    insertSeqWith = insertSeqWith; insertSeqWithKey = insertSeqWithKey; 
    unionl = unionl; unionr = unionr; unionWith = unionWith; 
    unionSeqWith = unionSeqWith; intersectionWith = intersectionWith; 
-   difference = difference; properSubset = properSubset;
-   subset = subset}
+   difference = difference; properSubset = properSubset; subset = subset;
+   properSubmapBy = properSubmapBy; submapBy = submapBy;
+   sameMapBy = sameMapBy}
 
 instance Ord k => A.OrdFiniteMapX (FM k) k
 
@@ -555,6 +569,15 @@ instance Ord k => A.OrdFiniteMap (FM k) k
 
 instance Eq k => Functor (FM k) where
   fmap =  map
+
+instance (Eq k,Eq a) => Eq (FM k a) where
+  (==) = sameMap
+
+instance (Eq k,Show k,Show a) => Show (FM k a) where
+  show = showUsingToList
+
+instance (Eq k,Read k,Read a) => Read (FM k a) where
+  readsPrec = readsPrecUsingFromList
 
 instance (Eq k,Arbitrary k,Arbitrary a) => Arbitrary (FM k a) where
    arbitrary = do xs <- arbitrary

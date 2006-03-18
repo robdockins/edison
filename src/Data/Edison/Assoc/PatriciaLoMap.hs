@@ -32,7 +32,8 @@ module Data.Edison.Assoc.PatriciaLoMap (
     -- * FiniteMapX operations
     fromSeqWith,fromSeqWithKey,insertWith,insertWithKey,insertSeqWith,
     insertSeqWithKey,unionl,unionr,unionWith,unionSeqWith,intersectionWith,
-    difference,properSubset,subset,
+    difference,properSubset,subset,properSubmapBy,submapBy,sameMapBy,
+    properSubmap,submap,sameMap,
 
     -- * FiniteMap operations
     unionWithKey,unionSeqWithKey,intersectionWithKey,
@@ -45,7 +46,7 @@ import Prelude hiding (null,map,lookup,foldr,foldl,foldr1,foldl1,filter)
 import qualified Prelude
 import Control.Monad.Identity (runIdentity)
 import Data.Edison.Prelude
-import qualified Data.Edison.Assoc as A ( AssocX(..), Assoc(..), FiniteMapX(..), FiniteMap(..) )
+import qualified Data.Edison.Assoc as A
 import qualified Data.Edison.Seq as S
 import Data.Edison.Assoc.Defaults
 import Data.Int
@@ -59,7 +60,6 @@ data FM a
   = E
   | L Int a
   | B Int Int !(FM a) !(FM a)
- deriving (Show)
 
 -- FIXME what are the invariants?
 structuralInvariant :: FM a -> Bool
@@ -411,6 +411,24 @@ subset (B p m s0 s1) _ = False
 subset (L k x) t = member k t
 subset E t = True
 
+properSubmapBy :: (a -> a -> Bool) -> FM a -> FM a -> Bool
+properSubmapBy = properSubmapByUsingSubmapBy
+
+submapBy :: (a -> a -> Bool) -> FM a -> FM a -> Bool
+submapBy = submapByUsingLookupM
+
+sameMapBy :: (a -> a -> Bool) -> FM a -> FM a -> Bool
+sameMapBy = sameMapByUsingSubmapBy
+
+properSubmap :: (Eq a) => FM a -> FM a -> Bool
+properSubmap = A.properSubmap
+
+submap :: (Eq a) => FM a -> FM a -> Bool
+submap = A.submap
+
+sameMap :: (Eq a) => FM a -> FM a -> Bool
+sameMap = A.sameMap
+
 mapWithKey :: (Int -> a -> b) -> FM a -> FM b
 mapWithKey f E = E
 mapWithKey f (L k x) = L k (f k x)
@@ -573,8 +591,9 @@ instance A.FiniteMapX FM Int where
    insertSeqWith = insertSeqWith; insertSeqWithKey = insertSeqWithKey; 
    unionl = unionl; unionr = unionr; unionWith = unionWith; 
    unionSeqWith = unionSeqWith; intersectionWith = intersectionWith; 
-   difference = difference; properSubset = properSubset;
-   subset = subset}
+   difference = difference; properSubset = properSubset; subset = subset;
+   properSubmapBy = properSubmapBy; submapBy = submapBy;
+   sameMapBy = sameMapBy}
 
 instance A.FiniteMap FM Int where
   {unionWithKey = unionWithKey; unionSeqWithKey = unionSeqWithKey; 
@@ -582,6 +601,15 @@ instance A.FiniteMap FM Int where
 
 instance Functor FM where
   fmap = map
+
+instance (Show a) => Show (FM a) where
+  show = showUsingToList
+
+instance (Read a) => Read (FM a) where
+  readsPrec = readsPrecUsingFromList
+
+instance (Eq a) => Eq (FM a) where
+  (==) = sameMap
 
 instance (Arbitrary a) => Arbitrary (FM a) where
    arbitrary = do xs <- arbitrary
