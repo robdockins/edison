@@ -441,7 +441,10 @@ instance MonadPlus Seq where
   mzero = empty
 
 instance Show a => Show (Seq a) where
-  show xs = show (toList xs)
+  show = showUsingToList
+
+instance Read a => Read (Seq a) where
+  readsPrec = readsPrecUsingFromList
 
 instance Arbitrary a => Arbitrary (Seq a) where
   arbitrary = do xs <- arbitrary

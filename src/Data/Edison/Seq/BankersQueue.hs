@@ -386,7 +386,10 @@ instance Eq a => Eq (Seq a) where
     (size q1 == size q2) && (toList q1 == toList q2)
 
 instance Show a => Show (Seq a) where
-  show q = show (toList q)
+  show = showUsingToList
+
+instance Read a => Read (Seq a) where
+  readsPrec = readsPrecUsingFromList
 
 instance Arbitrary a => Arbitrary (Seq a) where
   arbitrary =

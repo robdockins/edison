@@ -16,6 +16,7 @@ module Data.Edison.Seq.Defaults where
 import Prelude hiding (concat,reverse,map,concatMap,foldr,foldl,foldr1,foldl1,
                        filter,takeWhile,dropWhile,lookup,take,drop,splitAt,
                        zip,zip3,zipWith,zipWith3,unzip,unzip3,null)
+
 import Control.Monad.Identity
 
 import Data.Edison.Prelude
@@ -458,3 +459,22 @@ unzipWith3UsingFoldr ::
 unzipWith3UsingFoldr f g h = foldr tcons (empty,empty,empty) 
   where tcons e (xs,ys,zs) = (lcons (f e) xs, lcons (g e) ys, lcons (h e) zs)
 
+showUsingToList :: (Show a,Sequence s) => s a -> String
+showUsingToList xs = concat ["(",instanceName xs,".fromList ",show (toList xs),")"]
+
+readsPrecUsingFromList :: (Read a,Sequence s) => Int -> ReadS (s a)
+readsPrecUsingFromList i xs =
+   let result = do
+          list <- dropMatch (concat ["(",instanceName x,".fromList "]) xs
+          (l,')':rest) <- readsPrec i list
+          return (fromList l,rest)
+       ~[(x,_)] = result
+   in result
+
+
+dropMatch :: (Eq a,MonadPlus m) => [a] -> [a] -> m [a]
+dropMatch [] ys = return ys
+dropMatch (x:xs) (y:ys)
+    | x == y    = dropMatch xs ys
+    | otherwise = mzero
+dropMatch _ _   = mzero

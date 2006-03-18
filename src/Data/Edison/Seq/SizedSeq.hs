@@ -44,6 +44,7 @@ import Prelude hiding (concat,reverse,map,concatMap,foldr,foldl,foldr1,foldl1,
 
 import Data.Edison.Prelude
 import qualified Data.Edison.Seq as S
+import qualified Data.Edison.Seq.ListSeq as L
 import Data.Edison.Seq.Defaults -- only used by concatMap
 import Control.Monad
 import Test.QuickCheck
@@ -319,7 +320,13 @@ instance Eq (s a) => Eq (Sized s a) where
   -- that the sizes were compared before the inner sequences
 
 instance (S.Sequence s, Show (s a)) => Show (Sized s a) where
-  show xs = show (toSeq xs)
+  show xs = L.concat ["(",moduleName,".fromSeq ",show (toSeq xs),")"]
+
+instance (S.Sequence s, Read (s a)) => Read (Sized s a) where
+  readsPrec i xs = do
+       inner <- dropMatch (L.concat ["(",moduleName,".fromSeq "]) xs
+       (seq,')':rest) <- readsPrec i inner
+       return (fromSeq seq,rest)
 
 instance (S.Sequence s, Arbitrary (s a)) => Arbitrary (Sized s a) where
   arbitrary = do xs <- arbitrary

@@ -39,7 +39,11 @@ module Data.Edison.Seq.RevSeq (
     structuralInvariant,
 
     -- * Documentation
-    moduleName,instanceName
+    moduleName,instanceName,
+
+    -- * Other supported operations
+    fromSeq,toSeq
+
 ) where
 
 import Prelude hiding (concat,reverse,map,concatMap,foldr,foldl,foldr1,foldl1,
@@ -129,6 +133,11 @@ unzip3         :: S.Sequence s => Rev s (a,b,c) -> (Rev s a, Rev s b, Rev s c)
 unzipWith      :: S.Sequence s => (a -> b) -> (a -> c) -> Rev s a -> (Rev s b, Rev s c)
 unzipWith3     :: S.Sequence s => (a -> b) -> (a -> c) -> (a -> d) -> Rev s a -> (Rev s b, Rev s c, Rev s d)
 structuralInvariant :: S.Sequence s => Rev s a -> Bool
+
+-- bonus functions, not in Sequence signature
+fromSeq        :: S.Sequence s => s a -> Rev s a
+toSeq          :: S.Sequence s => Rev s a -> s a
+
 
 moduleName = "Data.Edison.Seq.RevSeq"
 instanceName (N m s) = "RevSeq(" ++ S.instanceName s ++ ")"
@@ -336,7 +345,13 @@ instance Eq (s a) => Eq (Rev s a) where
   (N m xs) == (N n ys) = (m == n) && (xs == ys)
 
 instance (S.Sequence s, Show (s a)) => Show (Rev s a) where
-  show xs = show (toSeq xs)
+  show xs = L.concat ["(",moduleName,".fromSeq ",show (toSeq xs),")"]
+
+instance (S.Sequence s, Read (s a)) => Read (Rev s a) where
+  readsPrec i xs = do
+       inner <- dropMatch (L.concat ["(",moduleName,".fromSeq "]) xs
+       (seq,')':rest) <- readsPrec i inner
+       return (fromSeq seq,rest)
 
 instance (S.Sequence s, Arbitrary (s a)) => Arbitrary (Rev s a) where
   arbitrary = do xs <- arbitrary

@@ -17,8 +17,8 @@
 --   @   class (Functor s, MonadPlus s) => Sequence s@
 --
 --   All sequences are also instances of 'Functor', 'Monad', and 'MonadPlus'.
---   In addition, all sequences are expected to be instances of 'Eq' and 'Show',
---   although this is not enforced.
+--   In addition, all sequences are expected to be instances of @Eq@, @Show@,
+--   and @Read@, although this is not enforced.
 --
 --   We follow the naming convention that every module implementing sequences
 --   defines a type constructor named @Seq@.

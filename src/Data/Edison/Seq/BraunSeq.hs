@@ -509,7 +509,10 @@ instance MonadPlus Seq where
 -- instance Eq (Seq a) is derived
 
 instance Show a => Show (Seq a) where
-  show xs = show (toList xs)
+  show = showUsingToList
+
+instance Read a => Read (Seq a) where
+  readsPrec = readsPrecUsingFromList
 
 instance Arbitrary a => Arbitrary (Seq a) where
   arbitrary = arbitrary >>= (return . fromList)
