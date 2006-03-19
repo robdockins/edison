@@ -323,13 +323,10 @@ instance (S.Sequence s, Show (s a)) => Show (Sized s a) where
   show xs = L.concat ["(",moduleName,".fromSeq ",show (toSeq xs),")"]
 
 instance (S.Sequence s, Read (s a)) => Read (Sized s a) where
-  readsPrec i xs = return xs
-      >>= tokenMatch "("
-      >>= tokenMatch (moduleName++".fromSeq")
-      >>= readsPrec i
-      >>= \(l,xs') -> return xs'
-      >>= tokenMatch ")"
-      >>= \rest -> return (fromSeq l,rest)
+  readsPrec i xs = maybeParens p xs
+      where p xs = tokenMatch (moduleName++".fromSeq") xs
+                     >>= readsPrec i
+                     >>= \(l,rest) -> return (fromSeq l, rest)
 
 instance (S.Sequence s, Arbitrary (s a)) => Arbitrary (Sized s a) where
   arbitrary = do xs <- arbitrary

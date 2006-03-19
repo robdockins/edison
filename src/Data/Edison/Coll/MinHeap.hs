@@ -43,7 +43,7 @@ import Data.Edison.Prelude
 import qualified Data.Edison.Coll as C
 import qualified Data.Edison.Seq as S
 import Data.Edison.Coll.Defaults
-import Data.Edison.Seq.Defaults (tokenMatch)
+import Data.Edison.Seq.Defaults (tokenMatch,maybeParens)
 import Control.Monad
 import Test.QuickCheck
 
@@ -369,13 +369,10 @@ instance (C.OrdColl h a, Show h) => Show (Min h a) where
    show xs = concat ["(",moduleName,".fromColl ",show (toColl xs),")"]
 
 instance (C.OrdColl h a, Read h) => Read (Min h a) where
-   readsPrec i xs = return xs
-       >>= tokenMatch "("
-       >>= tokenMatch (moduleName++".fromColl")
-       >>= readsPrec i
-       >>= \(coll,xs') -> return xs'
-       >>= tokenMatch ")"
-       >>= \rest -> return (fromColl coll,rest)
+   readsPrec i xs = maybeParens p xs
+       where p xs = tokenMatch (moduleName++".fromColl") xs
+                      >>= readsPrec i
+                      >>= \(coll,rest) -> return (fromColl coll,rest)
 
 instance (C.OrdColl h a,Arbitrary h,Arbitrary a) => Arbitrary (Min h a) where
   arbitrary = do xs <- arbitrary

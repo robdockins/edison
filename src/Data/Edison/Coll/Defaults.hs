@@ -19,7 +19,7 @@ import Control.Monad.Identity
 import Data.Edison.Coll
 import qualified Data.Edison.Seq as S
 import qualified Data.Edison.Seq.ListSeq as L
-import Data.Edison.Seq.Defaults (tokenMatch)
+import Data.Edison.Seq.Defaults (tokenMatch,maybeParens)
 
 insertSeqUsingUnion :: (CollX c a,S.Sequence seq) => seq a -> c -> c
 insertSeqUsingUnion xs c = union (fromSeq xs) c
@@ -212,13 +212,10 @@ showUsingToOrdList xs = concat ["(",instanceName xs,".unsafeFromOrdSeq ",show (t
 
 readsPrecUsingUnsafeFromOrdSeq :: (OrdColl c a, Read a) => Int -> ReadS c
 readsPrecUsingUnsafeFromOrdSeq i xs =
-    let result = return xs
-          >>= tokenMatch "("
-          >>= tokenMatch ((instanceName x)++".unsafeFromOrdSeq")
-          >>= readsPrec i
-          >>= \(l,xs') -> return xs'
-          >>= tokenMatch ")"
-          >>= \rest -> return (unsafeFromOrdList l,rest)
+    let result = maybeParens p xs
+        p xs = tokenMatch ((instanceName x)++".unsafeFromOrdSeq") xs
+                 >>= readsPrec i
+                 >>= \(l,rest) -> return (unsafeFromOrdList l,rest)
 
         -- play games with the typechecker so we don't have to use
         -- extensions for scoped type variables

@@ -465,13 +465,10 @@ showUsingToList xs = concat ["(",instanceName xs,".fromList ",show (toList xs),"
 
 readsPrecUsingFromList :: (Read a,Sequence s) => Int -> ReadS (s a)
 readsPrecUsingFromList i xs =
-   let result = return xs
-         >>= tokenMatch "("
-         >>= tokenMatch ((instanceName x)++".fromList")
-         >>= readsPrec i
-         >>= \(l,xs') -> return xs'
-         >>= tokenMatch ")"
-         >>= \rest -> return (fromList l,rest)
+   let result = maybeParens p xs
+       p xs = tokenMatch ((instanceName x)++".fromList") xs
+                >>= readsPrec i
+                >>= \(l,rest) -> return (fromList l,rest)
 
        -- play games with the typechecker so we don't have to use
        -- extensions for scoped type variables
@@ -490,3 +487,14 @@ dropMatch _ _   = mzero
 tokenMatch :: MonadPlus m => String -> String -> m String
 tokenMatch token str = dropMatch token (munch str) >>= return . munch
    where munch = dropWhile isSpace
+
+readSParens :: ReadS a -> ReadS a
+readSParens p xs = return xs
+     >>= tokenMatch "("
+     >>= p
+     >>= \(x,xs') -> return xs'
+     >>= tokenMatch ")"
+     >>= \rest -> return (x,rest)
+
+maybeParens :: ReadS a -> ReadS a
+maybeParens p xs = readSParens p xs `mplus` p xs
