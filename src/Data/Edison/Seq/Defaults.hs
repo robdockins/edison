@@ -18,6 +18,7 @@ import Prelude hiding (concat,reverse,map,concatMap,foldr,foldl,foldr1,foldl1,
                        zip,zip3,zipWith,zipWith3,unzip,unzip3,null)
 
 import Control.Monad.Identity
+import Data.Char (isSpace)
 
 import Data.Edison.Prelude
 import Data.Edison.Seq
@@ -464,10 +465,13 @@ showUsingToList xs = concat ["(",instanceName xs,".fromList ",show (toList xs),"
 
 readsPrecUsingFromList :: (Read a,Sequence s) => Int -> ReadS (s a)
 readsPrecUsingFromList i xs =
-   let result = do
-          list <- dropMatch (concat ["(",instanceName x,".fromList "]) xs
-          (l,')':rest) <- readsPrec i list
-          return (fromList l,rest)
+   let result = return xs
+         >>= tokenMatch "("
+         >>= tokenMatch ((instanceName x)++".fromList")
+         >>= readsPrec i
+         >>= \(l,xs') -> return xs'
+         >>= tokenMatch ")"
+         >>= \rest -> return (fromList l,rest)
 
        -- play games with the typechecker so we don't have to use
        -- extensions for scoped type variables
@@ -482,3 +486,7 @@ dropMatch (x:xs) (y:ys)
     | x == y    = dropMatch xs ys
     | otherwise = mzero
 dropMatch _ _   = mzero
+
+tokenMatch :: MonadPlus m => String -> String -> m String
+tokenMatch token str = dropMatch token (munch str) >>= return . munch
+   where munch = dropWhile isSpace

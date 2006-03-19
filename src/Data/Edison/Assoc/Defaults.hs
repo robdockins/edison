@@ -19,7 +19,7 @@ import Data.Maybe (fromJust)
 import Data.Edison.Assoc
 import qualified Data.Edison.Seq as S
 import qualified Data.Edison.Seq.ListSeq as L
-import Data.Edison.Seq.Defaults (dropMatch)
+import Data.Edison.Seq.Defaults (tokenMatch)
 
 singletonUsingInsert :: (Assoc m k) => k -> a -> m a
 singletonUsingInsert k v = insert k v empty
@@ -229,10 +229,13 @@ showUsingToList xs = concat ["(",instanceName xs,".fromSeq ",show (toList xs),")
 
 readsPrecUsingFromList :: (Read k, Read a, AssocX m k) => Int -> ReadS (m a)
 readsPrecUsingFromList i xs =
-   let result = do
-          inner <- dropMatch (concat ["(",instanceName x,".fromSeq "]) xs
-          (l,')':rest) <- readsPrec i inner
-          return (fromList l,rest)
+   let result = return xs
+         >>= tokenMatch "("
+         >>= tokenMatch ((instanceName x)++".fromSeq")
+         >>= readsPrec i
+         >>= \(l,xs') -> return xs'
+         >>= tokenMatch ")"
+         >>= \rest -> return (fromList l,rest)
 
        -- play games with the typechecker so we don't have to use
        -- extensions for scoped type variables
@@ -246,10 +249,13 @@ showUsingToOrdList xs = concat ["(",instanceName xs,".unsafeFromOrdSeq ",show (t
 
 readsPrecUsingUnsafeFromOrdSeq :: (Read k,Read a,OrdAssoc m k) => Int -> ReadS (m a)
 readsPrecUsingUnsafeFromOrdSeq i xs =
-   let result = do
-          inner <- dropMatch (concat ["(",instanceName x,".unsafeFromOrdSeq "]) xs
-          (l,')':rest) <- readsPrec i inner
-          return (unsafeFromOrdList l,rest)
+   let result = return xs
+         >>= tokenMatch "("
+         >>= tokenMatch ((instanceName x)++".unsafeFromOrdSeq")
+         >>= readsPrec i
+         >>= \(l,xs') -> return xs'
+         >>= tokenMatch ")"
+         >>= \rest -> return (unsafeFromOrdList l,rest)
 
        -- play games with the typechecker so we don't have to use
        -- extensions for scoped type variables
