@@ -229,13 +229,10 @@ showUsingToList xs = concat ["(",instanceName xs,".fromSeq ",show (toList xs),")
 
 readsPrecUsingFromList :: (Read k, Read a, AssocX m k) => Int -> ReadS (m a)
 readsPrecUsingFromList i xs =
-   let result = return xs
-         >>= tokenMatch "("
-         >>= tokenMatch ((instanceName x)++".fromSeq")
-         >>= readsPrec i
-         >>= \(l,xs') -> return xs'
-         >>= tokenMatch ")"
-         >>= \rest -> return (fromList l,rest)
+   let result = maybeParens p xs
+       p xs = tokenMatch ((instanceName x)++".fromSeq") xs
+                >>= readsPrec i
+                >>= \(l,rest) -> return (fromList l,rest)
 
        -- play games with the typechecker so we don't have to use
        -- extensions for scoped type variables
