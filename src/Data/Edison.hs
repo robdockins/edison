@@ -7,11 +7,11 @@
 --   Stability   :  provisional
 --   Portability :  non-portable (MPTC and FD)
 --
---   Edison is a library of purely functional data structures written by 
+--   Edison is a library of purely functional data structures written by
 --   Chris Okasaki.  It is named after Thomas Alva Edison and for the
 --   mnemonic value /ED/i/S/on (/E/fficent /D/ata /S/tructures).
 --
---   Edison provides several families of abstractions, each with 
+--   Edison provides several families of abstractions, each with
 --   multiple implementations.  The main abstractions provided by Edison are:
 --
 --   * /Sequences/ such as stacks, queues, and dequeues,
@@ -38,7 +38,7 @@
 --   you will likely need to import the Prelude @hiding@ the relevant names.
 --
 --   Edison modules also frequently share type names.  For example, most sequence
---   type constructors are named @Seq@.  This additionally aids substituting 
+--   type constructors are named @Seq@.  This additionally aids substituting
 --   implementations by simply importing a different module.
 --
 --   Argument orders are selected with the following points in mind:
@@ -77,7 +77,7 @@
 --
 --   Many Edison data structures require @Eq@ or @Ord@ contexts to define equivalence
 --   and\/or total ordering on elements or keys.  Edison makes the following assumptions
---   about these instances:
+--   about all such required instances:
 --
 --   * An @Eq@ instance correctly defines an equivalence relation (but not necessarily
 --     structural equality); that is, we assume @(==)@ (considered as a
@@ -89,6 +89,41 @@
 --   These assumptions correspond to the usual meanings assigned to these classes.  If
 --   an Edison data structure is used with an @Eq@ or @Ord@ instance which violates these
 --   assumptions, then the behavior of that data structure is undefined.
+--
+--   /Notes on Read and Show instances:/
+--
+--   The usual Haskell convention for @Read@ and @Show@ (as advanced by the automaticly derived
+--   instances), is that @show@ generates a string which is a valid Haskell expression built up
+--   using the data type's data constructors that, if interpreted as Haskell code, would generate
+--   an identical data item.  Furthermore, the derived  @Read@ instances are able to parse such
+--   strings, such that @(read . show) === id@.  So, derived instances of @Read@ and @Show@ exhibit
+--   the following useful properties:
+--
+--   * @read@ and @show@ are complementary; that is, @read@ is a useful inverse for @show@
+--
+--   * @show@ generates a string which is legal Haskell code representing the data item
+--
+--   This all works fine for many data types, but becomes a problem for abstract data types.
+--   For abstract types, the derived @Read@ instance may allow users to create data which
+--   violates invariants Furthermore, the strings resulting from @show@ reference hidden
+--   data constructors which violates good software engineering principles and also
+--   cannot be compiled because the constructors are not available outside the defining module.
+--
+--   Edison avoids most of these problems and still maintains the above useful properties by
+--   doing conversions to and from lists and inserting explicit calls to the list conversion
+--   operations.  The corresponding @Read@ instance strips the list conversion call before
+--   parsing the list.  In this way, private data constructors are not revealed and @show@ strings
+--   are still legal, compilable Haskell code.  Furthermore, one can change the concrete data
+--   type by simply changing the name of the conversion call (which is always fully qualified with
+--   the module name).
+--
+--   For example, calling @show@ on an empty Bankers's queue will result in the following string:
+--
+-- > Data.Edison.Seq.BankersQueue.fromList []
+--
+--   Datatypes which are not native Edison data structures (such as StandardSet and StandardMap)
+--   may or may not provide @Read@ or @Show@ instances and, if they exist, they may or may
+--   not also provide the properties that Edison native @Read@ and @Show@ instances do.
 --
 --   /Notes on unsafe functions:/
 --
@@ -174,7 +209,7 @@
 --   where @=@ means indistinguishability.
 --
 --   This property is sufficient to ensure that, for any collection of elements to
---   fold over, folds over all permutations of those elements will generate 
+--   fold over, folds over all permutations of those elements will generate
 --   indistinguishable results.  In other words, an ambiguous fold applied to a
 --   fold-commutative combining function becomes /unambiguous/.
 --
@@ -215,7 +250,7 @@
 --   properties of floating point representations.
 --
 --   /About this module:/
---  
+--
 --   This module re-exports the various data structure abstraction classes, but
 --   not their methods. This allows you to write type signatures which have
 --   contexts that mention Edison type classes without having to import the
@@ -244,7 +279,7 @@
 --
 --   Note, however, that the various sequence implementations are always lazy
 --   in their elements.  Similarly, associative collections are always lazy in
---   their elements (but usually strict in their keys).  Non-associative 
+--   their elements (but usually strict in their keys).  Non-associative
 --   collections are usually strict in their elements.
 
 module Data.Edison (
