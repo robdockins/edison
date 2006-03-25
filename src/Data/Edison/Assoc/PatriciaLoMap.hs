@@ -603,7 +603,7 @@ instance Functor FM where
   fmap = map
 
 instance (Show a) => Show (FM a) where
-  show = showUsingToList
+  showsPrec = showsPrecUsingToList
 
 instance (Read a) => Read (FM a) where
   readsPrec = readsPrecUsingFromList

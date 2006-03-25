@@ -435,7 +435,7 @@ instance Ord a => Eq (Heap a) where
   xs == ys = C.toOrdList xs == C.toOrdList ys
 
 instance (Ord a, Show a) => Show (Heap a) where
-  show = showUsingToOrdList
+  showsPrec = showsPrecUsingToOrdList
 
 instance (Ord a, Read a) => Read (Heap a) where
   readsPrec = readsPrecUsingUnsafeFromOrdSeq

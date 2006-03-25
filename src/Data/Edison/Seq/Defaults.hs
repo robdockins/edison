@@ -460,14 +460,16 @@ unzipWith3UsingFoldr ::
 unzipWith3UsingFoldr f g h = foldr tcons (empty,empty,empty) 
   where tcons e (xs,ys,zs) = (lcons (f e) xs, lcons (g e) ys, lcons (h e) zs)
 
-showUsingToList :: (Show a,Sequence s) => s a -> String
-showUsingToList xs = concat ["(",instanceName xs,".fromList ",show (toList xs),")"]
+showsPrecUsingToList :: (Show a,Sequence s) => Int -> s a -> ShowS
+showsPrecUsingToList i xs rest
+   | i == 0    = concat [    instanceName xs,".fromList "] ++ showsPrec 10 (toList xs) rest
+   | otherwise = concat ["(",instanceName xs,".fromList "] ++ showsPrec 10 (toList xs) (')':rest)
 
 readsPrecUsingFromList :: (Read a,Sequence s) => Int -> ReadS (s a)
 readsPrecUsingFromList i xs =
    let result = maybeParens p xs
        p xs = tokenMatch ((instanceName x)++".fromList") xs
-                >>= readsPrec i
+                >>= readsPrec 10
                 >>= \(l,rest) -> return (fromList l,rest)
 
        -- play games with the typechecker so we don't have to use

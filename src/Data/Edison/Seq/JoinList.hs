@@ -384,7 +384,7 @@ instance Eq a => Eq (Seq a) where
   xs == ys = toList xs == toList ys
 
 instance Show a => Show (Seq a) where
-  show = showUsingToList
+  showsPrec = showsPrecUsingToList
 
 instance Read a => Read (Seq a) where
   readsPrec = readsPrecUsingFromList

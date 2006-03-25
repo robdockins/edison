@@ -224,14 +224,16 @@ adjustOrDeleteAllDefault f k m =
       ins (Just x) m = insert k x m
   in L.foldr ins m' adjSeq
 
-showUsingToList :: (Show k, Show a, Assoc m k) => m a -> String
-showUsingToList xs = concat ["(",instanceName xs,".fromSeq ",show (toList xs),")"]
+showsPrecUsingToList :: (Show k, Show a, Assoc m k) => Int -> m a -> ShowS
+showsPrecUsingToList i xs rest
+   | i == 0    = concat [    instanceName xs,".fromSeq ",showsPrec 10 (toList xs) rest]
+   | otherwise = concat ["(",instanceName xs,".fromSeq ",showsPrec 10 (toList xs) (')':rest)]
 
 readsPrecUsingFromList :: (Read k, Read a, AssocX m k) => Int -> ReadS (m a)
 readsPrecUsingFromList i xs =
    let result = maybeParens p xs
        p xs = tokenMatch ((instanceName x)++".fromSeq") xs
-                >>= readsPrec i
+                >>= readsPrec 10
                 >>= \(l,rest) -> return (fromList l,rest)
 
        -- play games with the typechecker so we don't have to use
@@ -240,9 +242,10 @@ readsPrecUsingFromList i xs =
 
    in result
 
-showUsingToOrdList :: (Show k,Show a,OrdAssoc m k) => m a -> String
-showUsingToOrdList xs = concat ["(",instanceName xs,".unsafeFromOrdSeq ",show (toOrdList xs),")"]
-
+showsPrecUsingToOrdList :: (Show k,Show a,OrdAssoc m k) => Int -> m a -> ShowS
+showsPrecUsingToOrdList i xs rest
+   | i == 0    = concat [    instanceName xs,".unsafeFromOrdSeq ",showsPrec 10 (toOrdList xs) rest]
+   | otherwise = concat ["(",instanceName xs,".unsafeFromOrdSeq ",showsPrec 10 (toOrdList xs) (')':rest)]
 
 readsPrecUsingUnsafeFromOrdSeq :: (Read k,Read a,OrdAssoc m k) => Int -> ReadS (m a)
 readsPrecUsingUnsafeFromOrdSeq i xs =

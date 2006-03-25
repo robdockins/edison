@@ -574,7 +574,7 @@ instance (Eq k,Eq a) => Eq (FM k a) where
   (==) = sameMap
 
 instance (Eq k,Show k,Show a) => Show (FM k a) where
-  show = showUsingToList
+  showsPrec = showsPrecUsingToList
 
 instance (Eq k,Read k,Read a) => Read (FM k a) where
   readsPrec = readsPrecUsingFromList

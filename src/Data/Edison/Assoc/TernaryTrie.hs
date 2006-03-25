@@ -769,7 +769,7 @@ instance Ord k => Functor (FM k) where
   fmap = map
 
 instance (Ord k, Show k, Show a) => Show (FM k a) where
-  show = showUsingToList
+  showsPrec = showsPrecUsingToList
 
 instance (Ord k, Read k, Read a) => Read (FM k a) where
   readsPrec = readsPrecUsingFromList

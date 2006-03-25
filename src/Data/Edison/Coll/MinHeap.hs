@@ -366,12 +366,14 @@ instance (C.OrdColl h a, Ord a) => C.OrdColl (Min h a) a where
 -- instance Eq is derived
 
 instance (C.OrdColl h a, Show h) => Show (Min h a) where
-   show xs = concat ["(",moduleName,".fromColl ",show (toColl xs),")"]
+   showsPrec i xs rest
+     | i == 0    = concat [    moduleName,".fromColl ",showsPrec 10 (toColl xs) rest]
+     | otherwise = concat ["(",moduleName,".fromColl ",showsPrec 10 (toColl xs) (')':rest)]
 
 instance (C.OrdColl h a, Read h) => Read (Min h a) where
    readsPrec i xs = maybeParens p xs
        where p xs = tokenMatch (moduleName++".fromColl") xs
-                      >>= readsPrec i
+                      >>= readsPrec 10
                       >>= \(coll,rest) -> return (fromColl coll,rest)
 
 instance (C.OrdColl h a,Arbitrary h,Arbitrary a) => Arbitrary (Min h a) where

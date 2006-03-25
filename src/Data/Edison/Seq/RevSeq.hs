@@ -345,12 +345,14 @@ instance Eq (s a) => Eq (Rev s a) where
   (N m xs) == (N n ys) = (m == n) && (xs == ys)
 
 instance (S.Sequence s, Show (s a)) => Show (Rev s a) where
-  show xs = L.concat ["(",moduleName,".fromSeq ",show (toSeq xs),")"]
+  showsPrec i xs rest
+     | i == 0    = L.concat [    moduleName,".fromSeq ",showsPrec 10 (toSeq xs) rest]
+     | otherwise = L.concat ["(",moduleName,".fromSeq ",showsPrec 10 (toSeq xs) (')':rest)]
 
 instance (S.Sequence s, Read (s a)) => Read (Rev s a) where
   readsPrec i xs = maybeParens p xs
       where p xs = tokenMatch (moduleName++".fromSeq") xs
-                     >>= readsPrec i
+                     >>= readsPrec 10
                      >>= \(l,rest) -> return (fromSeq l,rest)
 
 instance (S.Sequence s, Arbitrary (s a)) => Arbitrary (Rev s a) where

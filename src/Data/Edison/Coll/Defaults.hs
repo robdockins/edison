@@ -207,14 +207,16 @@ intersectionWithUsingOrdLists c xs ys = unsafeFromOrdList (inter (toOrdList xs) 
 unsafeMapMonotonicUsingFoldr :: (OrdColl cin a, OrdCollX cout b) => (a -> b) -> (cin -> cout)
 unsafeMapMonotonicUsingFoldr f xs = foldr (unsafeInsertMin . f) empty xs
 
-showUsingToOrdList :: (OrdColl c a,Show a) => c -> String
-showUsingToOrdList xs = concat ["(",instanceName xs,".unsafeFromOrdSeq ",show (toOrdList xs),")"]
+showsPrecUsingToOrdList :: (OrdColl c a,Show a) => Int -> c -> ShowS
+showsPrecUsingToOrdList i xs rest
+  | i == 0    = concat [    instanceName xs,".unsafeFromOrdSeq ",showsPrec 10 (toOrdList xs) rest]
+  | otherwise = concat ["(",instanceName xs,".unsafeFromOrdSeq ",showsPrec 10 (toOrdList xs) (')':rest)]
 
 readsPrecUsingUnsafeFromOrdSeq :: (OrdColl c a, Read a) => Int -> ReadS c
 readsPrecUsingUnsafeFromOrdSeq i xs =
     let result = maybeParens p xs
         p xs = tokenMatch ((instanceName x)++".unsafeFromOrdSeq") xs
-                 >>= readsPrec i
+                 >>= readsPrec 10
                  >>= \(l,rest) -> return (unsafeFromOrdList l,rest)
 
         -- play games with the typechecker so we don't have to use
