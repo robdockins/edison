@@ -21,6 +21,8 @@
 --   * /Associative Collections/ such as finite maps and priority queues
 --     where the priority and element are distinct.
 --
+--
+--
 --   /Conventions:/
 --
 --   Each data structure is implemented as a separate module.  These modules
@@ -55,6 +57,8 @@
 --     mathematical function on more than one collection, the arguments
 --     are chosen to match the most usual argument order for the function.
 --
+--
+--
 --   /Type classes:/
 --
 --   Each family of abstractions is defined as a set of classes: a main class
@@ -73,6 +77,8 @@
 --   complexities; if so, the differences will be given in the documentation for
 --   the individual implementation module.
 --
+--
+--
 --   /Notes on Eq and Ord instances:/
 --
 --   Many Edison data structures require @Eq@ or @Ord@ contexts to define equivalence
@@ -90,6 +96,8 @@
 --   an Edison data structure is used with an @Eq@ or @Ord@ instance which violates these
 --   assumptions, then the behavior of that data structure is undefined.
 --
+--
+--
 --   /Notes on Read and Show instances:/
 --
 --   The usual Haskell convention for @Read@ and @Show@ (as advanced by the automaticly derived
@@ -105,7 +113,7 @@
 --
 --   This all works fine for many data types, but becomes a problem for abstract data types.
 --   For abstract types, the derived @Read@ instance may allow users to create data which
---   violates invariants Furthermore, the strings resulting from @show@ reference hidden
+--   violates invariants. Furthermore, the strings resulting from @show@ reference hidden
 --   data constructors which violates good software engineering principles and also
 --   cannot be compiled because the constructors are not available outside the defining module.
 --
@@ -125,6 +133,8 @@
 --   may or may not provide @Read@ or @Show@ instances and, if they exist, they may or may
 --   not also provide the properties that Edison native @Read@ and @Show@ instances do.
 --
+--
+--
 --   /Notes on unsafe functions:/
 --
 --   There are a number of different notions of what constitutes an unsafe function.
@@ -139,6 +149,8 @@
 --   @With@ functions in the 'Set' class, which are also unsafe but do not have
 --   the prefix.  Unsafe functions will have explicit preconditions listed in their
 --   documentation.
+--
+--
 --
 --   /Notes on ambiguous functions:/
 --
@@ -171,6 +183,8 @@
 --   Only do something like this if you are 110% sure you know what you are doing, and maybe
 --   not even then.
 --
+--
+--
 --   /How to choose a fold:/
 --
 --   /Folds/ are an important class of operations on data structures in a functional
@@ -190,6 +204,8 @@
 --   implementers the option to provide additional strictness if it improves performance.
 --   For associative collections, only use with @WithKey@ folds if you need the value
 --   of the key.
+--
+--
 --
 --   /Painfully detailed information about ambiguous folds:/
 --
@@ -249,6 +265,8 @@
 --   the results.  As always, be aware of the limitations and numeric
 --   properties of floating point representations.
 --
+--
+--
 --   /About this module:/
 --
 --   This module re-exports the various data structure abstraction classes, but
@@ -258,6 +276,8 @@
 --   avoid name clashes.  Obviously, to use the methods of these classes, you
 --   will have to import the appropriate modules.  This module additionally
 --   re-exports the entire "Data.Edison.Prelude" module.
+--
+--
 --
 --   /Miscellaneous points:/
 --
