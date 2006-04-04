@@ -10,7 +10,7 @@ Changes in 1.2rc3
   * add properSubmap{By} submap{By} and sameMap{By} to the
     associated collection API
   * add Eq instances for concrete associated collections
-
+  * break out the test suite into a separate sub-package
 
 Changes in 1.2rc2
 
