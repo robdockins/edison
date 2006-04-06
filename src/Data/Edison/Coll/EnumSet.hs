@@ -16,6 +16,26 @@
 -- >  import EnumSet as Set
 --
 -- The implementation of 'EnumSet' is based on bit-wise operations.
+--
+-- For this implementation to work as expected at type @A@, there are a number
+-- of preconditions on the @Eq@, @Enum@ and @Ord@ instances.
+--
+-- The @Enum A@ instance must create a bijection between the elements of type @A@ and
+-- a finite subset of the naturals [0,1,2,3....].  Also, the number of distinct elements
+-- of @A@ must be less than or equal to the number of bits in @Word@.
+--
+-- The @Enum A@ instance must be consistent with the @Eq A@ instance. 
+-- That is, we must have:
+--
+-- > forall x y::A, x == y <==> toEnum x == toEnum y 
+--
+-- Additionally, for operations that require an @Ord A@ context, we require that
+-- toEnum be monotonic.  That is, we must have:
+--
+-- > forall x y::A, x < y <==> toEnum x < toEnum y
+--
+-- Derived @Eq@, @Ord@ and @Enum@ instances will fulfull these conditions, if
+-- the enumerated type has sufficently few constructors.
 -----------------------------------------------------------------------------
 {-
 Copyright (c) 2006, David F. Place
@@ -56,75 +76,96 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 module Data.Edison.Coll.EnumSet (
             -- * Set type
             Set          
-            -- * Operators
-            , (\\)
 
-            -- * Query
+	    -- * CollX operations
+            , empty
+            , singleton
+            , fromSeq
+            , insert
+            , insertSeq
+            , union
+            , unionSeq
+            , delete
+            , deleteAll
+            , deleteSeq
             , null
             , size
             , member
-            , isSubsetOf
-            , isProperSubsetOf
-            
-            -- * Construction
-            , empty
-            , singleton
-            , insert
-            , delete
-            
-            -- * Combine
-            , union, unions
-            , difference
+            , count
+
+            -- * OrdCollX operations
+            , deleteMin
+            , deleteMax
+            , unsafeInsertMin
+            , unsafeInsertMax
+            , unsafeFromOrdSeq
+            , unsafeAppend
+            , filterLT
+            , filterLE
+            , filterGT
+            , filterGE
+            , partitionLT_GE
+            , partitionLE_GT
+            , partitionLT_GT
+
+            -- * SetX operations
             , intersection
+            , difference
+            , properSubset
+            , subset
+
+            -- * Coll operations
+            , toSeq
+            , lookup
+            , lookupM
+            , lookupAll
+            , lookupWithDefault
+            , fold, fold', fold1, fold1'
+            , filter
+            , partition     
+
+            -- * OrdColl operations
+            , minView
+            , minElem
+            , maxView
+            , maxElem
+            , foldr, foldr', foldl, foldl'
+            , foldr1, foldr1', foldl1, foldl1'
+            , toOrdSeq
+            , unsafeMapMonotonic
+
+            -- * Set operations
+            , fromSeqWith
+            , insertWith
+            , insertSeqWith
+            , unionl
+            , unionr
+            , unionWith
+            , unionSeqWith
+            , intersectionWith
+
+            -- * Bonus operations
+            , map
+            , splitMember
             , complement
             , complementWith
 
-            -- * Filter
-            , filter
-            , partition
-            , split
-            , splitMember
-
-            -- * Map
-	    , map
-	    , mapMonotonic
-
-            -- * Fold
-            , fold
-
-            -- * Min\/Max
-            , findMin
-            , findMax
-            , deleteMin
-            , deleteMax
-            , deleteFindMin
-            , deleteFindMax
-
-            -- * Conversion
-
-            -- ** List
-            , elems
-            , toList
-            , fromList
-            
-            -- ** Ordered list
-            , toAscList
-            , fromAscList
-            , fromDistinctAscList
+            -- * Documenation
+            , moduleName
 )  where
-import Prelude hiding (filter,foldr,null,map)
+import Prelude hiding (filter,foldl,foldr,null,map,lookup,foldl1,foldr1)
+import qualified Data.Bits as Bits
 import Data.Bits hiding (complement)
 import Data.Word
-import Data.List (foldl',intersperse,sort)
 import Data.Monoid (Monoid(..))
 
-{--------------------------------------------------------------------
-  Operators
---------------------------------------------------------------------}
-infixl 9 \\ --
+import Data.Edison.Prelude
+import qualified Data.Edison.Seq as S
+import qualified Data.Edison.Coll as C
+import qualified Data.Edison.Seq.ListSeq as L
+import Data.Edison.Coll.Defaults
 
-(\\) :: Set a -> Set a -> Set a
-m1 \\ m2 = difference m1 m2
+moduleName = "Data.Edison.Coll.EnumSet"
 
 {--------------------------------------------------------------------
   Sets are bit strings of width wordLength.
@@ -145,6 +186,11 @@ check msg x
     | otherwise = error $ "EnumSet."++msg++"` beyond word size."
 
 
+-- no interesting structural invariants
+structuralInvariant :: Set a -> Bool
+structuralInvariant = const True
+
+
 {--------------------------------------------------------------------
   Query
 --------------------------------------------------------------------}
@@ -160,8 +206,25 @@ size (Set w) = foldBits f 0 w
       f z _ = z+1
 
 -- | /O(1)/. Is the element in the set?
-member :: Enum a => a -> Set a -> Bool
+member :: (Eq a, Enum a) => a -> Set a -> Bool
 member x (Set w) = testBit w $ fromEnum x
+
+count :: (Eq a, Enum a) => a -> Set a -> Int
+count = undefined {-countUsingMember-}
+
+lookup :: (Eq a, Enum a) => a -> Set a -> a
+lookup = lookupUsingLookupAll
+
+lookupM :: (Eq a, Enum a, Monad m) => a -> Set a -> m a
+lookupM x s
+   | member x s = return x
+   | otherwise  = fail (moduleName++".lookupM: lookup failed")
+
+lookupAll  :: (Eq a, Enum a, S.Sequence s) => a -> Set a -> s a
+lookupAll = undefined {-lookupAllUsingLookupM-}
+
+lookupWithDefault :: (Eq a, Enum a) => a -> a -> Set a -> a
+lookupWithDefault = lookupWithDefaultUsingLookupM
 
 {--------------------------------------------------------------------
   Construction
@@ -171,7 +234,7 @@ empty :: Set a
 empty = Set 0
 
 -- | /O(1)/. Create a singleton set.
-singleton :: Enum a => a -> Set a
+singleton :: (Eq a, Enum a) => a -> Set a
 singleton x =
     Set $ setBit 0 $ check "singleton" $ fromEnum x
 
@@ -181,34 +244,36 @@ singleton x =
 -- | /O(1)/. Insert an element in a set.
 -- If the set already contains an element equal to the given value,
 -- it is replaced with the new value.
-insert :: Enum a => a -> Set a -> Set a
+insert :: (Eq a, Enum a) => a -> Set a -> Set a
 insert x (Set w) =
     Set $ setBit w $ check "insert" $ fromEnum x
 
 -- | /O(1)/. Delete an element from a set.
-delete :: Enum a => a -> Set a -> Set a
+delete :: (Eq a, Enum a) => a -> Set a -> Set a
 delete x (Set w) = 
     Set $ clearBit w $ fromEnum x
+
+deleteAll :: (Eq a, Enum a) => a -> Set a -> Set a
+deleteAll = delete
+
+deleteSeq :: (Eq a, Enum a, S.Sequence s) => s a -> Set a -> Set a
+deleteSeq = deleteSeqUsingDelete
 
 {--------------------------------------------------------------------
   Subset
 --------------------------------------------------------------------}
 -- | /O(1)/. Is this a proper subset? (ie. a subset but not equal).
-isProperSubsetOf :: Set a -> Set a -> Bool
-isProperSubsetOf x y = (x /= y) && (isSubsetOf x y)
+properSubset :: Set a -> Set a -> Bool
+properSubset x y = (x /= y) && (subset x y)
 
 -- | /O(1)/. Is this a subset?
--- @(s1 `isSubsetOf` s2)@ tells whether @s1@ is a subset of @s2@.
-isSubsetOf :: Set a -> Set a -> Bool
-isSubsetOf x y = (x `union` y) == y
+-- @(s1 `subset` s2)@ tells whether @s1@ is a subset of @s2@.
+subset :: Set a -> Set a -> Bool
+subset x y = (x `union` y) == y
 
 {--------------------------------------------------------------------
   Minimal, Maximal
 --------------------------------------------------------------------}
--- | /O(n)/. The minimal element of a set.
-findMin :: Enum a => Set a -> a
-findMin (Set w) = toEnum $ findMinIndex w
-
 findMinIndex :: Word -> Int
 findMinIndex 0 = 
     error "EnumSet.findMin: empty set has no minimal element"
@@ -216,49 +281,90 @@ findMinIndex w = f 0 w
     where 
       f i w
           | 1 == (w .&. 1) = i
-          | otherwise = f (i+1) (w `shiftR` 1)
-
--- | /O(n)/. The maximal element of a set.
-findMax :: Enum a => Set a -> a
-findMax (Set w) = toEnum $ findMaxIndex w
+          | otherwise = f (i+1) (w `Bits.shiftR` 1)
 
 findMaxIndex :: Word -> Int
 findMaxIndex 0 = 
     error "EnumSet.findMax: empty set has no maximal element"
 findMaxIndex w = foldBits (\_ i -> i) 0 w
 
+
+-- | /O(n)/. The minimal element of a set.
+minElem :: (Eq a, Enum a) => Set a -> a
+minElem (Set w) = toEnum $ findMinIndex w
+
+
+-- | /O(n)/. The maximal element of a set.
+maxElem :: (Eq a, Enum a) => Set a -> a
+maxElem (Set w) = toEnum $ findMaxIndex w
+
+
 -- | /O(n)/. Delete the minimal element.
-deleteMin :: Set a -> Set a
+deleteMin :: (Ord a, Enum a) => Set a -> Set a
 deleteMin (Set 0) = empty
 deleteMin (Set w) = Set $ clearBit w $ findMinIndex w
 
 -- | /O(n)/. Delete the maximal element.
-deleteMax :: Set a -> Set a
+deleteMax :: (Ord a, Enum a) => Set a -> Set a
 deleteMax (Set 0) = empty
 deleteMax (Set w) = Set $ clearBit w $ findMaxIndex w
 
-deleteFindMin :: Enum a => Set a -> (a,Set a)
-deleteFindMin s@(Set 0) = 
-    (error 
-     "EnumSet.deleteFindMin: can not return the minimal element of an empty set", 
-     s)
-deleteFindMin s = (min,delete min s)
-    where min = findMin s
+minView :: (Eq a, Enum a, Monad m) => Set a -> m (a, Set a)
+minView s@(Set 0) = fail (moduleName++".minView: empty set")
+minView s = return (min,delete min s)
+    where min = minElem s
 
-deleteFindMax :: Enum a => Set a -> (a,Set a)
-deleteFindMax s@(Set 0) = 
-    (error 
-     "EnumSet.deleteFindMax: can not return the maximal element of an empty set", 
-     s)
-deleteFindMax s = (max,delete max s)
-    where max = findMax s
+maxView :: (Eq a, Enum a, Monad m) => Set a -> m (a, Set a)
+maxView s@(Set 0) = fail (moduleName++".maxView: empty set")
+maxView s = return (max,delete max s)
+    where max = maxElem s
+
+unsafeInsertMin :: (Ord a, Enum a) => a -> Set a -> Set a
+unsafeInsertMin = insert
+
+unsafeInsertMax :: (Ord a, Enum a) => a -> Set a -> Set a
+unsafeInsertMax = insert
+
+unsafeAppend :: (Ord a, Enum a) => Set a -> Set a -> Set a
+unsafeAppend = union
+
+unsafeFromOrdSeq :: (Ord a, Enum a, S.Sequence s) => s a -> Set a
+unsafeFromOrdSeq = fromSeq
+
+lowMask :: Int -> Word
+lowMask x = (Bits.shiftL 1 x) - 1
+
+highMask :: Int -> Word
+highMask x = Bits.complement (lowMask x)
+
+filterLT :: (Ord a, Enum a) => a -> Set a -> Set a
+filterLT x (Set w) = Set (w .&. lowMask (fromEnum x))
+
+filterLE :: (Ord a, Enum a) => a -> Set a -> Set a
+filterLE x (Set w) = Set (w .&. lowMask (fromEnum x + 1))
+
+filterGT :: (Ord a, Enum a) => a -> Set a -> Set a
+filterGT x (Set w) = Set (w .&. highMask (fromEnum x + 1))
+
+filterGE :: (Ord a, Enum a) => a -> Set a -> Set a
+filterGE x (Set w) = Set (w .&. highMask (fromEnum x))
+
+partitionLT_GE :: (Ord a, Enum a) => a -> Set a -> (Set a, Set a)
+partitionLT_GE x s = (filterLT x s,filterGE x s)
+
+partitionLE_GT :: (Ord a, Enum a) => a -> Set a -> (Set a, Set a)
+partitionLE_GT x s = (filterLE x s,filterGT x s)
+
+partitionLT_GT :: (Ord a, Enum a) => a -> Set a -> (Set a, Set a)
+partitionLT_GT x s = (filterLT x s,filterGT x s)
+
 
 {--------------------------------------------------------------------
   Union. 
 --------------------------------------------------------------------}
 -- | The union of a list of sets: (@'unions' == 'foldl' 'union' 'empty'@).
-unions :: [Set a] -> Set a
-unions = foldl' union empty
+unionSeq :: (Eq a, Enum a, S.Sequence s) => s (Set a) -> Set a
+unionSeq = unionSeqUsingFoldl'
 
 -- | /O(1)/. The union of two sets.
 union :: Set a -> Set a -> Set a
@@ -284,9 +390,9 @@ intersection (Set x) (Set y) = Set $ x .&. y
 --------------------------------------------------------------------}
 -- | /O(1). The complement of a set with its universe set. @complement@ can be used with bounded types for which the universe set
 -- will be automatically created.
-complement :: (Bounded a, Enum a) => Set a -> Set a
+complement :: (Eq a, Bounded a, Enum a) => Set a -> Set a
 complement x = complementWith u x
-    where u = (fromList [minBound .. maxBound]) `asTypeOf` x
+    where u = (fromSeq [minBound .. maxBound]) `asTypeOf` x
 
 complementWith :: Set a -> Set a -> Set a
 complementWith (Set u) (Set x) = Set $ u `xor` x
@@ -295,7 +401,7 @@ complementWith (Set u) (Set x) = Set $ u `xor` x
   Filter and partition
 --------------------------------------------------------------------}
 -- | /O(n)/. Filter all elements that satisfy the predicate.
-filter :: Enum a => (a -> Bool) -> Set a -> Set a
+filter :: (Eq a, Enum a) => (a -> Bool) -> Set a -> Set a
 filter p (Set w) = Set $ foldBits f 0 w
     where 
       f z i 
@@ -305,13 +411,15 @@ filter p (Set w) = Set $ foldBits f 0 w
 -- | /O(n)/. Partition the set into two sets, one with all elements that satisfy
 -- the predicate and one with all elements that don't satisfy the predicate.
 -- See also 'split'.
-partition :: Enum a => (a -> Bool) -> Set a -> (Set a,Set a)
+partition :: (Eq a, Enum a) => (a -> Bool) -> Set a -> (Set a,Set a)
 partition p (Set w) = (Set yay,Set nay)
     where 
       (yay,nay) = foldBits f (0,0) w
       f (x,y) i 
           | p $ toEnum i = (setBit x i,y)
           | otherwise = (x,setBit y i)
+
+
 
 {----------------------------------------------------------------------
   Map
@@ -328,68 +436,89 @@ map f (Set w) = Set $ foldBits fold 0 w
 
 -- | @'mapMonotonic'@ is provided for compatibility with the 
 -- Data.Set interface.
-mapMonotonic :: (Enum a,Enum b) => (a -> b) -> Set a -> Set b
-mapMonotonic = map
+unsafeMapMonotonic :: (Enum a) => (a -> a) -> Set a -> Set a
+unsafeMapMonotonic = map
 
 {--------------------------------------------------------------------
   Fold
 --------------------------------------------------------------------}
 -- | /O(n)/. Fold over the elements of a set in an unspecified order.
-fold :: Enum a => (b -> a -> b) -> b -> Set a -> b
+fold :: (Eq a, Enum a) => (a -> b -> b) -> b -> Set a -> b
 fold f z (Set w) = foldBits folder z w
     where
-      folder z i = f z $ toEnum i
+      folder z i = f (toEnum i) z
 
-foldr :: (Enum a) => (a -> c -> c) -> c -> Set a -> c
-foldr f = fold (flip f)
+fold' :: (Eq a, Enum a) => (a -> b -> b) -> b -> Set a -> b
+fold' = fold
 
-{--------------------------------------------------------------------
-  List variations 
---------------------------------------------------------------------}
--- | /O(n)/. The elements of a set.
-elems :: Enum a => Set a -> [a]
-elems = toList
+fold1 :: (Eq a, Enum a) => (a -> a -> a) -> Set a -> a
+fold1 f (Set w) = foldBits folder (toEnum min) (clearBit w min)
+    where
+      min = findMinIndex w
+      folder z i = f (toEnum i) z
+
+fold1' :: (Eq a, Enum a) => (a -> a -> a) -> Set a -> a
+fold1' = fold1
+
+foldr :: (Ord a, Enum a) => (a -> c -> c) -> c -> Set a -> c
+foldr = fold
+
+foldr' :: (Ord a, Enum a) => (a -> c -> c) -> c -> Set a -> c
+foldr' = foldr
+
+foldr1 :: (Ord a, Enum a) => (a -> a -> a) -> Set a -> a
+foldr1 = fold1
+
+foldr1' :: (Ord a, Enum a) => (a -> a -> a) -> Set a -> a
+foldr1' = foldr1
+
+foldl :: (Ord a, Enum a) => (c -> a -> c) -> c -> Set a -> c
+foldl = undefined
+
+foldl' :: (Ord a, Enum a) => (c -> a -> c) -> c -> Set a -> c
+foldl' = foldl
+
+foldl1 :: (Ord a, Enum a) => (a -> a -> a) -> Set a -> a
+foldl1 = undefined
+
+foldl1' :: (Ord a, Enum a) => (a -> a -> a) -> Set a -> a
+foldl1' = foldl1
+
 
 {--------------------------------------------------------------------
   Lists 
 --------------------------------------------------------------------}
--- | /O(n)/. Convert the set to a list of elements.
-toList :: Enum a => Set a -> [a]
-toList (Set w) = reverse $ foldBits f [] w
-    where
-      f z i = (toEnum i) : z
+fromSeq :: (Eq a, Enum a, S.Sequence s) => s a -> Set a
+fromSeq xs = Set $ S.fold' f 0 xs
+  where
+     f x z = setBit z $ check "fromSeq" $ fromEnum x
 
--- | /O(n)/. Convert the set to an ascending list of elements.
-toAscList :: (Ord a,Enum a) => Set a -> [a]
-toAscList = sort . toList
+fromOrdSeq :: (Ord a, Enum a, S.Sequence s) => s a -> Set a
+fromOrdSeq = fromSeq
 
--- | /O(n)/. Create a set from a list of elements.
-fromList :: Enum a => [a] -> Set a
-fromList xs = Set $ foldl' f 0 xs
-    where 
-      f z x = setBit z $ check "fromList" $ fromEnum x
--- | @fromAscList@ and @fromDistinctAscList@ maintained for compatibility
--- with Data.Set, but here give no advantage.
-fromAscList :: Enum a => [a] -> Set a
-fromAscList = fromList
+insertSeq :: (Eq a, Enum a, S.Sequence s) => s a -> Set a -> Set a
+insertSeq = insertSeqUsingUnion
 
-fromDistinctAscList :: Enum a => [a] -> Set a
-fromDistinctAscList = fromList
+toSeq :: (Eq a, Enum a, S.Sequence s) => Set a -> s a
+toSeq (Set w) = S.reverse $ foldBits f S.empty w
+  where
+     f z i = S.lcons (toEnum i) z
+
+toOrdSeq :: (Ord a, Enum a, S.Sequence s) => Set a -> s a
+toOrdSeq = toSeq
 
 {--------------------------------------------------------------------
   Show
 --------------------------------------------------------------------}
+{-
 instance (Enum a, Show a) => Show (Set a) where
     show xs = 
         "{"++(concat $ intersperse "," [show x | x <- toList xs])++"}"
+-}
 
 {--------------------------------------------------------------------
   Split
 --------------------------------------------------------------------}
-split :: (Ord a, Enum a) => a -> Set a -> (Set a,Set a)
-split x s = (lesser,greater)
-    where (lesser,_,greater) = splitMember x s
-
 splitMember :: (Ord a, Enum a) => a -> Set a -> (Set a,Bool,Set a)
 splitMember x (Set w) = (Set lesser,isMember,Set greater)
     where
@@ -405,7 +534,7 @@ splitMember x (Set w) = (Set lesser,isMember,Set greater)
 --------------------------------------------------------------------}
 
 foldBits :: Bits c => (a -> Int -> a) -> a -> c -> a
-foldbits _ z 0  = z
+foldBits _ z 0  = z
 foldBits f z bs = foldBits' f 0 bs z
 
 foldBits' :: Bits c => (a -> Int -> a) -> Int -> c -> a -> a
@@ -415,19 +544,52 @@ foldBits' f i bs z
     where z' | 1 == bs .&. 1 = f z i
              | otherwise =  z
           i' = i + 1
-          bs' = bs `shiftR` 1
+          bs' = bs `Bits.shiftR` 1
 
 {--------------------------------------------------------------------
   Ord 
 --------------------------------------------------------------------}
+{-
 instance (Enum a,Ord a) => Ord (Set a) where
     compare a b = compare (toAscList a) (toAscList b)
+-}
 
 {--------------------------------------------------------------------
   Monoid
 --------------------------------------------------------------------}
-instance Enum a => Monoid (Set a) where
+instance (Eq a, Enum a) => Monoid (Set a) where
     mempty  = empty
     mappend = union
-    mconcat = unions
+    mconcat = unionSeq
 
+instance (Eq a, Enum a) => C.CollX (Set a) a where
+  {empty = empty; singleton = singleton; fromSeq = fromSeq; insert = insert;
+   insertSeq = insertSeq; union = union; unionSeq = unionSeq; 
+   delete = delete; deleteAll = deleteAll; deleteSeq = deleteSeq;
+   null = null; size = size; member = member; count = count;
+   structuralInvariant = structuralInvariant; instanceName c = moduleName}
+
+instance (Ord a, Enum a) => C.OrdCollX (Set a) a where  
+  {deleteMin = deleteMin; deleteMax = deleteMax; 
+   unsafeInsertMin = unsafeInsertMin; unsafeInsertMax = unsafeInsertMax; 
+   unsafeFromOrdSeq = unsafeFromOrdSeq; unsafeAppend = unsafeAppend; 
+   filterLT = filterLT; filterLE = filterLE; filterGT = filterGT; 
+   filterGE = filterGE; partitionLT_GE = partitionLT_GE; 
+   partitionLE_GT = partitionLE_GT; partitionLT_GT = partitionLT_GT}
+
+instance (Eq a, Enum a) => C.SetX (Set a) a where
+  {intersection = intersection; difference = difference;
+   properSubset = properSubset; subset = subset}
+
+instance (Eq a, Enum a) => C.Coll (Set a) a where
+  {toSeq = toSeq; lookup = lookup; lookupM = lookupM; 
+   lookupAll = lookupAll; lookupWithDefault = lookupWithDefault; 
+   fold = fold; fold' = fold'; fold1 = fold1; fold1' = fold1';
+   filter = filter; partition = partition}
+
+instance (Ord a, Enum a) => C.OrdColl (Set a) a where
+  {minView = minView; minElem = minElem; maxView = maxView; 
+   maxElem = maxElem; foldr = foldr; foldr' = foldr'; 
+   foldl = foldl; foldl' = foldl'; foldr1 = foldr1; foldr1' = foldr1';
+   foldl1 = foldl1; foldl1' = foldl1'; toOrdSeq = toOrdSeq;
+   unsafeMapMonotonic = unsafeMapMonotonic}

@@ -45,6 +45,9 @@ deleteSeqUsingDelete xs c = S.foldr delete c xs
 unionSeqUsingFoldl :: (CollX c a,S.Sequence seq) => seq c -> c
 unionSeqUsingFoldl = S.foldl union empty
 
+unionSeqUsingFoldl' :: (CollX c a,S.Sequence seq) => seq c -> c
+unionSeqUsingFoldl' = S.foldl' union empty
+
 unionSeqUsingReduce :: (CollX c a,S.Sequence seq) => seq c -> c
 unionSeqUsingReduce = S.reducel union empty
 
