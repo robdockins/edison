@@ -403,10 +403,10 @@ instance Ord a => Eq (Set a) where
   xs == ys = C.toOrdList xs == C.toOrdList ys
 
 instance (Ord a, Show a) => Show (Set a) where
-   showsPrec = showsPrecUsingToOrdList
+   showsPrec = showsPrecUsingToList
 
 instance (Ord a, Read a) => Read (Set a) where
-   readsPrec = readsPrecUsingUnsafeFromOrdSeq
+   readsPrec = readsPrecUsingFromList
 
 
 instance (Ord a, Arbitrary a) => Arbitrary (Set a) where

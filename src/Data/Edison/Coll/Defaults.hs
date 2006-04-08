@@ -210,17 +210,17 @@ intersectionWithUsingOrdLists c xs ys = unsafeFromOrdList (inter (toOrdList xs) 
 unsafeMapMonotonicUsingFoldr :: (OrdColl cin a, OrdCollX cout b) => (a -> b) -> (cin -> cout)
 unsafeMapMonotonicUsingFoldr f xs = foldr (unsafeInsertMin . f) empty xs
 
-showsPrecUsingToOrdList :: (OrdColl c a,Show a) => Int -> c -> ShowS
-showsPrecUsingToOrdList i xs rest
-  | i == 0    = concat [    instanceName xs,".unsafeFromOrdSeq ",showsPrec 10 (toOrdList xs) rest]
-  | otherwise = concat ["(",instanceName xs,".unsafeFromOrdSeq ",showsPrec 10 (toOrdList xs) (')':rest)]
+showsPrecUsingToList :: (Coll c a,Show a) => Int -> c -> ShowS
+showsPrecUsingToList i xs rest
+  | i == 0    = concat [    instanceName xs,".fromSeq ",showsPrec 10 (toList xs) rest]
+  | otherwise = concat ["(",instanceName xs,".fromSeq ",showsPrec 10 (toList xs) (')':rest)]
 
-readsPrecUsingUnsafeFromOrdSeq :: (OrdColl c a, Read a) => Int -> ReadS c
-readsPrecUsingUnsafeFromOrdSeq i xs =
+readsPrecUsingFromList :: (Coll c a, Read a) => Int -> ReadS c
+readsPrecUsingFromList i xs =
     let result = maybeParens p xs
-        p xs = tokenMatch ((instanceName x)++".unsafeFromOrdSeq") xs
+        p xs = tokenMatch ((instanceName x)++".fromSeq") xs
                  >>= readsPrec 10
-                 >>= \(l,rest) -> return (unsafeFromOrdList l,rest)
+                 >>= \(l,rest) -> return (fromList l,rest)
 
         -- play games with the typechecker so we don't have to use
         -- extensions for scoped type variables
