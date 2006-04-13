@@ -202,21 +202,16 @@ structuralInvariant = const True
 -- bit twiddly magic
 
 countBits :: Word -> Int
-countBits w
-   | w == 0 = 0
-   | otherwise = countBits (w `shiftR` 8) + bitsTable!(w .&. 0xFF)
+countBits w = w `seq` bitcount 0 w
 
-bitsTable :: Array Word Int
-bitsTable = array (0,255) $ [(i,bitcount i) | i <- [0..255]]
+bitcount :: Int -> Word -> Int
+bitcount a 0 = a
+bitcount a x = a `seq` bitcount (a+1) (x .&. (x-1))
 
-bitcount :: Word -> Int
-bitcount 0 = 0
-bitcount x = 1 + bitcount (x .&. (x-1))
-
+-- stolen from http://aggregate.org/MAGIC/
 lsb :: Word -> Int
 lsb x = countBits ((x-1) .&. (Bits.complement x))
 
--- stolen from http://aggregate.org/MAGIC/
 msb :: Word -> Int
 msb x0 = let
      x1 = x0 .|. (x0 `shiftR` 1)
@@ -225,6 +220,7 @@ msb x0 = let
      x4 = x3 .|. (x3 `shiftR` 8)
      x5 = x4 .|. (x4 `shiftR` 16)
      in countBits x5 - 1
+
 
 lowMask :: Int -> Word
 lowMask x = bit x - 1
