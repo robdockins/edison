@@ -342,6 +342,12 @@ class CollX c a => SetX c a | c -> a where
   --   This function is always /unambiguous/.
   difference  :: c -> c -> c
 
+  -- | Computes the symmetric difference of two sets; that is, all elements
+  --   which appear in exactily one of the two sets.
+  --
+  --   This function is always /unambiguous/.
+  symmetricDifference :: c -> c -> c
+
   -- | Test whether the first set is a proper subset of the second set;
   --   that is, if every element in the first set is also a member of the
   --   second set AND there exists some element in the second set which

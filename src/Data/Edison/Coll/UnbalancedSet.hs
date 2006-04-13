@@ -31,7 +31,7 @@ module Data.Edison.Coll.UnbalancedSet (
     foldr1,foldr1',foldl1,foldl1',toOrdSeq,unsafeMapMonotonic,
 
     -- * SetX operations
-    intersection,difference,properSubset,subset,
+    intersection,difference,symmetricDifference,properSubset,subset,
 
     -- * Set operations
     fromSeqWith,insertWith,insertSeqWith,unionl,unionr,unionWith,
@@ -109,6 +109,7 @@ toOrdSeq      :: (Ord a,S.Sequence seq) => Set a -> seq a
 
 intersection  :: Ord a => Set a -> Set a -> Set a
 difference    :: Ord a => Set a -> Set a -> Set a
+symmetricDifference :: Ord a => Set a -> Set a -> Set a
 properSubset  :: Ord a => Set a -> Set a -> Bool
 subset        :: Ord a => Set a -> Set a -> Bool
 
@@ -344,6 +345,7 @@ toOrdSeq = toOrdSeqUsingFoldr
 
 intersection = intersectionUsingIntersectionWith
 difference = differenceUsingOrdLists
+symmetricDifference = symmetricDifferenceUsingDifference
 properSubset = properSubsetUsingOrdLists
 subset = subsetUsingOrdLists
 fromSeqWith = fromSeqWithUsingInsertWith
@@ -386,6 +388,7 @@ instance Ord a => C.OrdColl (Set a) a where
 
 instance Ord a => C.SetX (Set a) a where
   {intersection = intersection; difference = difference;
+   symmetricDifference = symmetricDifference;
    properSubset = properSubset; subset = subset}
 
 instance Ord a => C.Set (Set a) a where

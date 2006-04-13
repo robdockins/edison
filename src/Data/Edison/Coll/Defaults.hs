@@ -152,6 +152,9 @@ differenceUsingOrdLists xs ys = unsafeFromOrdList (diff (toOrdList xs) (toOrdLis
             GT -> diff a ys
         diff a _ = a
 
+symmetricDifferenceUsingDifference :: SetX c a => c -> c -> c
+symmetricDifferenceUsingDifference xs ys = union (difference xs ys) (difference ys xs)
+
 properSubsetUsingOrdLists :: OrdSet c a => c -> c -> Bool
 properSubsetUsingOrdLists xs ys = properSubsetOnOrdLists (toOrdList xs) (toOrdList ys)
 

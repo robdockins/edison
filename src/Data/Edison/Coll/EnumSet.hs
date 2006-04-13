@@ -115,6 +115,7 @@ module Data.Edison.Coll.EnumSet (
             -- * SetX operations
             , intersection
             , difference
+            , symmetricDifference
             , properSubset
             , subset
 
@@ -420,6 +421,9 @@ unionSeqWith f = unionSeq
 -- | /O(1)/. Difference of two sets. 
 difference :: Set a -> Set a -> Set a
 difference (Set x) (Set y) = Set $ (x .|. y) `xor` y
+
+symmetricDifference :: Set a -> Set a -> Set a
+symmetricDifference (Set x) (Set y) = Set $ x `xor` y
 
 {--------------------------------------------------------------------
   Intersection
@@ -753,6 +757,7 @@ instance (Ord a, Enum a) => C.OrdCollX (Set a) a where
 
 instance (Eq a, Enum a) => C.SetX (Set a) a where
   {intersection = intersection; difference = difference;
+   symmetricDifference = symmetricDifference;
    properSubset = properSubset; subset = subset}
 
 instance (Eq a, Enum a) => C.Coll (Set a) a where

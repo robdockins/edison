@@ -108,6 +108,7 @@ setTests set = TestLabel ("Set Test "++(instanceName set)) . TestList $
    , qcTest $ prop_unionSeqWith set
    , qcTest $ prop_intersectWith set
    , qcTest $ prop_unsafeMapMonotonic set
+   , qcTest $ prop_symmetricDifference set
    ]
 
 -----------------------------------------------------
@@ -440,3 +441,8 @@ prop_unsafeMapMonotonic set xs =
 prop_show_read :: (SetTest a set,Read (set a),Show (set a)) 
                => set a -> set a -> Bool
 prop_show_read set xs = xs === read (show xs)
+
+
+prop_symmetricDifference :: SetTest a set => set a -> set a -> set a -> Bool
+prop_symmetricDifference set xs ys =
+   union (difference xs ys) (difference ys xs) === symmetricDifference xs ys
