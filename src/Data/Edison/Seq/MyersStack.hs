@@ -387,6 +387,9 @@ instance Eq a => Eq (Seq a) where
   xs == ys =
     (size xs == size ys) && (toList xs == toList ys)
 
+instance Ord a => Ord (Seq a) where
+  compare = defaultCompare
+
 instance Show a => Show (Seq a) where
   showsPrec = showsPrecUsingToList
 

@@ -478,6 +478,17 @@ readsPrecUsingFromList i xs =
 
    in result
 
+defaultCompare :: (Ord a, Sequence s) => s a -> s a -> Ordering
+defaultCompare a b =
+   case (lview a, lview b) of
+     (Nothing, Nothing) -> EQ
+     (Nothing, _      ) -> LT
+     (_      , Nothing) -> GT
+     (Just (x,xs), Just (y,ys)) ->
+	case compare x y of
+           EQ -> defaultCompare xs ys
+           c -> c
+
 
 dropMatch :: (Eq a,MonadPlus m) => [a] -> [a] -> m [a]
 dropMatch [] ys = return ys

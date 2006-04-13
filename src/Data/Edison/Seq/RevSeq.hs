@@ -345,6 +345,9 @@ instance S.Sequence s => MonadPlus (Rev s) where
 instance Eq (s a) => Eq (Rev s a) where
   (N m xs) == (N n ys) = (m == n) && (xs == ys)
 
+instance (S.Sequence s, Ord a, Eq (s a)) => Ord (Rev s a) where
+  compare = defaultCompare
+
 instance (S.Sequence s, Show (s a)) => Show (Rev s a) where
   showsPrec i xs rest
      | i == 0    = L.concat [    moduleName,".fromSeq ",showsPrec 10 (toSeq xs) rest]

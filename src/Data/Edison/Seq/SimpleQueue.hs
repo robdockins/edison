@@ -341,6 +341,9 @@ instance MonadPlus Seq where
 instance Eq a => Eq (Seq a) where
   q1 == q2 = toList q1 == toList q2
 
+instance Ord a => Ord (Seq a) where
+  compare = defaultCompare
+
 instance Show a => Show (Seq a) where
   showsPrec = showsPrecUsingToList
 

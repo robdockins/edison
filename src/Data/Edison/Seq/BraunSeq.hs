@@ -509,6 +509,9 @@ instance MonadPlus Seq where
 
 -- instance Eq (Seq a) is derived
 
+instance Ord a => Ord (Seq a) where
+  compare = defaultCompare
+
 instance Show a => Show (Seq a) where
   showsPrec = showsPrecUsingToList
 

@@ -441,6 +441,9 @@ instance MonadPlus Seq where
   mplus = append
   mzero = empty
 
+instance Ord a => Ord (Seq a) where
+  compare = defaultCompare
+
 instance Show a => Show (Seq a) where
   showsPrec = showsPrecUsingToList
 
