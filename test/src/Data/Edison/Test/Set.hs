@@ -288,28 +288,22 @@ prop_unsafeInsertMin_Max set i xs =
       &&
       unsafeInsertMax 0 xs === singleton 0
     else
-      unsafeInsertMin lo xs === insert lo xs
+      unsafeInsertMin lo (delete lo xs) === xs
       &&
-      unsafeInsertMax hi xs === insert hi xs
-  where lo = minElem xs - 1
-        hi = maxElem xs + 1
-    
+      unsafeInsertMax hi (delete hi xs) === xs
+  where lo = minElem xs
+        hi = maxElem xs
+
 prop_unsafeFromOrdSeq :: SetTest a set => set a -> [a] -> Bool
 prop_unsafeFromOrdSeq set xs =
     unsafeFromOrdSeq (sort xs) === (fromSeq xs `asTypeOf` set)
 
 prop_unsafeAppend :: SetTest a set => 
-	set a -> a -> set a -> set a -> Bool
-prop_unsafeAppend set i xs ys =
-    if null xs || null ys then
-      unsafeAppend xs ys === union xs ys
-    else
-      unsafeAppend xs ys' === union xs ys'
-  where delta = maxElem xs - minElem ys + 1
-        ys' = unsafeMapMonotonic (+delta) ys
-  -- if unsafeMapMonotonic does any reorganizing in addition
-  -- to simply replacing the elements, then this test will
-  -- not provide even coverage
+	set a -> a -> set a -> Bool
+prop_unsafeAppend set i xs =
+       union ys zs === unsafeAppend ys zs
+    where (ys,zs) = partitionLE_GT i xs
+
 
 prop_filter :: SetTest a set => set a -> a -> set a -> Bool
 prop_filter set x xs =
@@ -438,7 +432,10 @@ prop_intersectWith set xs ys =
 
 prop_unsafeMapMonotonic :: SetTest a set => set a -> set a -> Bool
 prop_unsafeMapMonotonic set xs =
-    toOrdList (unsafeMapMonotonic (2*) xs) == Prelude.map (2*) (toOrdList xs)
+   if null xs
+      then True
+      else let xs' = deleteMax xs 
+	    in toOrdList (unsafeMapMonotonic (+1) xs') == Prelude.map (+1) (toOrdList xs')
 
 prop_show_read :: (SetTest a set,Read (set a),Show (set a)) 
                => set a -> set a -> Bool
