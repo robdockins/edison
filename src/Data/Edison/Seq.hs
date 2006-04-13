@@ -58,7 +58,8 @@ import Prelude hiding (concat,reverse,map,concatMap,foldr,foldl,foldr1,foldl1,
                        zip,zip3,zipWith,zipWith3,unzip,unzip3,null)
 
 import Control.Monad
-import qualified Control.Monad.Identity as ID
+import Data.Monoid
+
 import Data.Edison.Prelude
 
 
@@ -147,12 +148,10 @@ append    :: Sequence s => s a -> s a -> s a
 append = mplus
 
 
-
 -- | The 'Sequence' class defines an interface for datatypes which
 --   implement sequences.  A description for each function is
 --   given below.  
 class (Functor s, MonadPlus s) => Sequence s where
-
 
   -- | Add a new element to the front\/left of a sequence
   --

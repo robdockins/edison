@@ -45,6 +45,7 @@ import qualified Data.Edison.Coll as C ( CollX(..), OrdCollX(..), Coll(..), OrdC
                                    unionList, toOrdList )
 import qualified Data.Edison.Seq as S
 import Data.Edison.Coll.Defaults
+import Data.Monoid
 import Control.Monad
 import Test.QuickCheck
 
@@ -404,8 +405,8 @@ toOrdSeq = toOrdSeqUsingFoldr
 -- instance declarations
 
 instance Ord a => C.CollX (Heap a) a where
-  {empty = empty; singleton = singleton; fromSeq = fromSeq; insert = insert;
-   insertSeq = insertSeq; union = union; unionSeq = unionSeq; 
+  {singleton = singleton; fromSeq = fromSeq; insert = insert;
+   insertSeq = insertSeq; unionSeq = unionSeq; 
    delete = delete; deleteAll = deleteAll; deleteSeq = deleteSeq;
    null = null; size = size; member = member; count = count;
    structuralInvariant = structuralInvariant; instanceName c = moduleName}
@@ -468,3 +469,8 @@ instance (Ord a, Arbitrary a) => Arbitrary (Heap a) where
   coarbitrary E = variant 0
   coarbitrary (L _ x a b) = 
       variant 1 . coarbitrary x . coarbitrary a . coarbitrary b
+
+instance (Ord a) => Monoid (Heap a) where
+    mempty  = empty
+    mappend = union
+    mconcat = unionSeq

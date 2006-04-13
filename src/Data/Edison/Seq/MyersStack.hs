@@ -48,6 +48,7 @@ import qualified Data.Edison.Seq as S ( Sequence(..) )
 import Data.Edison.Seq.Defaults
 import Control.Monad
 import Control.Monad.Identity
+import Data.Monoid
 import Test.QuickCheck
 
 -- signatures for exported functions
@@ -399,6 +400,11 @@ instance Arbitrary a => Arbitrary (Seq a) where
 
   coarbitrary xs = coarbitrary (toList xs)
 
+instance Monoid (Seq a) where
+  mempty  = empty
+  mappend = append
+
+
 -------------
 
 {-
@@ -412,3 +418,4 @@ questions:
 
 I don't believe any will do any better, except possibly the first
 -}
+

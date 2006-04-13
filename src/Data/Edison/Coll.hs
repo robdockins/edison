@@ -66,6 +66,10 @@
 --   require the elements themselves, rather than the hashed values.
 
 module Data.Edison.Coll (
+    -- * Superclass aliases
+    -- ** Monoid
+    empty, union,
+
     -- * Non-observable collections
     CollX(..),
     OrdCollX(..),
@@ -94,20 +98,33 @@ module Data.Edison.Coll (
 ) where
 
 import Prelude hiding (null,foldr,foldl,foldr1,foldl1,lookup,filter)
+import Data.Monoid
+
 import Data.Edison.Prelude
 import Data.Edison.Seq(Sequence)
 import Data.Edison.Seq.ListSeq()
 
+
+-- | The empty collection.  Equivalant to @mempty@ from
+--   the @Monoid@ instance.
+--
+--   This function is always /unambiguous/.
+empty :: CollX c a => c
+empty = mempty
+
+-- | Merge two collections.  For sets, it is unspecified which element is
+--   kept in the case of duplicates.  Equivalant to @mappend@ from the
+--   @Monoid@ instance.
+--
+--   This function is /ambiguous/ at set types if the sets are not disjoint.
+--   Otherwise it is /unambiguous/.
+union :: CollX c a => c -> c -> c
+union = mappend
+
+
 -- | This is the root class of the collection hierarchy.  However, it
 --   is perfectly adequate for many applications that use sets or bags.
-
-class Eq a => CollX c a | c -> a where
-
-  -- | The empty collection
-  --
-  --   This function is always /unambiguous/.
-  empty          :: c
-
+class (Eq a,Monoid c) => CollX c a | c -> a where
   -- | create a singleton collection
   --
   --   This function is always /unambiguous/.
@@ -119,6 +136,13 @@ class Eq a => CollX c a | c -> a where
   --   This function is /ambiguous/ at set types if more than one
   --   equivalent item is in the sequence.  Otherwise it is /unambiguous/.
   fromSeq        :: Sequence seq => seq a -> c
+
+  -- | Merge a sequence of collections.  For sets, it is unspecified which
+  --   element is kept in the case of duplicates.
+  --
+  --   This function is /ambiguous/ at set types if the sets in the sequence
+  --   are not mutually disjoint. Otherwise it is /unambiguous/.
+  unionSeq :: Sequence seq => seq c -> c
 
   -- | Insert an element into a collection.  For sets, if an equal element
   --   is already in the set, the newly inserted element is kept, and the
@@ -134,20 +158,6 @@ class Eq a => CollX c a | c -> a where
   --   more than one equivalent item or an item which is already in the set.
   --   Otherwise it is /unambiguous/.
   insertSeq      :: Sequence seq => seq a -> c -> c
-
-  -- | Merge two collections.  For sets, it is unspecified which element is
-  --   kept in the case of duplicates.
-  --
-  --   This function is /ambiguous/ at set types if the sets are not disjoint.
-  --   Otherwise it is /unambiguous/.
-  union          :: c -> c -> c
-
-  -- | Merge a sequence of collections.  For sets, it is unspecified which
-  --   element is kept in the case of duplicates.
-  --
-  --   This function is /ambiguous/ at set types if the sets in the sequence
-  --   are not mutually disjoint. Otherwise it is /unambiguous/.
-  unionSeq       :: Sequence seq => seq c -> c
 
   -- | Delete a single occurrence of the given element from a collection.
   --   For bags, it is unspecified which element will be deleted.

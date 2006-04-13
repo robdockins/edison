@@ -217,8 +217,8 @@ unsafeMapMonotonic = DS.mapMonotonic
 
 
 instance Ord a => C.CollX (Set a) a where
-  {empty = empty; singleton = singleton; fromSeq = fromSeq; insert = insert;
-   insertSeq = insertSeq; union = union; unionSeq = unionSeq; 
+  {singleton = singleton; fromSeq = fromSeq; insert = insert;
+   insertSeq = insertSeq; unionSeq = unionSeq; 
    delete = delete; deleteAll = deleteAll; deleteSeq = deleteSeq;
    null = null; size = size; member = member; count = count;
    structuralInvariant = structuralInvariant; instanceName c = moduleName}

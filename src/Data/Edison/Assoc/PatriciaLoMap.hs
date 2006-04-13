@@ -45,6 +45,7 @@ module Data.Edison.Assoc.PatriciaLoMap (
 import Prelude hiding (null,map,lookup,foldr,foldl,foldr1,foldl1,filter)
 import qualified Prelude
 import Control.Monad.Identity (runIdentity)
+import Data.Monoid
 import Data.Edison.Prelude
 import qualified Data.Edison.Assoc as A
 import qualified Data.Edison.Seq as S
@@ -620,3 +621,8 @@ instance (Arbitrary a) => Arbitrary (FM a) where
    coarbitrary (B i j m n) = variant 2 . coarbitrary i . coarbitrary j
                            . coarbitrary m . coarbitrary n
 
+
+instance Monoid (FM a) where
+   mempty  = empty
+   mappend = union
+   mconcat = unionSeq

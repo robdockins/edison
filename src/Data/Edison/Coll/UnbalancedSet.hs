@@ -48,6 +48,7 @@ import qualified Data.Edison.Coll as C
 import qualified Data.Edison.Seq as S
 import qualified Data.Edison.Seq.ListSeq as L
 import Data.Edison.Coll.Defaults
+import Data.Monoid
 import Test.QuickCheck
 
 -- signatures for exported functions
@@ -359,8 +360,8 @@ intersectionWith = intersectionWithUsingOrdLists
 -- instance declarations
 
 instance Ord a => C.CollX (Set a) a where
-  {empty = empty; singleton = singleton; fromSeq = fromSeq; insert = insert;
-   insertSeq = insertSeq; union = union; unionSeq = unionSeq; 
+  {singleton = singleton; fromSeq = fromSeq; insert = insert;
+   insertSeq = insertSeq; unionSeq = unionSeq; 
    delete = delete; deleteAll = deleteAll; deleteSeq = deleteSeq;
    null = null; size = size; member = member; count = count;
    structuralInvariant = structuralInvariant; instanceName c = moduleName}
@@ -419,3 +420,8 @@ instance (Ord a, Arbitrary a) => Arbitrary (Set a) where
   coarbitrary E = variant 0
   coarbitrary (T a x b) = 
     variant 1 . coarbitrary a . coarbitrary x . coarbitrary b
+
+instance (Ord a) => Monoid (Set a) where
+    mempty  = empty
+    mappend = union
+    mconcat = unionSeq

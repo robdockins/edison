@@ -56,6 +56,7 @@ module Data.Edison.Assoc.AssocList (
 
 import Prelude hiding (null,map,lookup,foldr,foldl,foldr1,foldl1,filter)
 import qualified Prelude
+import Data.Monoid
 import Control.Monad.Identity
 import Data.Edison.Prelude
 import qualified Data.Edison.Assoc as A
@@ -587,3 +588,8 @@ instance (Eq k,Arbitrary k,Arbitrary a) => Arbitrary (FM k a) where
    coarbitrary (I k a m) = variant 1 . coarbitrary k
                          . coarbitrary a . coarbitrary m
 
+
+instance Eq k => Monoid (FM k a) where
+   mempty  = empty
+   mappend = union
+   mconcat = unionSeq

@@ -51,6 +51,7 @@ import Data.Maybe
 import Data.Edison.Prelude
 import qualified Data.Edison.Seq as S ( Sequence(..) ) 
 import Data.Edison.Seq.Defaults
+import Data.Monoid
 import Control.Monad
 import Test.QuickCheck
 
@@ -415,3 +416,7 @@ instance Arbitrary a => Arbitrary (Seq a) where
   coarbitrary E = variant 0
   coarbitrary (Even ps) = variant 1 . coarbitrary ps
   coarbitrary (Odd x ps) = variant 2 . coarbitrary x . coarbitrary ps
+
+instance Monoid (Seq a) where
+  mempty  = empty
+  mappend = append

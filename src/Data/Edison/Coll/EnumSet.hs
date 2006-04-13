@@ -741,8 +741,8 @@ foldBits' f i bs z
 -}
 
 instance (Eq a, Enum a) => C.CollX (Set a) a where
-  {empty = empty; singleton = singleton; fromSeq = fromSeq; insert = insert;
-   insertSeq = insertSeq; union = union; unionSeq = unionSeq; 
+  {singleton = singleton; fromSeq = fromSeq; insert = insert;
+   insertSeq = insertSeq; unionSeq = unionSeq; 
    delete = delete; deleteAll = deleteAll; deleteSeq = deleteSeq;
    null = null; size = size; member = member; count = count;
    structuralInvariant = structuralInvariant; instanceName c = moduleName}
@@ -794,9 +794,6 @@ instance (Eq a, Enum a, Arbitrary a) => Arbitrary (Set a) where
 
   coarbitrary (Set w) = coarbitrary (fromIntegral w :: Int)
 
-{--------------------------------------------------------------------
-  Monoid
---------------------------------------------------------------------}
 instance (Eq a, Enum a) => Monoid (Set a) where
     mempty  = empty
     mappend = union

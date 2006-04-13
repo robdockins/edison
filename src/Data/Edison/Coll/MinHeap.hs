@@ -44,6 +44,7 @@ import qualified Data.Edison.Coll as C
 import qualified Data.Edison.Seq as S
 import Data.Edison.Coll.Defaults
 import Data.Edison.Seq.Defaults (tokenMatch,maybeParens)
+import Data.Monoid
 import Control.Monad
 import Test.QuickCheck
 
@@ -336,8 +337,8 @@ unsafeMapMonotonic = unsafeMapMonotonicUsingFoldr
 -- instance declarations
 
 instance (C.OrdColl h a, Ord a) => C.CollX (Min h a) a where
-  {empty = empty; singleton = singleton; fromSeq = fromSeq; insert = insert;
-   insertSeq = insertSeq; union = union; unionSeq = unionSeq; 
+  {singleton = singleton; fromSeq = fromSeq; insert = insert;
+   insertSeq = insertSeq; unionSeq = unionSeq; 
    delete = delete; deleteAll = deleteAll; deleteSeq = deleteSeq;
    null = null; size = size; member = member; count = count;
    structuralInvariant = structuralInvariant; instanceName c = moduleName}
@@ -386,3 +387,8 @@ instance (C.OrdColl h a,Arbitrary h,Arbitrary a) => Arbitrary (Min h a) where
 
   coarbitrary E = variant 0
   coarbitrary (M x xs) = variant 1 . coarbitrary x . coarbitrary xs
+
+instance (C.OrdColl h a) => Monoid (Min h a) where
+    mempty  = empty
+    mappend = union
+    mconcat = unionSeq

@@ -52,6 +52,7 @@ import Data.Edison.Prelude
 import qualified Data.Edison.Seq as S ( Sequence(..) ) 
 import Data.Edison.Seq.Defaults
 import qualified Data.Edison.Seq.ListSeq as L
+import Data.Monoid
 import Control.Monad
 import Control.Monad.Identity
 import Test.QuickCheck
@@ -400,3 +401,7 @@ instance Arbitrary a => Arbitrary (Seq a) where
                in if i >= j then Q i xs ys j else Q j ys xs i)
 
   coarbitrary (Q i xs ys j) = coarbitrary xs . coarbitrary ys
+
+instance Monoid (Seq a) where
+  mempty  = empty
+  mappend = append

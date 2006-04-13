@@ -46,6 +46,7 @@ import Data.Edison.Prelude
 import qualified Data.Edison.Seq as S
 import qualified Data.Edison.Seq.ListSeq as L
 import Data.Edison.Seq.Defaults -- only used by concatMap
+import Data.Monoid
 import Control.Monad
 import Test.QuickCheck
 
@@ -335,3 +336,7 @@ instance (S.Sequence s, Arbitrary (s a)) => Arbitrary (Sized s a) where
                  return (fromSeq xs)
 
   coarbitrary xs = coarbitrary (toSeq xs)
+
+instance S.Sequence s => Monoid (Sized s a) where
+  mempty  = empty
+  mappend = append

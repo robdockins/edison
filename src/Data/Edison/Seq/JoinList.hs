@@ -52,6 +52,7 @@ import Data.Edison.Prelude
 import qualified Data.Edison.Seq as S ( Sequence(..) )
 import Data.Edison.Seq.Defaults
 import Control.Monad
+import Data.Monoid
 import Test.QuickCheck
 
 -- signatures for exported functions
@@ -401,3 +402,7 @@ instance Arbitrary a => Arbitrary (Seq a) where
   coarbitrary E = variant 0
   coarbitrary (L x) = variant 1 . coarbitrary x
   coarbitrary (A xs ys) = variant 2 . coarbitrary xs . coarbitrary ys
+
+instance Monoid (Seq a) where
+  mempty  = empty
+  mappend = append

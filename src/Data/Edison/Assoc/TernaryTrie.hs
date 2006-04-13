@@ -48,6 +48,7 @@ import qualified Data.Edison.Assoc as A
 import qualified Data.Edison.Seq as S
 import qualified Data.List as L
 import Control.Monad.Identity
+import Data.Monoid
 import Data.Edison.Assoc.Defaults
 import Test.QuickCheck (Arbitrary(..), variant)
 
@@ -826,3 +827,9 @@ coarbitrary_fmb E = variant 0
 coarbitrary_fmb (I _ k x l (FMB' m) r) =
 	variant 1 . coarbitrary k . coarbitrary_maybe x .
         coarbitrary_fmb l . coarbitrary_fmb m . coarbitrary_fmb r
+
+instance Ord k => Monoid (FM k a) where
+   mempty  = empty
+   mappend = union
+   mconcat = unionSeq
+   

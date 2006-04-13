@@ -61,6 +61,7 @@ import Prelude hiding (concat,reverse,map,concatMap,foldr,foldl,foldr1,foldl1,
 import Control.Monad
 import Control.Monad.Identity
 import Data.Maybe
+import Data.Monoid
 import Test.QuickCheck
 
 import Data.Edison.Prelude
@@ -517,3 +518,7 @@ instance Read a => Read (Seq a) where
 instance Arbitrary a => Arbitrary (Seq a) where
   arbitrary = arbitrary >>= (return . fromList)
   coarbitrary xs = coarbitrary (toList xs)
+
+instance Monoid (Seq a) where
+  mempty  = empty
+  mappend = append

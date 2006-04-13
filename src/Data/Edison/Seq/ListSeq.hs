@@ -41,6 +41,7 @@ import qualified Control.Monad.Identity as ID
 import qualified Prelude
 import Data.Edison.Prelude
 import qualified Data.List
+import Data.Monoid
 import qualified Data.Edison.Seq as S ( Sequence(..) ) 
 
 -- signatures for exported functions
