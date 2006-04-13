@@ -574,6 +574,9 @@ instance Eq k => Functor (FM k) where
 instance (Eq k,Eq a) => Eq (FM k a) where
   (==) = sameMap
 
+instance (Ord k, Ord a) => Ord (FM k a) where
+  compare = compareUsingToOrdList
+
 instance (Eq k,Show k,Show a) => Show (FM k a) where
   showsPrec = showsPrecUsingToList
 

@@ -612,6 +612,10 @@ instance (Read a) => Read (FM a) where
 instance (Eq a) => Eq (FM a) where
   (==) = sameMap
 
+-- FIXME
+--instance (Ord a) => Ord (FM a) where
+--  compare = compareUsingToOrdList
+
 instance (Arbitrary a) => Arbitrary (FM a) where
    arbitrary = do xs <- arbitrary
                   return (Prelude.foldr (uncurry insert) empty xs)

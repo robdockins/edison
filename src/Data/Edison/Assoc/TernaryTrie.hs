@@ -778,6 +778,10 @@ instance (Ord k, Read k, Read a) => Read (FM k a) where
 instance (Ord k, Eq a) => Eq (FM k a) where
   (==) = sameMap
 
+-- FIXME
+--instance (Ord k, Ord a) => Ord (FM k a) where
+--  compare = compareUsingToOrdList
+
 
 --
 -- Test code follows

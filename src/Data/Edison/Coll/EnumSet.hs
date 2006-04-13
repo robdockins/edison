@@ -798,3 +798,6 @@ instance (Eq a, Enum a) => Monoid (Set a) where
     mempty  = empty
     mappend = union
     mconcat = unionSeq
+
+instance (Ord a, Enum a) => Ord (Set a) where
+    compare = compareUsingToOrdList

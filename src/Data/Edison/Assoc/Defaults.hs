@@ -259,3 +259,14 @@ readsPrecUsingUnsafeFromOrdSeq i xs =
        ~[(x,_)] = result
 
    in result
+
+compareUsingToOrdList :: (Ord a, OrdAssoc m k) => m a -> m a -> Ordering
+compareUsingToOrdList xs ys = cmp (toOrdList xs) (toOrdList ys)
+ where
+  cmp [] [] = EQ
+  cmp [] _  = LT
+  cmp _  [] = GT
+  cmp (x:xs) (y:ys) =
+      case compare x y of
+         EQ -> cmp xs ys
+         c -> c

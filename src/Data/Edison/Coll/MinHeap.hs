@@ -392,3 +392,6 @@ instance (C.OrdColl h a) => Monoid (Min h a) where
     mempty  = empty
     mappend = union
     mconcat = unionSeq
+
+instance (Eq h, C.OrdColl h a) => Ord (Min h a) where
+    compare = compareUsingToOrdList

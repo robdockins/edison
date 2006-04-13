@@ -544,3 +544,6 @@ instance (Ord a) => Monoid (Heap a) where
     mempty  = empty
     mappend = union
     mconcat = unionSeq
+
+instance (Ord a) => Ord (Heap a) where
+    compare = compareUsingToOrdList

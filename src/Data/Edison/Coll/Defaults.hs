@@ -230,3 +230,15 @@ readsPrecUsingFromList i xs =
         ~[(x,_)] = result
 
     in result
+
+compareUsingToOrdList :: OrdColl c a => c -> c -> Ordering
+compareUsingToOrdList xs ys = cmp (toOrdList xs) (toOrdList ys)
+ where
+  cmp [] [] = EQ
+  cmp [] _  = LT
+  cmp _  [] = GT
+  cmp (x:xs) (y:ys) =
+      case compare x y of
+         EQ -> cmp xs ys
+         c -> c
+
