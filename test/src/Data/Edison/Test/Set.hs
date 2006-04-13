@@ -46,7 +46,7 @@ class (Eq (set a), Arbitrary (set a),
 instance SetTest Int US.Set
 instance SetTest Int SS.Set
 
-newtype SmallInt = SI Int deriving (Show,Eq,Ord,Enum,Num,Integral,Real)
+newtype SmallInt = SI Int deriving (Show,Read,Eq,Ord,Enum,Num,Integral,Real)
 instance Arbitrary SmallInt where
    arbitrary = arbitrary >>= \x -> return (SI $ abs x `mod` (bitSize (0::Word) - 1))
    coarbitrary (SI x) = coarbitrary x
@@ -62,6 +62,7 @@ allSetTests = TestList
    , setTests (empty :: SS.Set Int)
    , setTests (empty :: ES.Set SmallInt)
    , qcTest $ prop_show_read (empty :: US.Set Int)
+   , qcTest $ prop_show_read (empty :: ES.Set SmallInt)
    ]
 
 
