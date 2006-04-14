@@ -2,11 +2,10 @@
 -- |
 -- Module      :  Data.Edison.Coll.EnumSet
 -- Copyright   :  (c) David F. Place 2006
--- Derived from Data.Set by Daan Leijen
 -- License     :  BSD
--- Maintainer  :  David F. Place
+-- Maintainer  :  robdockins AT fastmail DOT fm
 -- Stability   :  Experimental
--- Portability :  portable
+-- Portability :  non-portable (MPTC and FD)
 --
 -- An efficient implementation of sets over small enumerations.
 --
@@ -76,7 +75,6 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 -} 
 
--- | EnumSet: Efficient sets for small enumerations.
 module Data.Edison.Coll.EnumSet (
             -- * Set type
             Set          
@@ -152,9 +150,7 @@ module Data.Edison.Coll.EnumSet (
             -- * Bonus operations
             , map
             , setCoerce
-            , splitMember
             , complement
-            , complementWith
 
             -- * Documenation
             , moduleName
@@ -438,14 +434,12 @@ intersectionWith f = intersection
 {--------------------------------------------------------------------
   Complement
 --------------------------------------------------------------------}
--- | /O(1). The complement of a set with its universe set. @complement@ can be used with bounded types for which the universe set
--- will be automatically created.
+-- | /O(1)/. The complement of a set with its universe set. @complement@ can be used
+--   with bounded types for which the universe set
+--   will be automatically created.
 complement :: (Eq a, Bounded a, Enum a) => Set a -> Set a
-complement x = complementWith u x
+complement x = symmetricDifference u x
     where u = (fromSeq [minBound .. maxBound]) `asTypeOf` x
-
-complementWith :: Set a -> Set a -> Set a
-complementWith (Set u) (Set x) = Set $ u `xor` x
 
 {--------------------------------------------------------------------
   Filter and partition
@@ -483,11 +477,11 @@ map f0 (Set w) = Set $ foldlBits' f 0 w
     where 
       f z i = setBit z $ check "map" $ fromEnum $ f0 (toEnum i)
 
--- | @'mapMonotonic'@ is provided for compatibility with the 
--- Data.Set interface.
 unsafeMapMonotonic :: (Enum a) => (a -> a) -> Set a -> Set a
 unsafeMapMonotonic = map
 
+-- | Changes the type of the elements in the set without changing
+--   the representation.  Equivalant to @map (toEnum . fromEnum)@.
 setCoerce :: (Enum a, Enum b) => Set a -> Set b
 setCoerce (Set w) = Set w
 
@@ -592,6 +586,7 @@ fromSeqWith = fromSeqWithUsingInsertWith
 {--------------------------------------------------------------------
   Split
 --------------------------------------------------------------------}
+{-
 splitMember :: (Ord a, Enum a) => a -> Set a -> (Set a,Bool,Set a)
 splitMember x (Set w) = (Set lesser,isMember,Set greater)
     where
@@ -601,6 +596,8 @@ splitMember x (Set w) = (Set lesser,isMember,Set greater)
           GT -> (lesser,isMember,setBit greater i)
           LT -> (setBit lesser i,isMember,greater)
           EQ -> (lesser,True,greater)
+-}
+
 
 {--------------------------------------------------------------------
   Utility functions. 
@@ -723,22 +720,6 @@ foldlBits_aux' f z i w
      _ -> error "bug in foldlBits_aux"
 
  where a z = foldlBits_aux' f z (i+4) (Bits.shiftR w 4)
-
-{-
-foldBits :: (a -> Int -> a) -> a -> Word -> a
-foldBits _ z 0  = z
-foldBits f z bs = foldBits' f 0 bs z
-
-foldBits' :: (a -> Int -> a) -> Int -> Word -> a -> a
-foldBits' f i bs z
-    | i `seq` bs `seq` False = undefined
-    | bs == 0   = z
-    | otherwise = foldBits' f i' bs' z'
-    where z' | testBit bs 0 = f z i
-             | otherwise    = z
-          i' = i + 1
-          bs' = bs `Bits.shiftR` 1
--}
 
 instance (Eq a, Enum a) => C.CollX (Set a) a where
   {singleton = singleton; fromSeq = fromSeq; insert = insert;
