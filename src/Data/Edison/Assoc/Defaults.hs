@@ -211,10 +211,12 @@ adjustOrInsertUsingMember f z k m =
 
 adjustOrDeleteDefault :: AssocX m k => (a -> Maybe a) -> k -> m a -> m a
 adjustOrDeleteDefault f k m =
-  let (elem,m') = lookupAndDelete k m
-  in case f elem of
-     Nothing -> m'
-     Just x  -> insert k x m'
+  case lookupAndDeleteM k m of
+    Nothing -> m
+    Just (elem,m') ->
+      case f elem of
+         Nothing -> m'
+         Just x  -> insert k x m'
 
 adjustOrDeleteAllDefault :: AssocX m k => (a -> Maybe a) -> k -> m a -> m a
 adjustOrDeleteAllDefault f k m =
