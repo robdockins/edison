@@ -68,8 +68,8 @@ fmTests fm = TestLabel ("FM test "++(instanceName fm)) . TestList $
    , qcTest $ prop_ToSeq fm
    , qcTest $ prop_ToFromSeq fm
    , qcTest $ prop_Member fm
-   , qcTest $ prop_Elements fm          -- 10
-   , qcTest $ prop_PartitionKey fm
+   , qcTest $ prop_Elements fm
+   , qcTest $ prop_PartitionKey fm      -- 10
    , qcTest $ prop_Partition fm
    , qcTest $ prop_Difference fm
    , qcTest $ prop_insert fm
@@ -78,8 +78,8 @@ fmTests fm = TestLabel ("FM test "++(instanceName fm)) . TestList $
    , qcTest $ prop_unionSeq fm
    , qcTest $ prop_delete fm
    , qcTest $ prop_deleteSeq fm
-   , qcTest $ prop_size fm              -- 20
-   , qcTest $ prop_member fm
+   , qcTest $ prop_size fm
+   , qcTest $ prop_member fm            -- 20
    , qcTest $ prop_lookup fm
    , qcTest $ prop_lookupAndDelete fm
    , qcTest $ prop_adjust fm
@@ -88,8 +88,12 @@ fmTests fm = TestLabel ("FM test "++(instanceName fm)) . TestList $
    , qcTest $ prop_adjustAllOrInsert fm
    , qcTest $ prop_adjustOrDelete fm
    , qcTest $ prop_adjustOrDeleteAll fm
+   , qcTest $ prop_fold fm
+   , qcTest $ prop_fold1 fm             -- 30
+   , qcTest $ prop_elements fm
+   , qcTest $ prop_filter fm
+   , qcTest $ prop_partition fm
    ]
-
 
 -----------------------------------------------------------------
 -- Utility Operations
@@ -375,34 +379,55 @@ prop_adjustOrDeleteAll fm k xs =
                   else Just (2*x)
 
 
+prop_fold :: FMTest k Int fm =>
+        fm Int -> fm Int -> Bool
+prop_fold fm xs =
+   L.sort (fold (:) [] xs) == L.sort (elementsList xs)
+   &&
+   (null xs || fold (+) 0 xs == sum (elementsList xs))
+   &&
+   (null xs || fold' (+) 0 xs == sum (elementsList xs))
+
+prop_fold1 :: FMTest k Int fm =>
+        fm Int -> fm Int -> Bool
+prop_fold1 fm xs =
+   (null xs || fold (+) 0 xs == fold1 (+) xs)
+   &&
+   (null xs || fold (+) 0 xs == fold1' (+) xs)
+
+prop_elements :: FMTest k Int fm =>
+         fm Int -> [(k,Int)] -> Bool
+prop_elements fm xs =
+    L.sort (elementsList (fromList (removeDups xs) `asTypeOf` fm)) == 
+    (L.sort . L.map snd . removeDups) xs
+
+prop_filter :: FMTest k Int fm =>
+         fm Int -> [(k,Int)] -> Bool
+prop_filter fm xs = 
+     (L.sort . L.filter (f . snd)) xs' ==
+     L.sort (toList (filter f (fromList xs' `asTypeOf` fm)))     
+
+  where xs' = removeDups xs
+        f x = x `mod` 2 == 0
+
+prop_partition :: FMTest k Int fm =>
+         fm Int -> fm Int -> Bool
+prop_partition fm xs =
+     let (xs1,xs2) = partition f xs
+     in xs1 === filter f xs
+        &&
+        xs2 === filter (not . f) xs
+ 
+  where f x = x `mod` 2 == 0
+
 prop_show_read :: (FMTest k Int fm, Read (fm Int)) => 
 	fm Int -> fm Int -> Bool
 prop_show_read fm xs = xs === read (show xs)
 
 
 {-
-fold :: (a -> b -> b) -> b -> m a -> b
-fold' :: (a -> b -> b) -> b -> m a -> b
-fold1 :: (a -> a -> a) -> m a -> a
-fold1' :: (a -> a -> a) -> m a -> a
-filter :: (a -> Bool) -> m a -> m a
-partition :: (a -> Bool) -> m a -> (m a, m a)
-elements :: Sequence seq => m a -> seq a
-
-
     -- Methods still to be tested:
 
-    deleteAll
-    size
-    count
-    lookupAll
-    lookupWithDefault
-    adjust
-    adjustAll
-    map
-    fold
-    fold1
-    filter
 
     mapWithKey
     foldWithKey
