@@ -7,7 +7,8 @@ import Prelude hiding (concat,reverse,map,concatMap,foldr,foldl,foldr1,foldl1,
                        filter,takeWhile,dropWhile,lookup,take,drop,splitAt,
                        zip,zip3,zipWith,zipWith3,unzip,unzip3,null)
 import qualified Prelude
-import qualified List as L
+import qualified Data.List as L
+import Data.Maybe
 
 import Test.QuickCheck hiding (elements)
 import Test.HUnit (Test(..))
@@ -71,6 +72,22 @@ fmTests fm = TestLabel ("FM test "++(instanceName fm)) . TestList $
    , qcTest $ prop_PartitionKey fm
    , qcTest $ prop_Partition fm
    , qcTest $ prop_Difference fm
+   , qcTest $ prop_insert fm
+   , qcTest $ prop_insertSeq fm
+   , qcTest $ prop_union fm
+   , qcTest $ prop_unionSeq fm
+   , qcTest $ prop_delete fm
+   , qcTest $ prop_deleteSeq fm
+   , qcTest $ prop_size fm              -- 20
+   , qcTest $ prop_member fm
+   , qcTest $ prop_lookup fm
+   , qcTest $ prop_lookupAndDelete fm
+   , qcTest $ prop_adjust fm
+   , qcTest $ prop_adjustAll fm
+   , qcTest $ prop_adjustOrInsert fm
+   , qcTest $ prop_adjustAllOrInsert fm
+   , qcTest $ prop_adjustOrDelete fm
+   , qcTest $ prop_adjustOrDeleteAll fm
    ]
 
 
@@ -232,12 +249,147 @@ prop_Difference fm xs ys
 	  | otherwise = check xs     ys     (z:zs)
 
 
+prop_insert :: FMTest k Int fm =>
+	fm Int -> k -> Int -> [(k,Int)] -> Bool
+prop_insert fm k x xs =
+   let xs' = (k,x) : (L.filter ( (/=k) .  fst ) xs)
+   in insert k x (fromSeq xs) === (fromSeq xs' `asTypeOf` fm)
+
+prop_insertSeq :: FMTest k Int fm =>
+	fm Int -> [(k,Int)] -> fm Int -> Bool
+prop_insertSeq fm ins xs =
+   insertSeq (removeDups ins) xs === L.foldr (uncurry insert) xs (removeDups ins)
+
+
+prop_union :: FMTest k Int fm =>
+        fm Int -> fm Int -> fm Int -> Bool
+prop_union fm xs ys =
+   let a = L.sort (keysList (union xs ys))
+       b = L.sort (L.nub (keysList xs ++ keysList ys))
+   in a == b
+
+prop_unionSeq :: FMTest k Int fm =>
+        fm Int -> [fm Int] -> Bool
+prop_unionSeq fm xss =
+   keysList (unionSeq xss) == keysList (L.foldr union empty xss)
+
+prop_delete :: FMTest k Int fm =>
+        fm Int -> k -> fm Int -> Bool
+prop_delete fm k xs =
+     L.sort (keysList (delete k xs)) == 
+     L.sort (L.filter (/=k) (keysList xs)) 
+  &&
+     delete k xs === deleteAll k xs
+
+prop_deleteSeq :: FMTest k Int fm =>
+        fm Int -> [k] -> fm Int -> Bool
+prop_deleteSeq fm ks xs =
+   deleteSeq ks xs === L.foldr delete xs ks
+
+prop_size :: FMTest k Int fm =>
+        fm Int -> fm Int -> Bool
+prop_size fm xs =
+      L.length (keysList xs) == size xs
+  &&
+      (null xs == (size xs == 0))
+
+prop_member :: FMTest k Int fm =>
+        fm Int -> k -> fm Int -> Bool
+prop_member fm k xs =
+       member k xs == (not . L.null) (L.filter (==k) (keysList xs))
+    &&
+       if member k xs then count k xs == 1 else count k xs == 0
+
+
+prop_lookup :: FMTest k Int fm =>
+        fm Int -> k -> fm Int -> Bool
+prop_lookup fm k xs =
+   case lookupM k xs of
+      Nothing ->
+          not (member k xs)
+       && lookupWithDefault 9999 k xs == 9999
+
+      Just x  -> 
+          lookup k xs == x 
+       && lookupWithDefault 9999 k xs == x
+       && ((snd . head) (L.filter ((==k) . fst) (toList xs))) == x
+      
+
+prop_lookupAndDelete :: FMTest k Int fm =>
+        fm Int -> k -> fm Int -> Bool
+prop_lookupAndDelete fm k xs =
+   case lookupAndDeleteM k xs of
+      Nothing ->
+          not (member k xs)
+
+      Just (z,zs)  ->
+          (lookup k xs == z)
+       && (lookupAndDelete k xs == (z,zs))
+       && (lookupAndDeleteAll k xs == ([z],zs))
+
+prop_adjust :: FMTest k Int fm =>
+        fm Int -> k -> fm Int -> Bool
+prop_adjust fm k xs =
+   if member k xs
+      then L.sort (toList (adjust (+ 1234) k xs)) ==
+           L.sort (L.map (\(k',x) -> if k == k' then (k',x+1234) else (k',x)) (toList xs))
+      else adjust (\x -> undefined) k xs === xs
+
+prop_adjustAll :: FMTest k Int fm =>
+        fm Int -> k -> fm Int -> Bool
+prop_adjustAll fm k xs =
+   adjust (+1234) k xs === adjustAll (+1234) k xs
+
+
+prop_adjustOrInsert :: FMTest k Int fm =>
+        fm Int -> k -> Int -> fm Int -> Bool
+prop_adjustOrInsert fm k x xs =
+   if member k xs
+      then adjustOrInsert (+1234) x k xs === adjust (+1234) k xs
+      else adjustOrInsert (+1234) x k xs === insert k x xs
+
+prop_adjustAllOrInsert :: FMTest k Int fm =>
+        fm Int -> k -> Int -> fm Int -> Bool
+prop_adjustAllOrInsert fm k x xs =
+   adjustAllOrInsert (+1234) x k xs === adjustOrInsert (+1234) x k xs
+
+prop_adjustOrDelete :: FMTest k Int fm =>
+        fm Int -> k -> fm Int -> Bool
+prop_adjustOrDelete fm k xs =
+     L.sort (toList (adjustOrDelete f k xs)) ==
+     L.sort (catMaybes (L.map g (toList xs)))
+
+   where f x = if x `mod` 7 == 0
+                  then Nothing
+                  else Just (2*x)
+         g (k',x) = if k == k' then f x >>= return . (,) k' else return (k',x)
+
+
+prop_adjustOrDeleteAll :: FMTest k Int fm =>
+         fm Int -> k -> fm Int -> Bool
+prop_adjustOrDeleteAll fm k xs =
+      adjustOrDelete f k xs === adjustOrDeleteAll f k xs
+
+   where f x = if x `mod` 7 == 0
+                  then Nothing
+                  else Just (2*x)
+
+
 prop_show_read :: (FMTest k Int fm, Read (fm Int)) => 
 	fm Int -> fm Int -> Bool
 prop_show_read fm xs = xs === read (show xs)
 
 
 {-
+fold :: (a -> b -> b) -> b -> m a -> b
+fold' :: (a -> b -> b) -> b -> m a -> b
+fold1 :: (a -> a -> a) -> m a -> a
+fold1' :: (a -> a -> a) -> m a -> a
+filter :: (a -> Bool) -> m a -> m a
+partition :: (a -> Bool) -> m a -> (m a, m a)
+elements :: Sequence seq => m a -> seq a
+
+
     -- Methods still to be tested:
 
     deleteAll
