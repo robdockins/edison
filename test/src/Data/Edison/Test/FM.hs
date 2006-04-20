@@ -29,6 +29,8 @@ class (Ord k, Show k, Arbitrary k,
        Eq (fm a), FiniteMap fm k)
         => FMTest k a fm | fm -> k 
 
+class (FMTest k a fm,OrdFiniteMap fm k) => OrdFMTest k a fm | fm -> k
+
 instance (Ord a, Show a, Arbitrary a,
           Ord k, Show k, Arbitrary k) => FMTest [k] a (TT.FM k)
 
@@ -36,10 +38,13 @@ instance (Ord a, Show a, Arbitrary a) => FMTest Int a PLM.FM
 
 instance (Ord a, Show a, Arbitrary a,
           Ord k, Show k, Arbitrary k) => FMTest k a (SM.FM k)
+instance (Ord a, Show a, Arbitrary a,
+          Ord k, Show k, Arbitrary k) => OrdFMTest k a (SM.FM k)
 
 instance (Ord a, Show a, Arbitrary a,
           Ord k, Show k, Arbitrary k) => FMTest k a (AL.FM k)
-
+instance (Ord a, Show a, Arbitrary a,
+          Ord k, Show k, Arbitrary k) => OrdFMTest k a (AL.FM k)
 
 ---------------------------------------------------------------
 -- List of all permutations of bag types to test
@@ -50,6 +55,8 @@ allFMTests = TestList
    , fmTests (empty :: (Ord a) => AL.FM Int a)
    , fmTests (empty :: (Ord a) => PLM.FM a)
    , fmTests (empty :: (Ord a) => TT.FM Int a)
+   , ordFMTests (empty :: (Ord a) => SM.FM Int a)
+   , ordFMTests (empty :: (Ord a) => AL.FM Int a)
    , qcTest $ prop_show_read (empty :: (Ord a) => AL.FM Int a)
    , qcTest $ prop_show_read (empty :: (Ord a) => PLM.FM a)
    , qcTest $ prop_show_read (empty :: (Ord a) => TT.FM Int a)
@@ -93,6 +100,17 @@ fmTests fm = TestLabel ("FM test "++(instanceName fm)) . TestList $
    , qcTest $ prop_elements fm
    , qcTest $ prop_filter fm
    , qcTest $ prop_partition fm
+   ]
+
+ordFMTests fm = TestLabel ("Ord FM test "++(instanceName fm)) . TestList $
+   [ qcTest $ prop_min fm
+   , qcTest $ prop_max fm
+   , qcTest $ prop_foldr fm
+   , qcTest $ prop_foldl fm
+   , qcTest $ prop_ord_filter fm
+   , qcTest $ prop_ord_partition fm
+   , qcTest $ prop_fromOrdSeq fm
+   , qcTest $ prop_unsafeAppend fm
    ]
 
 -----------------------------------------------------------------
@@ -419,6 +437,108 @@ prop_partition fm xs =
         xs2 === filter (not . f) xs
  
   where f x = x `mod` 2 == 0
+
+prop_min :: OrdFMTest k Int fm =>
+         fm Int -> [(k,Int)] -> Bool
+prop_min fm xs =
+      case minView xs' of
+         Nothing     -> null xs'
+         Just (z,zs) ->
+            snd min == z
+            &&
+            minElem xs' == z
+	    &&
+            delete (fst min) xs' === zs
+            &&
+            deleteMin xs' === zs
+            &&
+            unsafeInsertMin (fst min) (snd min) (deleteMin xs') === xs'
+
+  where xs' = (fromSeq (removeDups xs)) `asTypeOf` fm
+        min = L.minimumBy (\x y -> compare (fst x) (fst y)) (removeDups xs)
+
+prop_max :: OrdFMTest k Int fm =>
+         fm Int -> [(k,Int)] -> Bool
+prop_max fm xs =
+      case maxView xs' of
+         Nothing     -> null xs'
+         Just (z,zs) ->
+            snd max == z
+            &&
+            maxElem xs' == z
+	    &&
+            delete (fst max) xs' === zs
+            &&
+            deleteMax xs' === zs
+            &&
+            unsafeInsertMax (fst max) (snd max) (deleteMax xs') === xs'
+
+  where xs' = (fromSeq (removeDups xs)) `asTypeOf` fm
+        max = L.maximumBy (\x y -> compare (fst x) (fst y)) (removeDups xs)
+
+
+prop_foldr :: OrdFMTest k Int fm =>
+          fm Int -> [(k,Int)] -> Bool
+prop_foldr fm xs =
+	foldr f 17 map == L.foldr f 17 (L.map snd xs')
+        &&
+        foldr f 17 map == foldr' f 17 map
+	&&
+	(null map || foldr1 f map == L.foldr1 f (L.map snd xs'))
+        &&
+        (null map || foldr1 f map == foldr1' f map)
+
+  where f x z = (z^(abs x) + 11) `mod` ((abs x)+23)
+        map = fromSeq (removeDups xs) `asTypeOf` fm
+        xs' = L.sortBy (\x y -> compare (fst x) (fst y)) (removeDups xs)
+
+prop_foldl :: OrdFMTest k Int fm =>
+          fm Int -> [(k,Int)] -> Bool
+prop_foldl fm xs =
+	foldl f 17 map == L.foldl f 17 (L.map snd xs')
+        &&
+        foldl f 17 map == foldl' f 17 map
+	&&
+	(null map || foldl1 f map == L.foldl1 f (L.map snd xs'))
+        &&
+        (null map || foldl1 f map == foldl1' f map)
+
+  where f z x = (z^(abs x) + 11) `mod` ((abs x)+23)
+        map = fromSeq (removeDups xs) `asTypeOf` fm
+        xs' = L.sortBy (\x y -> compare (fst x) (fst y)) (removeDups xs)
+
+prop_ord_filter :: OrdFMTest k Int fm =>
+          fm Int -> k -> fm Int -> Bool
+prop_ord_filter fm k xs =
+        filterLT k xs === filterWithKey (\k' _ -> k' < k) xs
+        &&
+        filterLE k xs === filterWithKey (\k' _ -> k' <= k) xs
+        &&
+        filterGT k xs === filterWithKey (\k' _ -> k' > k) xs
+        &&
+        filterGE k xs === filterWithKey (\k' _ -> k' >= k) xs
+
+
+prop_ord_partition :: OrdFMTest k Int fm =>
+          fm Int -> k -> fm Int -> Bool
+prop_ord_partition fm k xs =
+        partitionLT_GE k xs == (filterLT k xs, filterGE k xs)
+        &&
+        partitionLE_GT k xs == (filterLE k xs, filterGT k xs)
+        &&
+        partitionLT_GT k xs == (filterLT k xs, filterGT k xs)
+
+prop_fromOrdSeq :: OrdFMTest k Int fm =>
+          fm Int -> [(k,Int)] -> Bool
+prop_fromOrdSeq fm xs = map1 === map2    
+   where map1 = fromSeq (removeDups xs) `asTypeOf` fm
+         map2 = unsafeFromOrdSeq (L.sortBy (\x y -> compare (fst x) (fst y)) (removeDups xs))
+
+prop_unsafeAppend :: OrdFMTest k Int fm =>
+          fm Int -> k -> fm Int -> Bool
+prop_unsafeAppend fm k xs = unsafeAppend a b === xs
+   where (a,b) = partitionLT_GE k xs
+
 
 prop_show_read :: (FMTest k Int fm, Read (fm Int)) => 
 	fm Int -> fm Int -> Bool
