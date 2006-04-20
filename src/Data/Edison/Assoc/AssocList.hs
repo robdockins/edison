@@ -403,28 +403,28 @@ findMin k0 a0 (I k a m)
 
 findMax k0 x E = (k0,x)
 findMax k0 a0 (I k a m)
-        | k > k0    = findMin k  a  (delete k m)
-        | otherwise = findMin k0 a0 (delete k m)
+        | k > k0    = findMax k  a  (delete k m)
+        | otherwise = findMax k0 a0 (delete k m)
 
 minView E = fail (moduleName++".minView: empty map")
-minView (I k a m) = let (k',x) = findMin k a m in return (x,delete k' m)
+minView n@(I k a m) = let (k',x) = findMin k a m in return (x,delete k' n)
 
 minElem E = error (moduleName++".minElem: empty map")
 minElem (I k a m) = let (_,x) = findMin k a m in x
 
 deleteMin E = error (moduleName++".deleteMin: empty map")
-deleteMin (I k a m) = let (k',_) = findMin k a m in delete k' m
+deleteMin n@(I k a m) = let (k',_) = findMin k a m in delete k' n
 
 unsafeInsertMin  = insert
 
 maxView E = fail (moduleName++".maxView: empty map")
-maxView (I k a m) = let (k',x) = findMax k a m in return (x,delete k' m)
+maxView n@(I k a m) = let (k',x) = findMax k a m in return (x,delete k' n)
 
 maxElem E = error (moduleName++".maxElem: empty map")
 maxElem (I k a m) = let (_,x) = findMax k a m in x
 
 deleteMax E = error (moduleName++".deleteMax: empty map")
-deleteMax (I k a m) = let (k',_) = findMax k a m in delete k' m
+deleteMax n@(I k a m) = let (k',_) = findMax k a m in delete k' n
 
 unsafeInsertMax = insert
 
