@@ -255,8 +255,8 @@ partitionLT_GE k m = DM.partitionWithKey (\k' _ -> k' <  k) m
 partitionLE_GT k m = DM.partitionWithKey (\k' _ -> k' <= k) m
 partitionLT_GT     = DM.split
 
-fromSeqWith    f s = DM.fromAscListWith    f (S.toList s)
-fromSeqWithKey f s = DM.fromAscListWithKey f (S.toList s)
+fromSeqWith    f s = DM.fromListWith    f (S.toList s)
+fromSeqWithKey f s = DM.fromListWithKey f (S.toList s)
 insertWith         = DM.insertWith
 insertWithKey      = insertWithKeyUsingInsertWith
 insertSeqWith      = insertSeqWithUsingInsertWith
