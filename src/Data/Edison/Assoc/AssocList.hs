@@ -212,9 +212,19 @@ foldrFM :: Eq k => (a -> b -> b) -> b -> FM k a -> b
 foldrFM f z E = z
 foldrFM f z (I k a m) = f a (foldrFM f z (delete k m))
 
+foldr1FM :: Eq k => (a -> a -> a) -> FM k a -> a
+foldr1FM f (I k a E) = a
+foldr1FM f (I k a m) = f a (foldr1FM f (delete k m))
+foldr1FM f _ = error "invalid call to foldr1FM on empty map"
+
 foldrFM' :: Eq k => (a -> b -> b) -> b -> FM k a -> b
 foldrFM' f z E = z
 foldrFM' f z (I k a m) = f a $! (foldrFM' f z (delete k m))
+
+foldr1FM' :: Eq k => (a -> a -> a) -> FM k a -> a
+foldr1FM' f (I k a E) = a
+foldr1FM' f (I k a m) = f a $! (foldr1FM' f (delete k m))
+foldr1FM' f _ = error "invalid call to foldr1FM' on empty map"
 
 foldlFM :: Eq k => (b -> a -> b) -> b -> FM k a -> b
 foldlFM f x E = x
@@ -434,12 +444,12 @@ foldr' f z m = foldrFM' f z (mergeSortFM m)
 foldr1 f m =
   case mergeSortFM m of
     E -> error $ moduleName++".foldlr1: empty map"
-    I k a m -> foldrFM f a (delete k m)
+    m -> foldr1FM f m
 
 foldr1' f m =
   case mergeSortFM m of
     E -> error $ moduleName++".foldlr1': empty map"
-    I k a m -> foldrFM' f a (delete k m)
+    m -> foldr1FM' f m
    
 foldl  f x m = foldlFM  f x (mergeSortFM m)
 foldl' f x m = foldlFM' f x (mergeSortFM m)
