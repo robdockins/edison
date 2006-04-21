@@ -620,7 +620,7 @@ insertSeqWith = insertSeqWithUsingInsertWith
 insertSeqWithKey = insertSeqWithKeyUsingInsertWithKey
 
 unionl = union
-unionr = flip unionr
+unionr = flip union
 
 unionWith f = unionWithKey (const f)
 
