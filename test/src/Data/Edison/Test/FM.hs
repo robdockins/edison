@@ -100,6 +100,28 @@ fmTests fm = TestLabel ("FM test "++(instanceName fm)) . TestList $
    , qcTest $ prop_elements fm
    , qcTest $ prop_filter fm
    , qcTest $ prop_partition fm
+   , qcTest $ prop_fromSeqWith fm
+   , qcTest $ prop_fromSeqWithKey fm
+   , qcTest $ prop_insertWith fm
+   , qcTest $ prop_insertWithKey fm
+   , qcTest $ prop_insertSeqWith fm
+   , qcTest $ prop_insertSeqWithKey fm
+   , qcTest $ prop_unionWith fm        -- 40
+   , qcTest $ prop_unionlr fm
+   , qcTest $ prop_unionSeqWith fm
+   , qcTest $ prop_intersectionWith fm
+   , qcTest $ prop_difference fm
+   , qcTest $ prop_properSubset fm
+   , qcTest $ prop_subset fm
+   , qcTest $ prop_submapBy fm
+   , qcTest $ prop_properSubmapBy fm
+   , qcTest $ prop_sameMapBy fm
+   , qcTest $ prop_toSeq fm            -- 50
+   , qcTest $ prop_keys fm
+   , qcTest $ prop_mapWithKey fm
+   , qcTest $ prop_foldWithKey fm
+   , qcTest $ prop_filterWithKey fm
+   , qcTest $ prop_partitionWithKey fm
    ]
 
 ordFMTests fm = TestLabel ("Ord FM test "++(instanceName fm)) . TestList $
@@ -540,38 +562,208 @@ prop_unsafeAppend fm k xs = unsafeAppend a b === xs
    where (a,b) = partitionLT_GE k xs
 
 
+prop_fromSeqWith :: FMTest k Int fm =>
+          fm Int -> [(k,Int)] -> Bool
+prop_fromSeqWith fm xs = map1 === map2
+   where map1 = fromSeqWith (+) xs `asTypeOf` fm
+	 map2 = fromSeq .
+                L.map (\l -> L.foldr (\ (_,x) (i,y) -> (i,x+y))
+                                     (fst $ head l,snd $ head l)
+                                     (tail l)) .
+                L.groupBy (\x y -> (fst x) == (fst y)) .
+                L.sortBy  (\x y -> compare (fst x) (fst y)) $ xs
+
+prop_fromSeqWithKey :: FMTest k Int fm =>
+          fm Int -> [(k,Int)] -> Bool
+prop_fromSeqWithKey fm xs =
+	fromSeqWithKey (const (+)) xs === (fromSeqWith (+) xs `asTypeOf` fm)
+
+prop_insertWith :: FMTest k Int fm =>
+          fm Int -> k -> Int -> [(k,Int)] -> Bool
+prop_insertWith fm k x xs = map1 === map2
+   where map1 = insertWith (+) k x (fromSeq (removeDups xs) `asTypeOf` fm)
+         map2 = fromSeq . g . removeDups $ xs
+         g [] = [(k,x)]
+         g ((k',x'):rest)
+             | k == k'   = (k,x+x') : rest
+             | otherwise = (k',x') : g rest
+
+prop_insertWithKey :: FMTest k Int fm =>
+          fm Int -> k -> Int -> [(k,Int)] -> Bool
+prop_insertWithKey fm k x xs =
+        insertWithKey (const (+)) k x z === insertWith (+) k x z
+   where z = (fromSeq . removeDups $ xs) `asTypeOf` fm
+
+prop_insertSeqWith :: FMTest k Int fm =>
+          fm Int -> [(k,Int)] -> fm Int -> Bool
+prop_insertSeqWith fm xs map =
+	insertSeqWith (+) xs map === L.foldr (uncurry (insertWith (+))) map xs
+
+prop_insertSeqWithKey :: FMTest k Int fm =>
+          fm Int -> [(k,Int)] -> fm Int -> Bool
+prop_insertSeqWithKey fm xs map =
+        insertSeqWithKey (const (+)) xs map === insertSeqWith (+) xs map
+
+prop_unionWith :: FMTest k Int fm =>
+          fm Int -> [(k,Int)] -> [(k,Int)] -> Bool
+prop_unionWith fm as bs = map1 === map2
+  where f = (+)
+	map1 = unionWith f (fromSeq (removeDups as)) (fromSeq (removeDups bs))
+	map2 = fromSeq zs `asTypeOf` fm
+        zs = merge (sortFst (removeDups as)) (sortFst (removeDups bs))
+        sortFst = L.sortBy (\x y -> compare (fst x) (fst y))
+        merge [] ys = ys
+        merge xs [] = xs
+        merge ((k1,x):xs) ((k2,y):ys) =
+	   case compare k1 k2 of
+                EQ -> (k1,f x y) : merge xs ys
+                LT -> (k1,x) : merge xs ((k2,y):ys)
+                GT -> (k2,y) : merge ((k1,x):xs) ys
+
+prop_unionlr :: FMTest k Int fm =>
+          fm Int -> fm Int -> fm Int -> Bool
+prop_unionlr fm xs ys =
+     unionl xs ys === unionWith (\x y -> x) xs ys
+     &&
+     unionr xs ys === unionWith (\x y -> y) xs ys
+
+prop_unionSeqWith :: FMTest k Int fm =>
+          fm Int -> [fm Int] -> Bool
+prop_unionSeqWith fm xss =
+     unionSeqWith (+) xss === L.foldr (unionWith (+)) empty xss
+
+prop_intersectionWith :: FMTest k Int fm =>
+          fm Int -> [(k,Int)] -> [(k,Int)] -> Bool
+prop_intersectionWith fm xs ys =
+     intersectionWith (-) as bs === unionWith (-) (fromSeq xs') (fromSeq ys')
+
+  where as = fromSeq (removeDups xs) `asTypeOf` fm
+        bs = fromSeq (removeDups ys) `asTypeOf` fm
+        xs' = L.filter (\ (k,_) -> k `L.elem` L.map fst ys) (removeDups xs)
+        ys' = L.filter (\ (k,_) -> k `L.elem` L.map fst xs) (removeDups ys)
+
+prop_difference :: FMTest k Int fm =>
+          fm Int -> [(k,Int)] -> [(k,Int)] -> Bool
+prop_difference fm xs ys =
+	difference as bs === fromSeq xs'
+
+  where as = fromSeq (removeDups xs) `asTypeOf` fm
+        bs = fromSeq (removeDups ys) `asTypeOf` fm
+        xs' = L.filter (\ (k,_) -> not (k `L.elem` L.map fst ys)) (removeDups xs)
+
+prop_properSubset :: FMTest k Int fm =>
+           fm Int -> [(k,Int)] -> [(k,Int)] -> Bool
+prop_properSubset fm xs ys =
+        properSubset as bs == (isSub && notEq)
+
+  where as = fromSeq xs' `asTypeOf` fm
+        bs = fromSeq ys' `asTypeOf` fm
+        xs' = removeDups xs
+        ys' = removeDups ys
+        isSub = L.foldr (&&) True  . L.map (\ (k,_) -> k `L.elem` L.map fst ys') $ xs'
+        notEq = length xs' < length ys'
+
+prop_subset :: FMTest k Int fm =>
+           fm Int -> [(k,Int)] -> [(k,Int)] -> Bool
+prop_subset fm xs ys =
+	subset as bs == isSub
+
+  where as = fromSeq xs' `asTypeOf` fm
+        bs = fromSeq ys' `asTypeOf` fm
+        xs' = removeDups xs
+        ys' = removeDups ys
+        isSub = L.foldr (&&) True . L.map (\ (k,_) -> k `L.elem` L.map fst ys') $ xs'
+
+
+prop_submapBy :: FMTest k Int fm =>
+           fm Int -> fm Int -> fm Int -> Bool
+prop_submapBy fm xs ys =
+         submapBy f xs ys ==
+         (subset xs ys && fold (&&) True (intersectionWith f xs ys))
+  where f x y = x + y `mod` 3 == 0
+
+prop_properSubmapBy :: FMTest k Int fm =>
+           fm Int -> fm Int -> fm Int -> Bool
+prop_properSubmapBy fm xs ys =
+         properSubmapBy f xs ys ==
+         (properSubset xs ys && fold (&&) True (intersectionWith f xs ys))
+  where f x y = x + y `mod` 3 == 0
+
+prop_sameMapBy :: FMTest k Int fm =>
+           fm Int -> fm Int -> fm Int -> Bool
+prop_sameMapBy fm xs ys =
+	 sameMapBy f xs ys ==
+         (subset xs ys && subset ys xs && fold (&&) True (intersectionWith f xs ys))
+  where f x y = x + y `mod` 3 == 0
+
+
+prop_toSeq :: FMTest k Int fm =>
+           fm Int -> [(k,Int)] -> Bool
+prop_toSeq fm xs =
+     sortFst (toSeq map1) == sortFst (removeDups xs)
+
+  where sortFst = L.sortBy (\x y -> compare (fst x) (fst y))
+        map1 = fromSeq (removeDups xs) `asTypeOf` fm
+
+prop_keys :: FMTest k Int fm =>
+           fm Int -> [(k,Int)] -> Bool
+prop_keys fm xs =
+      L.sort ks == L.sort (keys map1)
+
+  where ks = L.map fst . removeDups $ xs
+        map1 = fromSeq (removeDups xs) `asTypeOf` fm
+
+prop_mapWithKey :: FMTest k Int fm =>
+           fm Int -> fm Int -> Bool
+prop_mapWithKey fm xs =
+      (mapWithKey (const (+19)) xs == map (+19) xs)
+      &&
+      (fold (&&) True . mapWithKey (\k x -> lookupM k xs == Just x) $ xs)
+
+prop_foldWithKey :: FMTest k Int fm =>
+           fm Int -> fm Int -> Bool
+prop_foldWithKey fm xs =
+      (foldWithKey (const (+)) 11 xs == fold (+) 11 xs)
+      &&
+      (foldWithKey (const (+)) 11 xs == foldWithKey' (const (+)) 11 xs)
+      &&
+      (foldWithKey (\k x z -> (lookupM k xs == Just x) && z) True xs)
+
+prop_filterWithKey :: FMTest k Int fm =>
+           fm Int -> fm Int -> Bool
+prop_filterWithKey fm xs =
+    filterWithKey (const f) xs === filter f xs
+    &&
+    filterWithKey (\k x -> lookupM k xs == Just x) xs === xs
+
+  where f x = x `mod` 2 == 0
+
+prop_partitionWithKey :: FMTest k Int fm =>
+           fm Int -> k -> fm Int -> Bool
+prop_partitionWithKey fm k xs =
+    partitionWithKey f xs == (filterWithKey f xs, filterWithKey (\k x -> not (f k x)) xs)
+  where f k' x = k' < k || (x `mod` 3 == 0)
+
 prop_show_read :: (FMTest k Int fm, Read (fm Int)) => 
 	fm Int -> fm Int -> Bool
 prop_show_read fm xs = xs === read (show xs)
 
-
 {-
-    -- Methods still to be tested:
+OrdAssoc
+class (Assoc m k, OrdAssocX m k) => OrdAssoc m k | m -> k where
+minViewWithKey :: Monad rm => m a -> rm ((k, a), m a)
+minElemWithKey :: m a -> (k, a)
+maxViewWithKey :: Monad rm => m a -> rm ((k, a), m a)
+maxElemWithKey :: m a -> (k, a)
+foldrWithKey :: (k -> a -> b -> b) -> b -> m a -> b
+foldrWithKey' :: (k -> a -> b -> b) -> b -> m a -> b
+foldlWithKey :: (b -> k -> a -> b) -> b -> m a -> b
+foldlWithKey' :: (b -> k -> a -> b) -> b -> m a -> b
+toOrdSeq :: Sequence seq => m a -> seq (k, a)
 
-
-    mapWithKey
-    foldWithKey
-    filterWithKey
-
-    fromSeqWith
-    fromSeqWithKey
-    insertWith
-    insertWithKey
-    insertSeqWith
-    
-    insertSeqWithKey
-    unionl
-    unionr
-    unionWith
-    unionSeqWith
-    intersectWith
-    
-    subset
-    subsetEq
-
-    unionWithKey
-    unionSeqWithKey
-    intersectWithKey
-
+FiniteMap
+class (Assoc m k, FiniteMapX m k) => FiniteMap m k | m -> k where
+unionWithKey :: (k -> a -> a -> a) -> m a -> m a -> m a
+unionSeqWithKey :: Sequence seq => (k -> a -> a -> a) -> seq (m a) -> m a
+intersectionWithKey :: (k -> a -> b -> c) -> m a -> m b -> m c
 -}
-
