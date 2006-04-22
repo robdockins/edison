@@ -180,7 +180,7 @@ sameMapByUsingOrdLists :: OrdFiniteMap m k
                        => (a -> a -> Bool) -> m a -> m a -> Bool
 sameMapByUsingOrdLists f m1 m2 =
    let comp (k1,x1) (k2,x2) = k1 == k2 && f x1 x2
-   in L.foldr (&&) True (L.zipWith comp (toOrdList m1) (toOrdList m2))
+   in L.foldr (&&) (size m1 == size m2) (L.zipWith comp (toOrdList m1) (toOrdList m2))
 
 
 sameMapByUsingSubmapBy :: FiniteMapX m k
