@@ -352,6 +352,28 @@ class (Eq k,Functor m) => AssocX m k | m -> k where
   --   more than one element.
   elements       :: Sequence seq => m a -> seq a
 
+  -- | Semanticly, this function is a partial identity function.  If the
+  --   datastructure is infinite in size or contains exceptions or non-termination
+  --   in the structure itself, then @strict@ will result in bottom.  Operationally,
+  --   this function walks the datastructure forcing any closures.  Elements contained
+  --   in the map are /not/ forced.
+  --
+  --   This function is always /unambiguous/.
+  strict :: m a -> m a
+
+  -- | Similar to 'strict', this function walks the datastructure forcing closures.
+  --   However, @strictWith@ will additionally apply the given function to the
+  --   map elements, force the result using @seq@, and then ignore it.
+  --   This function can be used to perform various levels of forcing on the
+  --   sequence elements.  In particular:
+  --
+  -- > strictWith id xs
+  --
+  --   will force the spine of the datastructure and reduce each element to WHNF.
+  --
+  --   This function is always /unambiguous/.
+  strictWith :: (a -> b) -> m a -> m a
+
   -- | A method to facilitate unit testing.  Returns 'True' if the structural
   --   invariants of the implementation hold for the given associative
   --   collection.  If this function returns 'False', it represents a bug;

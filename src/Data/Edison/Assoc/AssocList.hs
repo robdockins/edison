@@ -24,7 +24,7 @@ module Data.Edison.Assoc.AssocList (
     deleteSeq,null,size,member,count,lookup,lookupM,lookupAll,
     lookupAndDelete,lookupAndDeleteM,lookupAndDeleteAll,
     lookupWithDefault,adjust,adjustAll,adjustOrInsert,adjustAllOrInsert,
-    adjustOrDelete,adjustOrDeleteAll,
+    adjustOrDelete,adjustOrDeleteAll,strict,strictWith,
     map,fold,fold',fold1,fold1',filter,partition,elements,structuralInvariant,
 
     -- * OrdAssocX operations
@@ -94,6 +94,8 @@ adjustOrInsert     :: Eq k => (a -> a) -> a -> k -> FM k a -> FM k a
 adjustAllOrInsert  :: Eq k => (a -> a) -> a -> k -> FM k a -> FM k a
 adjustOrDelete     :: Eq k => (a -> Maybe a) -> k -> FM k a -> FM k a
 adjustOrDeleteAll  :: Eq k => (a -> Maybe a) -> k -> FM k a -> FM k a
+strict             :: FM k a -> FM k a
+strictWith         :: (a -> b) -> FM k a -> FM k a
 map           :: Eq k => (a -> b) -> FM k a -> FM k b
 fold          :: Eq k => (a -> b -> b) -> b -> FM k a -> b
 fold1         :: Eq k => (a -> a -> a) -> FM k a -> a
@@ -493,6 +495,13 @@ foldlWithKey' f x   = foldlWithKeyFM' f x . mergeSortFM
 toOrdSeq            = toSeq . mergeSortFM
 
 
+strict n@E = n
+strict n@(I k a m) = strict m `seq` n
+
+strictWith f n@E = n
+strictWith f n@(I k a m) = f a `seq` strictWith f m `seq` n
+
+
 -- defaults
 
 deleteSeq = deleteSeqUsingFoldr
@@ -534,6 +543,7 @@ instance Eq k  => A.AssocX (FM k) k where
    adjustOrDelete = adjustOrDelete; adjustOrDeleteAll = adjustOrDeleteAll;
    fold = fold; fold' = fold'; fold1 = fold1; fold1' = fold1';
    filter = filter; partition = partition; elements = elements;
+   strict = strict; strictWith = strictWith;
    structuralInvariant = structuralInvariant; instanceName m = moduleName}
 
 instance Ord k => A.OrdAssocX (FM k) k where

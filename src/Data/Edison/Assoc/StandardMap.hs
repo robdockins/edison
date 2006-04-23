@@ -19,7 +19,7 @@ module Data.Edison.Assoc.StandardMap (
     deleteSeq,null,size,member,count,lookup,lookupM,lookupAll,
     lookupAndDelete,lookupAndDeleteM,lookupAndDeleteAll,
     lookupWithDefault,adjust,adjustAll,adjustOrInsert,adjustAllOrInsert,
-    adjustOrDelete,adjustOrDeleteAll,
+    adjustOrDelete,adjustOrDeleteAll,strict,strictWith,
     map,fold,fold',fold1,fold1',filter,partition,elements,structuralInvariant,
 
     -- * FiniteMapX operations
@@ -95,6 +95,8 @@ adjustOrInsert    :: Ord k => (a -> a) -> a -> k -> FM k a -> FM k a
 adjustAllOrInsert :: Ord k => (a -> a) -> a -> k -> FM k a -> FM k a
 adjustOrDelete    :: Ord k => (a -> Maybe a) -> k -> FM k a -> FM k a
 adjustOrDeleteAll :: Ord k => (a -> Maybe a) -> k -> FM k a -> FM k a
+strict            :: Ord k => FM k a -> FM k a
+strictWith        :: Ord k => (a -> b) -> FM k a -> FM k a
 map               :: (Ord k,Functor (FM k)) => (a -> b) -> FM k a -> FM k b
 fold              :: Ord k => (a -> b -> b) -> b -> FM k a -> b
 fold1             :: Ord k => (a -> a -> a) -> FM k a -> a
@@ -214,6 +216,8 @@ adjustOrInsert     = adjustOrInsertUsingMember
 adjustAllOrInsert  = adjustOrInsertUsingMember
 adjustOrDelete     = DM.update
 adjustOrDeleteAll  = DM.update
+strict xs          = DM.fold (flip const) () xs `seq` xs
+strictWith f xs    = DM.fold (\x z -> f x `seq` z) () xs `seq` xs
 map                = fmap
 fold               = DM.fold
 fold' f x xs       = L.foldl' (flip f) x (DM.elems xs)
@@ -317,6 +321,7 @@ instance Ord k => A.AssocX (FM k) k where
    adjustOrDelete = adjustOrDelete; adjustOrDeleteAll = adjustOrDeleteAll;
    fold = fold; fold' = fold'; fold1 = fold1; fold1' = fold1';
    filter = filter; partition = partition; elements = elements;
+   strict = strict; strictWith = strictWith;
    structuralInvariant = structuralInvariant; instanceName m = moduleName}
 
 instance Ord k => A.OrdAssocX (FM k) k where

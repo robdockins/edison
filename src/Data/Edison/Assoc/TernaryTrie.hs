@@ -19,7 +19,7 @@ module Data.Edison.Assoc.TernaryTrie (
     deleteSeq,null,size,member,count,lookup,lookupM,lookupAll,
     lookupAndDelete,lookupAndDeleteM,lookupAndDeleteAll,
     lookupWithDefault,adjust,adjustAll,adjustOrInsert,adjustAllOrInsert,
-    adjustOrDelete,adjustOrDeleteAll,    
+    adjustOrDelete,adjustOrDeleteAll,strict,strictWith,
     map,fold,fold',fold1,fold1',filter,partition,elements,structuralInvariant,
 
     -- * Assoc operations
@@ -83,6 +83,8 @@ adjustOrInsert    :: Ord k => (a -> a) -> a -> [k] -> FM k a -> FM k a
 adjustAllOrInsert :: Ord k => (a -> a) -> a -> [k] -> FM k a -> FM k a
 adjustOrDelete    :: Ord k => (a -> Maybe a) -> [k] -> FM k a -> FM k a
 adjustOrDeleteAll :: Ord k => (a -> Maybe a) -> [k] -> FM k a -> FM k a
+strict            :: FM k a -> FM k a
+strictWith        :: (a -> b) -> FM k a -> FM k a
 map           :: Ord k => (a -> b) -> FM k a -> FM k b
 fold          :: Ord k => (a -> b -> b) -> b -> FM k a -> b
 fold1         :: Ord k => (a -> a -> a) -> FM k a -> a
@@ -600,6 +602,20 @@ partition = partitionUsingFilter
 
 elements = elementsUsingFold
 
+strict z@(FM v fmb) = strictFMB fmb `seq` z
+ where strictFMB n@E = n
+       strictFMB n@(I i k v l (FMB' m) r) =
+           strictFMB l `seq` strictFMB m `seq` strictFMB r `seq` n
+
+strictWith f z@(FM v fmb) = f' v `seq` strictWithFMB fmb `seq` z
+   where f' v@Nothing  = v
+         f' v@(Just x) = f x `seq` v
+
+         strictWithFMB n@E = n
+         strictWithFMB n@(I i k v l (FMB' m) r) =
+           f' v `seq` strictWithFMB l `seq` strictWithFMB m `seq` strictWithFMB r `seq` n
+
+
 -- FiniteMapX
 
 fromSeqWith = fromSeqWithUsingInsertSeqWith
@@ -743,6 +759,7 @@ instance Ord k  => A.AssocX (FM k) [k] where
    adjustOrDelete = adjustOrDelete; adjustOrDeleteAll = adjustOrDeleteAll;
    fold = fold; fold' = fold'; fold1 = fold1; fold1' = fold1';
    filter = filter; partition = partition; elements = elements;
+   strict = strict; strictWith = strictWith;
    structuralInvariant = structuralInvariant; instanceName m = moduleName}
 
 instance Ord k  => A.Assoc (FM k) [k] where

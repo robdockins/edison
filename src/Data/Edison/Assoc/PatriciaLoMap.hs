@@ -22,7 +22,7 @@ module Data.Edison.Assoc.PatriciaLoMap (
     -- * AssocX operations
     empty,singleton,fromSeq,insert,insertSeq,union,unionSeq,delete,deleteAll,
     deleteSeq,null,size,member,count,lookup,lookupM,lookupAll,
-    lookupAndDelete,lookupAndDeleteM,lookupAndDeleteAll,
+    lookupAndDelete,lookupAndDeleteM,lookupAndDeleteAll,strict,strictWith,
     lookupWithDefault,adjust,adjustAll,adjustOrInsert,adjustAllOrInsert,map,
     fold,fold',fold1,fold1',filter,partition,elements,structuralInvariant,
 
@@ -504,6 +504,14 @@ intersectionWithKey f (L k x) t =
       Nothing -> E
 intersectionWithKey f E t = E
 
+-- Datastructure definition is strict in all submaps,
+-- no forcing required
+strict n = n
+
+strictWith f n@E = n
+strictWith f n@(L i x) = f x `seq` n
+strictWith f n@(B i j m1 m2) = strictWith f m1 `seq` strictWith f m2 `seq` n
+
 -- defaults
 
 insertSeq :: S.Sequence seq => seq (Int,a) -> FM a -> FM a
@@ -578,6 +586,7 @@ instance A.AssocX FM Int where
    adjustOrDelete = adjustOrDelete; adjustOrDeleteAll = adjustOrDeleteAll;
    fold = fold; fold' = fold'; fold1 = fold1; fold1' = fold1';
    filter = filter; partition = partition; elements = elements;
+   strict = strict; strictWith = strictWith;
    structuralInvariant = structuralInvariant; instanceName m = moduleName}
 
 instance A.Assoc FM Int where

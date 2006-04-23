@@ -125,6 +125,7 @@ fmTests fm = TestLabel ("FM test "++(instanceName fm)) . TestList $
    , qcTest $ prop_unionWithKey fm
    , qcTest $ prop_unionSeqWithKey fm
    , qcTest $ prop_intersectionWithKey fm
+   , qcTest $ prop_strict fm
    ]
 
 ordFMTests fm = TestLabel ("Ord FM test "++(instanceName fm)) . TestList $
@@ -809,6 +810,13 @@ prop_intersectionWithKey :: FMTest k Int fm =>
            fm Int -> fm Int -> fm Int -> Bool
 prop_intersectionWithKey fm xs ys =
      intersectionWithKey (const (-)) xs ys === intersectionWith (-) xs ys
+
+prop_strict :: FMTest k Int fm =>
+           fm Int -> fm Int -> Bool
+prop_strict fm xs = 
+     strict xs === xs
+     &&
+     strictWith id xs === xs
 
 prop_show_read :: (FMTest k Int fm, Read (fm Int)) =>
 	fm Int -> fm Int -> Bool
