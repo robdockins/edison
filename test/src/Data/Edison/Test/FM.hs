@@ -47,7 +47,7 @@ instance (Ord a, Show a, Arbitrary a,
           Ord k, Show k, Arbitrary k) => OrdFMTest k a (AL.FM k)
 
 ---------------------------------------------------------------
--- List of all permutations of bag types to test
+-- List of all permutations of finite map types to test
 
 allFMTests :: Test
 allFMTests = TestList
@@ -122,6 +122,9 @@ fmTests fm = TestLabel ("FM test "++(instanceName fm)) . TestList $
    , qcTest $ prop_foldWithKey fm
    , qcTest $ prop_filterWithKey fm
    , qcTest $ prop_partitionWithKey fm
+   , qcTest $ prop_unionWithKey fm
+   , qcTest $ prop_unionSeqWithKey fm
+   , qcTest $ prop_intersectionWithKey fm
    ]
 
 ordFMTests fm = TestLabel ("Ord FM test "++(instanceName fm)) . TestList $
@@ -133,6 +136,11 @@ ordFMTests fm = TestLabel ("Ord FM test "++(instanceName fm)) . TestList $
    , qcTest $ prop_ord_partition fm
    , qcTest $ prop_fromOrdSeq fm
    , qcTest $ prop_unsafeAppend fm
+   , qcTest $ prop_minViewWithKey fm
+   , qcTest $ prop_maxViewWithKey fm
+   , qcTest $ prop_foldrWithKey fm
+   , qcTest $ prop_foldlWithKey fm
+   , qcTest $ prop_toOrdSeq fm
    ]
 
 -----------------------------------------------------------------
@@ -744,26 +752,64 @@ prop_partitionWithKey fm k xs =
     partitionWithKey f xs == (filterWithKey f xs, filterWithKey (\k x -> not (f k x)) xs)
   where f k' x = k' < k || (x `mod` 3 == 0)
 
-prop_show_read :: (FMTest k Int fm, Read (fm Int)) => 
+prop_minViewWithKey :: OrdFMTest k Int fm =>
+           fm Int -> fm Int -> Bool
+prop_minViewWithKey fm xs =
+    case minViewWithKey xs of
+      Nothing -> minView xs == Nothing
+      Just ((k,x), xs') ->
+	(minView xs == Just (x,xs')) && 
+        (minElemWithKey xs == (k,x)) &&
+        (lookupM k xs == Just x)
+
+prop_maxViewWithKey :: OrdFMTest k Int fm =>
+           fm Int -> fm Int -> Bool
+prop_maxViewWithKey fm xs =
+    case maxViewWithKey xs of
+      Nothing -> maxView xs == Nothing
+      Just ((k,x), xs') ->
+	(maxView xs == Just (x,xs')) && 
+        (maxElemWithKey xs == (k,x)) &&
+        (lookupM k xs == Just x)
+
+prop_foldrWithKey :: OrdFMTest k Int fm =>
+           fm Int -> fm Int -> Bool
+prop_foldrWithKey fm xs =
+    (foldrWithKey (const f) 19 xs == foldr f 19 xs) &&
+    (foldrWithKey' (const f) 19 xs == foldr f 19 xs) &&
+    (L.sort (foldrWithKey (\k x z -> k:z) [] xs) == L.sort (keys xs))
+ where f x z = (z^(abs x) + 11) `mod` ((abs x)+23)
+
+prop_foldlWithKey :: OrdFMTest k Int fm =>
+           fm Int -> fm Int -> Bool
+prop_foldlWithKey fm xs =
+    (foldlWithKey g 19 xs == foldl f 19 xs) &&
+    (foldlWithKey' g 19 xs == foldl f 19 xs) &&
+    (L.sort (foldlWithKey (\z k x -> k:z) [] xs) == L.sort (keys xs))
+ where f z x = (z^(abs x) + 11) `mod` ((abs x)+23)
+       g z _ x = f z x
+
+prop_toOrdSeq :: OrdFMTest k Int fm =>
+           fm Int -> [(k,Int)] -> Bool
+prop_toOrdSeq fm xs = xs' == toOrdSeq as
+   where as  = fromSeq (removeDups xs) `asTypeOf` fm
+         xs' = L.sortBy (\x y -> compare (fst x) (fst y)) (removeDups xs)
+
+prop_unionWithKey :: FMTest k Int fm =>
+           fm Int -> fm Int -> fm Int -> Bool
+prop_unionWithKey fm xs ys =
+   unionWithKey (const (+)) xs ys === unionWith (+) xs ys
+
+prop_unionSeqWithKey :: FMTest k Int fm =>
+           fm Int -> [fm Int] -> Bool
+prop_unionSeqWithKey fm xss =
+   unionSeqWithKey (const (+)) xss === unionSeqWith (+) xss
+
+prop_intersectionWithKey :: FMTest k Int fm =>
+           fm Int -> fm Int -> fm Int -> Bool
+prop_intersectionWithKey fm xs ys =
+     intersectionWithKey (const (-)) xs ys === intersectionWith (-) xs ys
+
+prop_show_read :: (FMTest k Int fm, Read (fm Int)) =>
 	fm Int -> fm Int -> Bool
 prop_show_read fm xs = xs === read (show xs)
-
-{-
-OrdAssoc
-class (Assoc m k, OrdAssocX m k) => OrdAssoc m k | m -> k where
-minViewWithKey :: Monad rm => m a -> rm ((k, a), m a)
-minElemWithKey :: m a -> (k, a)
-maxViewWithKey :: Monad rm => m a -> rm ((k, a), m a)
-maxElemWithKey :: m a -> (k, a)
-foldrWithKey :: (k -> a -> b -> b) -> b -> m a -> b
-foldrWithKey' :: (k -> a -> b -> b) -> b -> m a -> b
-foldlWithKey :: (b -> k -> a -> b) -> b -> m a -> b
-foldlWithKey' :: (b -> k -> a -> b) -> b -> m a -> b
-toOrdSeq :: Sequence seq => m a -> seq (k, a)
-
-FiniteMap
-class (Assoc m k, FiniteMapX m k) => FiniteMap m k | m -> k where
-unionWithKey :: (k -> a -> a -> a) -> m a -> m a -> m a
-unionSeqWithKey :: Sequence seq => (k -> a -> a -> a) -> seq (m a) -> m a
-intersectionWithKey :: (k -> a -> b -> c) -> m a -> m b -> m c
--}
