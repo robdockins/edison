@@ -586,8 +586,7 @@ fold1 f (FM v fmb)
       fold1FMB E
         = \j n -> n
       fold1FMB (I _ _ v l (FMB' m) r)
-        = comb (fold1FMB l) (comb (basecase v) (comb (fold1FMB l)
-          (comb (fold1FMB m) (fold1FMB r))))
+        = comb (basecase v) . comb (fold1FMB l) . comb (fold1FMB m) $ (fold1FMB r)
 
 -- FIXME, undestand this code to strictify it
 fold1' = fold1
