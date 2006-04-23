@@ -35,6 +35,7 @@ module Data.Edison.Seq.BankersQueue (
     mapWithIndex,foldrWithIndex,foldrWithIndex',foldlWithIndex,foldlWithIndex',
     take,drop,splitAt,subseq,filter,partition,takeWhile,dropWhile,splitWhile,
     zip,zip3,zipWith,zipWith3,unzip,unzip3,unzipWith,unzipWith3,
+    strict, strictWith,
 
     -- * Unit testing
     structuralInvariant,
@@ -130,13 +131,20 @@ unzip          :: Seq (a,b) -> (Seq a, Seq b)
 unzip3         :: Seq (a,b,c) -> (Seq a, Seq b, Seq c)
 unzipWith      :: (a -> b) -> (a -> c) -> Seq a -> (Seq b, Seq c)
 unzipWith3     :: (a -> b) -> (a -> c) -> (a -> d) -> Seq a -> (Seq b, Seq c, Seq d)
+strict         :: Seq a -> Seq a
+strictWith     :: (a -> b) -> Seq a -> Seq a
+
 structuralInvariant :: Seq a -> Bool
 
 moduleName = "Data.Edison.Seq.BankersQueue"
 
 
 data Seq a = Q !Int [a] [a] !Int
-  -- invariant: front at least as long as rear
+
+-- invariant: front at least as long as rear
+structuralInvariant (Q x f r y) =
+    length f == x && length r == y && x >= y
+
 
 -- not exported
 makeQ :: Int -> [a] -> [a] -> Int -> Seq a
@@ -310,9 +318,9 @@ splitAt idx q@(Q i xs ys j) =
          in (Q i xs ys'' idx', Q (j - idx') (L.reverse ys') [] 0)
       -- could do splitAt followed by reverse more efficiently...
   
-structuralInvariant (Q x f r y) =
-    length f == x && length r == y && x >= y
 
+strict l@(Q i xs ys j) = L.strict xs `seq` L.strict ys `seq` l
+strictWith f l@(Q i xs ys j) = L.strictWith f xs `seq` L.strictWith f ys `seq` l
 
 -- the remaining functions all use defaults
 
@@ -369,6 +377,7 @@ instance S.Sequence Seq where
    dropWhile = dropWhile; splitWhile = splitWhile; zip = zip;
    zip3 = zip3; zipWith = zipWith; zipWith3 = zipWith3; unzip = unzip;
    unzip3 = unzip3; unzipWith = unzipWith; unzipWith3 = unzipWith3;
+   strict = strict; strictWith = strictWith;
    structuralInvariant = structuralInvariant; instanceName s = moduleName}
 
 instance Functor Seq where

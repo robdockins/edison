@@ -34,6 +34,7 @@ module Data.Edison.Seq.RevSeq (
     mapWithIndex,foldrWithIndex,foldrWithIndex',foldlWithIndex,foldlWithIndex',
     take,drop,splitAt,subseq,filter,partition,takeWhile,dropWhile,splitWhile,
     zip,zip3,zipWith,zipWith3,unzip,unzip3,unzipWith,unzipWith3,
+    strict, strictWith,
 
     -- * Unit testing
     structuralInvariant,
@@ -133,6 +134,8 @@ unzip          :: S.Sequence s => Rev s (a,b) -> (Rev s a, Rev s b)
 unzip3         :: S.Sequence s => Rev s (a,b,c) -> (Rev s a, Rev s b, Rev s c)
 unzipWith      :: S.Sequence s => (a -> b) -> (a -> c) -> Rev s a -> (Rev s b, Rev s c)
 unzipWith3     :: S.Sequence s => (a -> b) -> (a -> c) -> (a -> d) -> Rev s a -> (Rev s b, Rev s c, Rev s d)
+strict         :: S.Sequence s => Rev s a -> Rev s a
+strictWith     :: S.Sequence s => (a -> b) -> Rev s a -> Rev s a
 structuralInvariant :: S.Sequence s => Rev s a -> Bool
 
 -- bonus functions, not in Sequence signature
@@ -303,6 +306,9 @@ unzipWith f g (N m xys) = (N m xs, N m ys)
 unzipWith3 f g h (N m xyzs) = (N m xs, N m ys, N m zs)
   where (xs,ys,zs) = S.unzipWith3 f g h xyzs
 
+strict s@(N i s') = S.strict s' `seq` s
+strictWith f s@(N i s') = S.strictWith f s' `seq` s
+
 structuralInvariant (N i s) = i == ((S.size s) - 1)
 
 -- instances
@@ -329,6 +335,7 @@ instance S.Sequence s => S.Sequence (Rev s) where
    dropWhile = dropWhile; splitWhile = splitWhile; zip = zip;
    zip3 = zip3; zipWith = zipWith; zipWith3 = zipWith3; unzip = unzip;
    unzip3 = unzip3; unzipWith = unzipWith; unzipWith3 = unzipWith3;
+   strict = strict; strictWith = strictWith;
    structuralInvariant = structuralInvariant; instanceName = instanceName}
 
 instance S.Sequence s => Functor (Rev s) where

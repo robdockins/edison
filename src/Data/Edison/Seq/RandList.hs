@@ -36,6 +36,7 @@ module Data.Edison.Seq.RandList (
     mapWithIndex,foldrWithIndex,foldrWithIndex',foldlWithIndex,foldlWithIndex',
     take,drop,splitAt,subseq,filter,partition,takeWhile,dropWhile,splitWhile,
     zip,zip3,zipWith,zipWith3,unzip,unzip3,unzipWith,unzipWith3,
+    strict, strictWith,
 
     -- * Unit testing
     structuralInvariant,
@@ -129,7 +130,8 @@ unzip          :: Seq (a,b) -> (Seq a, Seq b)
 unzip3         :: Seq (a,b,c) -> (Seq a, Seq b, Seq c)
 unzipWith      :: (a -> b) -> (a -> c) -> Seq a -> (Seq b, Seq c)
 unzipWith3     :: (a -> b) -> (a -> c) -> (a -> d) -> Seq a -> (Seq b, Seq c, Seq d)
-
+strict         :: Seq a -> Seq a
+strictWith     :: (a -> b) -> Seq a -> Seq a
 moduleName = "Data.Edison.Seq.RandList"
 
 
@@ -338,6 +340,19 @@ drop n xs = if n < 0 then xs else drp n xs
             | otherwise = drpTree (i - 1) k s (C k t xs)
           where k = half j
 
+strict s@E = s
+strict s@(C j t xs) = strictTree t `seq` strict xs `seq` s
+
+strictTree t@(L x) = t
+strictTree t@(T x l r) = strictTree l `seq` strictTree r `seq` t
+
+strictWith f s@E = s
+strictWith f s@(C j t xs) = strictWithTree f t `seq` strictWith f xs `seq` s
+
+strictWithTree f t@(L x) = f x `seq` t
+strictWithTree f t@(T x l r) = f x `seq` strictWithTree f l `seq` strictWithTree f r `seq` t
+
+
 -- the remaining functions all use defaults
 
 rcons = rconsUsingFoldr
@@ -428,6 +443,7 @@ instance S.Sequence Seq where
    dropWhile = dropWhile; splitWhile = splitWhile; zip = zip;
    zip3 = zip3; zipWith = zipWith; zipWith3 = zipWith3; unzip = unzip;
    unzip3 = unzip3; unzipWith = unzipWith; unzipWith3 = unzipWith3;
+   strict = strict; strictWith = strictWith;
    structuralInvariant = structuralInvariant; instanceName s = moduleName}
 
 instance Functor Seq where

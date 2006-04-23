@@ -38,6 +38,7 @@ module Data.Edison.Seq.SimpleQueue (
     mapWithIndex,foldrWithIndex,foldlWithIndex,foldrWithIndex',foldlWithIndex',
     take,drop,splitAt,subseq,filter,partition,takeWhile,dropWhile,splitWhile,
     zip,zip3,zipWith,zipWith3,unzip,unzip3,unzipWith,unzipWith3,
+    strict, strictWith,
 
     -- * Unit testing
     structuralInvariant,
@@ -131,6 +132,8 @@ unzip          :: Seq (a,b) -> (Seq a, Seq b)
 unzip3         :: Seq (a,b,c) -> (Seq a, Seq b, Seq c)
 unzipWith      :: (a -> b) -> (a -> c) -> Seq a -> (Seq b, Seq c)
 unzipWith3     :: (a -> b) -> (a -> c) -> (a -> d) -> Seq a -> (Seq b, Seq c, Seq d)
+strict         :: Seq a -> Seq a
+strictWith     :: (a -> b) -> Seq a -> Seq a
 structuralInvariant :: Seq a -> Bool
 
 moduleName = "Data.Edison.Seq.SimpleQueue"
@@ -258,6 +261,9 @@ partition p (Q xs ys)
    (xsT,xsF) = L.partition p xs
    (ysT,ysF) = L.partition p ys
 
+strict s@(Q xs ys) = L.strict xs `seq` L.strict ys `seq` s
+strictWith f s@(Q xs ys) = L.strictWith f xs `seq` L.strictWith f ys `seq` s
+
 -- the remaining functions all use defaults
 
 concat = concatUsingFoldr
@@ -325,6 +331,7 @@ instance S.Sequence Seq where
    dropWhile = dropWhile; splitWhile = splitWhile; zip = zip;
    zip3 = zip3; zipWith = zipWith; zipWith3 = zipWith3; unzip = unzip;
    unzip3 = unzip3; unzipWith = unzipWith; unzipWith3 = unzipWith3;
+   strict = strict; strictWith = strictWith;
    structuralInvariant = structuralInvariant; instanceName s = moduleName}
 
 instance Functor Seq where

@@ -33,6 +33,7 @@ module Data.Edison.Seq.BinaryRandList (
     mapWithIndex,foldrWithIndex,foldrWithIndex',foldlWithIndex,foldlWithIndex',
     take,drop,splitAt,subseq,filter,partition,takeWhile,dropWhile,splitWhile,
     zip,zip3,zipWith,zipWith3,unzip,unzip3,unzipWith,unzipWith3,
+    strict, strictWith,
 
     -- * Unit testing
     structuralInvariant,
@@ -128,6 +129,8 @@ unzip          :: Seq (a,b) -> (Seq a, Seq b)
 unzip3         :: Seq (a,b,c) -> (Seq a, Seq b, Seq c)
 unzipWith      :: (a -> b) -> (a -> c) -> Seq a -> (Seq b, Seq c)
 unzipWith3     :: (a -> b) -> (a -> c) -> (a -> d) -> Seq a -> (Seq b, Seq c, Seq d)
+strict         :: Seq a -> Seq a
+strictWith     :: (a -> b) -> Seq a -> Seq a
 structuralInvariant :: Seq a -> Bool
 
 moduleName = "Data.Edison.Seq.BinaryRandList"
@@ -315,6 +318,16 @@ drop n xs = if n <= 0 then xs else drp n xs
           | odd i = mkEven (drp (half (i-1)) ps)
           | otherwise = fromMaybe empty (ltailM (mkEven (drp (half (i-1)) ps)))
 
+
+strict l@E = l
+strict l@(Even l') = strict l' `seq` l
+strict l@(Odd x l') = strict l' `seq` l
+
+strictWith f l@E = l
+strictWith f l@(Even l')  = strictWith (\ (x,y) -> f x `seq` f y) l' `seq` l
+strictWith f l@(Odd x l') = f x `seq` strictWith (\ (x,y) -> f x `seq` f y) `seq` l
+
+
 -- structural invariants are enforced by the type system
 structuralInvariant = const True
 
@@ -388,6 +401,7 @@ instance S.Sequence Seq where
    dropWhile = dropWhile; splitWhile = splitWhile; zip = zip;
    zip3 = zip3; zipWith = zipWith; zipWith3 = zipWith3; unzip = unzip;
    unzip3 = unzip3; unzipWith = unzipWith; unzipWith3 = unzipWith3;
+   strict = strict; strictWith = strictWith;
    structuralInvariant = structuralInvariant; instanceName s = moduleName}
 
 instance Functor Seq where

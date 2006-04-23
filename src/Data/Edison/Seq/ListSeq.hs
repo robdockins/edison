@@ -26,6 +26,7 @@ module Data.Edison.Seq.ListSeq (
     mapWithIndex,foldrWithIndex,foldrWithIndex',foldlWithIndex,foldlWithIndex',
     take,drop,splitAt,subseq,filter,partition,takeWhile,dropWhile,splitWhile,
     zip,zip3,zipWith,zipWith3,unzip,unzip3,unzipWith,unzipWith3,
+    strict,strictWith,
 
     -- * Unit testing
     structuralInvariant,
@@ -114,6 +115,8 @@ unzip          :: [(a,b)] -> ([a], [b])
 unzip3         :: [(a,b,c)] -> ([a], [b], [c])
 unzipWith      :: (a -> b) -> (a -> c) -> [a] -> ([b], [c])
 unzipWith3     :: (a -> b) -> (a -> c) -> (a -> d) -> [a] -> ([b], [c], [d])
+strict         :: [a] -> [a]
+strictWith     :: (a -> b) -> [a] -> [a]
 structuralInvariant :: [a] -> Bool
 
 moduleName = "Data.Edison.Seq.ListSeq"
@@ -309,6 +312,12 @@ splitAt i xs | i <= 0 = ([], xs)
 
 subseq i len xs = take len (drop i xs)
         
+strict l@[] = l
+strict l@(_:xs) = strict xs `seq` l
+
+strictWith f l@[] = l
+strictWith f l@(x:xs) = f x `seq` strictWith f xs `seq` l
+
 filter = Data.List.filter
 partition = Data.List.partition
 takeWhile = Data.List.takeWhile
@@ -358,5 +367,5 @@ instance S.Sequence [] where
    dropWhile = dropWhile; splitWhile = splitWhile; zip = zip;
    zip3 = zip3; zipWith = zipWith; zipWith3 = zipWith3; unzip = unzip;
    unzip3 = unzip3; unzipWith = unzipWith; unzipWith3 = unzipWith3;
+   strict = strict; strictWith = strictWith;
    structuralInvariant = structuralInvariant; instanceName s = moduleName}
-

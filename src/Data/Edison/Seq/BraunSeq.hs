@@ -46,6 +46,7 @@ module Data.Edison.Seq.BraunSeq (
     mapWithIndex,foldrWithIndex,foldrWithIndex',foldlWithIndex,foldlWithIndex',
     take,drop,splitAt,subseq,filter,partition,takeWhile,dropWhile,splitWhile,
     zip,zip3,zipWith,zipWith3,unzip,unzip3,unzipWith,unzipWith3,
+    strict, strictWith,
 
     -- * Unit testing
     structuralInvariant,
@@ -143,6 +144,8 @@ unzip          :: Seq (a,b) -> (Seq a, Seq b)
 unzip3         :: Seq (a,b,c) -> (Seq a, Seq b, Seq c)
 unzipWith      :: (a -> b) -> (a -> c) -> Seq a -> (Seq b, Seq c)
 unzipWith3     :: (a -> b) -> (a -> c) -> (a -> d) -> Seq a -> (Seq b, Seq c, Seq d)
+strict         :: Seq a -> Seq a
+strictWith     :: (a -> b) -> Seq a -> Seq a
 structuralInvariant :: Seq a -> Bool
 
 moduleName = "Data.Edison.Seq.BraunSeq"
@@ -415,6 +418,11 @@ unzipWith3 f g h (B x a b) = (B (f x) a1 b1, B (g x) a2 b2, B (h x) a3 b3)
         (b1,b2,b3) = unzipWith3 f g h b
 
 
+strict s@E = s
+strict s@(B x l r) = strict l `seq` strict r `seq` s
+
+strictWith f s@E = s
+strictWith f s@(B x l r) = f x `seq` strictWith f l `seq` strictWith f r `seq` s
 
 -- invariants:
 --   * Left subtree is exactily the same size as the right
@@ -494,6 +502,7 @@ instance S.Sequence Seq where
    dropWhile = dropWhile; splitWhile = splitWhile; zip = zip;
    zip3 = zip3; zipWith = zipWith; zipWith3 = zipWith3; unzip = unzip;
    unzip3 = unzip3; unzipWith = unzipWith; unzipWith3 = unzipWith3;
+   strict = strict; strictWith = strictWith;
    structuralInvariant = structuralInvariant; instanceName s = moduleName}
 
 instance Functor Seq where

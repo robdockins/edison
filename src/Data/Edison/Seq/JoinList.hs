@@ -36,6 +36,7 @@ module Data.Edison.Seq.JoinList (
     mapWithIndex,foldrWithIndex,foldlWithIndex,
     take,drop,splitAt,subseq,filter,partition,takeWhile,dropWhile,splitWhile,
     zip,zip3,zipWith,zipWith3,unzip,unzip3,unzipWith,unzipWith3,
+    strict, strictWith,
 
     -- * Unit testing
     structuralInvariant,
@@ -128,6 +129,8 @@ unzip          :: Seq (a,b) -> (Seq a, Seq b)
 unzip3         :: Seq (a,b,c) -> (Seq a, Seq b, Seq c)
 unzipWith      :: (a -> b) -> (a -> c) -> Seq a -> (Seq b, Seq c)
 unzipWith3     :: (a -> b) -> (a -> c) -> (a -> d) -> Seq a -> (Seq b, Seq c, Seq d)
+strict         :: Seq a -> Seq a
+strictWith     :: (a -> b) -> Seq a -> Seq a
 structuralInvariant :: Seq a -> Bool
 
 moduleName = "Data.Edison.Seq.JoinList"
@@ -287,6 +290,15 @@ copy n x
           | otherwise = let xs = cpy (half n) x
                         in A (L x) (A xs xs)
 
+
+strict s@E = s
+strict s@(L x) = s
+strict s@(A l r) = strict l `seq` strict r `seq` s
+
+strictWith f s@E = s
+strictWith f s@(L x) = f x `seq` s
+strictWith f s@(A l r) = strictWith f l `seq` strictWith f l `seq` s
+
 -- invariants:
 --   * 'E' is never a child of 'A'
 
@@ -368,6 +380,7 @@ instance S.Sequence Seq where
    dropWhile = dropWhile; splitWhile = splitWhile; zip = zip;
    zip3 = zip3; zipWith = zipWith; zipWith3 = zipWith3; unzip = unzip;
    unzip3 = unzip3; unzipWith = unzipWith; unzipWith3 = unzipWith3;
+   strict = strict; strictWith = strictWith;
    structuralInvariant = structuralInvariant; instanceName s = moduleName}
 
 instance Functor Seq where

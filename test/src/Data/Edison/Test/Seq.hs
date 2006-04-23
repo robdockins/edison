@@ -127,6 +127,7 @@ seqTests seq = TestLabel ("Sequence test "++(instanceName seq)) . TestList $
   , qcTest $ prop_unzip3_unzipWith3 seq
   , qcTest $ prop_concat seq
   , qcTest $ prop_concatMap seq
+  , qcTest $ prop_strict seq
   , qcTest $ prop_show_read seq
   ]
 
@@ -444,6 +445,14 @@ prop_concatMap :: (SeqTest (seq Int) seq, SeqTest Int seq) =>
 prop_concatMap seq xs = forAll (genss seq) check
   where check xss = concatMap f xs === concat (map f xs)
             where f i = lookupWithDefault empty i xss
+
+prop_strict :: SeqTest Int seq =>
+        seq Int -> seq Int -> Bool
+prop_strict seq xs = 
+     strict xs === xs
+     &&
+     strictWith id xs === xs
+     
 
 prop_show_read :: (SeqTest Int seq) => seq Int -> seq Int -> Bool
 prop_show_read seq xs = xs === read (show xs)

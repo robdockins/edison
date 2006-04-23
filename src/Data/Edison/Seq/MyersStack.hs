@@ -31,6 +31,7 @@ module Data.Edison.Seq.MyersStack (
     mapWithIndex,foldrWithIndex,foldrWithIndex',foldlWithIndex,foldlWithIndex',
     take,drop,splitAt,subseq,filter,partition,takeWhile,dropWhile,splitWhile,
     zip,zip3,zipWith,zipWith3,unzip,unzip3,unzipWith,unzipWith3,
+    strict, strictWith,
 
     -- * Unit testing
     structuralInvariant,
@@ -124,6 +125,8 @@ unzip          :: Seq (a,b) -> (Seq a, Seq b)
 unzip3         :: Seq (a,b,c) -> (Seq a, Seq b, Seq c)
 unzipWith      :: (a -> b) -> (a -> c) -> Seq a -> (Seq b, Seq c)
 unzipWith3     :: (a -> b) -> (a -> c) -> (a -> d) -> Seq a -> (Seq b, Seq c, Seq d)
+strict         :: Seq a -> Seq a
+strictWith     :: (a -> b) -> Seq a -> Seq a
 structuralInvariant :: Seq a -> Bool
 
 moduleName = "Data.Edison.Seq.MyersStack"
@@ -305,6 +308,12 @@ unzipWith3 f g h (C j x xs _)
                    C j (h x) cs (jump cs))
   where (as,bs,cs) = unzipWith3 f g h xs
 
+strict s@E = s
+strict s@(C i x xs j) = strict xs `seq` strict j `seq` s
+
+strictWith f s@E = s
+strictWith f s@(C i x xs j) = f x `seq` strictWith f xs `seq` strictWith f j `seq` s
+
 -- the remaining functions all use defaults
 
 rcons = rconsUsingFoldr
@@ -370,6 +379,7 @@ instance S.Sequence Seq where
    dropWhile = dropWhile; splitWhile = splitWhile; zip = zip;
    zip3 = zip3; zipWith = zipWith; zipWith3 = zipWith3; unzip = unzip;
    unzip3 = unzip3; unzipWith = unzipWith; unzipWith3 = unzipWith3;
+   strict = strict; strictWith = strictWith;
    structuralInvariant = structuralInvariant; instanceName s = moduleName}
 
 instance Functor Seq where

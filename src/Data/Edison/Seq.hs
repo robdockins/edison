@@ -1219,6 +1219,40 @@ class (Functor s, MonadPlus s) => Sequence s where
   --     of @f@, @g@, and @h@
   unzipWith3  :: (a -> b) -> (a -> c) -> (a -> d) -> s a -> (s b, s c, s d)
 
+  -- | Semanticly, this function is a partial identity function.  If the
+  --   datastructure is infinite in size or contains exceptions or non-termination
+  --   in the structure itself, then @strict@ will result in bottom.  Operationally,
+  --   this function walks the datastructure forcing any closures.  Elements contained
+  --   in the sequence are /not/ forced.
+  --
+  --   /Axioms:/
+  --
+  --   * @strict xs = xs@ OR @strict xs = _|_@
+  --
+  --   This function is always /unambiguous/.
+  --
+  --   Default running time: @O( n )@
+  strict :: s a -> s a
+
+  -- | Similar to 'strict', this function walks the datastructure forcing closures.
+  --   However, @strictWith@ will additionally apply the given function to the
+  --   sequence elements, force the result using @seq@, and then ignore it.
+  --   This function can be used to perform various levels of forcing on the
+  --   sequence elements.  In particular:
+  --
+  -- > strictWith id xs
+  --
+  --   will force the spine of the datastructure and reduce each element to WHNF.
+  --
+  --   /Axioms:/
+  --
+  --   * forall @f :: a -> b@, @strictWith f xs = xs@ OR @strictWith f xs = _|_@
+  --
+  --   This function is always /unambiguous/.
+  --
+  --   Default running time: unbounded (forcing element closures can take arbitrairly long)
+  strictWith :: (a -> b) -> s a -> s a
+
   -- | A method to facilitate unit testing.  Returns 'True' if the structural
   --   invariants of the implementation hold for the given sequence.  If
   --   this function returns 'False', it represents a bug in the implementation.
