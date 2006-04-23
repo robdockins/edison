@@ -15,11 +15,11 @@ module Data.Edison.Coll.UnbalancedSet (
 
     -- * CollX operations
     empty,singleton,fromSeq,insert,insertSeq,union,unionSeq,delete,deleteAll,
-    deleteSeq,null,size,member,count,
+    deleteSeq,null,size,member,count,strict,structuralInvariant,
 
     -- * Coll operations
     toSeq,lookup,lookupM,lookupAll,lookupWithDefault,fold,fold',
-    fold1,fold1',filter,partition,
+    fold1,fold1',filter,partition,strictWith,
 
     -- * OrdCollX operations
     deleteMin,deleteMax,unsafeInsertMin,unsafeInsertMax,unsafeFromOrdSeq,
@@ -67,6 +67,7 @@ null       :: Set a -> Bool
 size       :: Set a -> Int
 member     :: Ord a => a -> Set a -> Bool
 count      :: Ord a => a -> Set a -> Int
+strict     :: Set a -> Set a
 
 toSeq      :: (Ord a,S.Sequence seq) => Set a -> seq a
 lookup     :: Ord a => a -> Set a -> a
@@ -79,6 +80,7 @@ fold'      :: (a -> b -> b) -> b -> Set a -> b
 fold1'     :: (a -> a -> a) -> Set a -> a
 filter     :: Ord a => (a -> Bool) -> Set a -> Set a
 partition  :: Ord a => (a -> Bool) -> Set a -> (Set a, Set a)
+strictWith :: (a -> b) -> Set a -> Set a
 
 deleteMin        :: Ord a => Set a -> Set a
 deleteMax        :: Ord a => Set a -> Set a
@@ -325,6 +327,12 @@ unsafeMapMonotonic f E = E
 unsafeMapMonotonic f (T a x b) = 
     T (unsafeMapMonotonic f a) (f x) (unsafeMapMonotonic f b)
 
+strict s@E = s
+strict s@(T l x r) = strict l `seq` strict r `seq` s
+
+strictWith f s@E = s
+strictWith f s@(T l x r) = f x `seq` strictWith f l `seq` strictWith f r `seq` s
+
 -- the remaining functions all use default definitions
 
 fromSeq = fromSeqUsingUnionSeq
@@ -364,6 +372,7 @@ instance Ord a => C.CollX (Set a) a where
    insertSeq = insertSeq; unionSeq = unionSeq; 
    delete = delete; deleteAll = deleteAll; deleteSeq = deleteSeq;
    null = null; size = size; member = member; count = count;
+   strict = strict;
    structuralInvariant = structuralInvariant; instanceName c = moduleName}
 
 instance Ord a => C.OrdCollX (Set a) a where
@@ -378,7 +387,7 @@ instance Ord a => C.Coll (Set a) a where
   {toSeq = toSeq; lookup = lookup; lookupM = lookupM; 
    lookupAll = lookupAll; lookupWithDefault = lookupWithDefault; 
    fold = fold; fold' = fold'; fold1 = fold1; fold1' = fold1';
-   filter = filter; partition = partition}
+   filter = filter; partition = partition; strictWith = strictWith}
 
 instance Ord a => C.OrdColl (Set a) a where
   {minView = minView; minElem = minElem; maxView = maxView; 

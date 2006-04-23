@@ -23,11 +23,11 @@ module Data.Edison.Coll.SplayHeap (
 
     -- * CollX operations
     empty,singleton,fromSeq,insert,insertSeq,union,unionSeq,delete,deleteAll,
-    deleteSeq,null,size,member,count,structuralInvariant,
+    deleteSeq,null,size,member,count,strict,structuralInvariant,
 
     -- * Coll operations
     toSeq, lookup, lookupM, lookupAll, lookupWithDefault, fold, fold',
-    fold1, fold1', filter, partition,
+    fold1, fold1', filter, partition, strictWith,
 
     -- * OrdCollX operations
     deleteMin,deleteMax,unsafeInsertMin,unsafeInsertMax,unsafeFromOrdSeq,
@@ -88,6 +88,7 @@ null      :: Heap a -> Bool
 size      :: Heap a -> Int
 member    :: Ord a => a -> Heap a -> Bool
 count     :: Ord a => a -> Heap a -> Int
+strict    :: Heap a -> Heap a
 
 toSeq     :: (Ord a, S.Sequence s) => Heap a -> s a
 lookup    :: Ord a => a -> Heap a -> a
@@ -100,6 +101,7 @@ fold'     :: Ord a => (a -> b -> b) -> b -> Heap a -> b
 fold1'    :: Ord a => (a -> a -> a) -> Heap a -> a
 filter    :: Ord a => (a -> Bool) -> Heap a -> Heap a
 partition :: Ord a => (a -> Bool) -> Heap a -> (Heap a, Heap a)
+strictWith :: (a -> b) -> Heap a -> Heap a
 
 deleteMin        :: Ord a => Heap a -> Heap a
 deleteMax        :: Ord a => Heap a -> Heap a
@@ -418,6 +420,12 @@ unsafeMapMonotonic f E = E
 unsafeMapMonotonic f (T a x b) =
   T (unsafeMapMonotonic f a) (f x) (unsafeMapMonotonic f b)
 
+strict h@E = h
+strict h@(T l x r) = strict l `seq` strict r `seq` h
+
+strictWith f h@E = h
+strictWith f h@(T l x r) = f x `seq` strictWith f l `seq` strictWith f r `seq` h
+
 -- the remaining functions all use defaults
 
 fromSeq = fromSeqUsingFoldr
@@ -433,6 +441,7 @@ instance Ord a => C.CollX (Heap a) a where
    insertSeq = insertSeq; unionSeq = unionSeq; 
    delete = delete; deleteAll = deleteAll; deleteSeq = deleteSeq;
    null = null; size = size; member = member; count = count;
+   strict = strict;
    structuralInvariant = structuralInvariant; instanceName c = moduleName}
 
 instance Ord a => C.OrdCollX (Heap a) a where
@@ -447,6 +456,7 @@ instance Ord a => C.Coll (Heap a) a where
   {toSeq = toSeq; lookup = lookup; lookupM = lookupM; 
    lookupAll = lookupAll; lookupWithDefault = lookupWithDefault; 
    fold = fold; fold' = fold'; fold1 = fold1; fold1' = fold1';
+   strictWith = strictWith;
    filter = filter; partition = partition}
 
 instance Ord a => C.OrdColl (Heap a) a where

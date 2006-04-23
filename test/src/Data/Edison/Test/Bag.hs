@@ -96,6 +96,7 @@ bagTests bag = TestLabel ("Bag test "++(instanceName bag)) . TestList $
    , qcTest $ prop_unsafeAppend bag
    , qcTest $ prop_unsafeMapMonotonic bag -- 30
    , qcTest $ prop_read_show bag
+   , qcTest $ prop_strict bag
    ]
 
 ----------------------------------------------------
@@ -376,3 +377,9 @@ prop_unsafeMapMonotonic bag xs =
 prop_read_show :: BagTest Int bag 
                => bag Int -> bag Int -> Bool
 prop_read_show bag xs = xs === read (show xs)
+
+prop_strict :: BagTest a bag => bag a -> bag a -> Bool
+prop_strict bag xs =
+   strict xs === xs
+   &&
+   strictWith id xs === xs

@@ -94,6 +94,7 @@ module Data.Edison.Coll.EnumSet (
             , size
             , member
             , count
+            , strict
 
             -- * OrdCollX operations
             , deleteMin
@@ -126,6 +127,7 @@ module Data.Edison.Coll.EnumSet (
             , fold, fold', fold1, fold1'
             , filter
             , partition
+            , strictWith
 
             -- * OrdColl operations
             , minView
@@ -599,6 +601,16 @@ splitMember x (Set w) = (Set lesser,isMember,Set greater)
 -}
 
 
+{----------------------------------------------------------------
+  Strictness enhancement
+----------------------------------------------------------------}
+
+strict :: Set a -> Set a
+strict s@(Set w) = s
+
+strictWith :: (a -> b) -> Set a -> Set a
+strictWith f s@(Set w) = s
+
 {--------------------------------------------------------------------
   Utility functions. 
 --------------------------------------------------------------------}
@@ -726,6 +738,7 @@ instance (Eq a, Enum a) => C.CollX (Set a) a where
    insertSeq = insertSeq; unionSeq = unionSeq; 
    delete = delete; deleteAll = deleteAll; deleteSeq = deleteSeq;
    null = null; size = size; member = member; count = count;
+   strict = strict;
    structuralInvariant = structuralInvariant; instanceName c = moduleName}
 
 instance (Ord a, Enum a) => C.OrdCollX (Set a) a where  
@@ -745,7 +758,7 @@ instance (Eq a, Enum a) => C.Coll (Set a) a where
   {toSeq = toSeq; lookup = lookup; lookupM = lookupM; 
    lookupAll = lookupAll; lookupWithDefault = lookupWithDefault; 
    fold = fold; fold' = fold'; fold1 = fold1; fold1' = fold1';
-   filter = filter; partition = partition}
+   filter = filter; partition = partition; strictWith = strictWith}
 
 instance (Ord a, Enum a) => C.OrdColl (Set a) a where
   {minView = minView; minElem = minElem; maxView = maxView; 

@@ -15,11 +15,11 @@ module Data.Edison.Coll.MinHeap (
 
     -- * CollX operations
     empty,singleton,fromSeq,insert,insertSeq,union,unionSeq,delete,deleteAll,
-    deleteSeq,null,size,member,count,structuralInvariant,
+    deleteSeq,null,size,member,count,strict,structuralInvariant,
 
     -- * Coll operations
     toSeq, lookup, lookupM, lookupAll, lookupWithDefault, fold, fold',
-    fold1, fold1', filter, partition,
+    fold1, fold1', filter, partition, strictWith,
 
     -- * OrdCollX operations
     deleteMin,deleteMax,unsafeInsertMin,unsafeInsertMax,unsafeFromOrdSeq,
@@ -73,6 +73,7 @@ null      :: Min h a -> Bool
 size      :: C.CollX h a => Min h a -> Int
 member    :: (C.CollX h a,Ord a) => a -> Min h a -> Bool
 count     :: (C.CollX h a,Ord a) => a -> Min h a -> Int
+strict    :: (C.CollX h a,Ord a) => Min h a -> Min h a
 
 toSeq     :: (C.Coll h a,S.Sequence s) => Min h a -> s a
 lookup    :: (C.Coll h a,Ord a) => a -> Min h a -> a
@@ -85,6 +86,7 @@ fold'     :: (C.Coll h a) => (a -> b -> b) -> b -> Min h a -> b
 fold1'    :: (C.Coll h a) => (a -> a -> a) -> Min h a -> a
 filter    :: (C.OrdColl h a) => (a -> Bool) -> Min h a -> Min h a
 partition :: (C.OrdColl h a) => (a -> Bool) -> Min h a -> (Min h a, Min h a)
+strictWith :: (C.OrdColl h a) => (a -> b) -> Min h a -> Min h a
 
 deleteMin :: (C.OrdColl h a,Ord a) => Min h a -> Min h a
 deleteMax :: (C.OrdCollX h a,Ord a) => Min h a -> Min h a
@@ -333,6 +335,12 @@ toOrdSeq (M x xs) = S.lcons x (C.toOrdSeq xs)
 
 unsafeMapMonotonic = unsafeMapMonotonicUsingFoldr
 
+strict h@E = h
+strict h@(M x xs) = C.strict xs `seq` h
+
+strictWith f h@E = h
+strictWith f h@(M x xs) = f x `seq` C.strictWith f xs `seq` h
+
 
 -- instance declarations
 
@@ -341,6 +349,7 @@ instance (C.OrdColl h a, Ord a) => C.CollX (Min h a) a where
    insertSeq = insertSeq; unionSeq = unionSeq; 
    delete = delete; deleteAll = deleteAll; deleteSeq = deleteSeq;
    null = null; size = size; member = member; count = count;
+   strict = strict;
    structuralInvariant = structuralInvariant; instanceName c = moduleName}
 
 instance (C.OrdColl h a, Ord a) => C.OrdCollX (Min h a) a where
@@ -355,7 +364,7 @@ instance (C.OrdColl h a, Ord a) => C.Coll (Min h a) a where
   {toSeq = toSeq; lookup = lookup; lookupM = lookupM; 
    lookupAll = lookupAll; lookupWithDefault = lookupWithDefault; 
    fold = fold; fold' = fold'; fold1 = fold1; fold1' = fold1';
-   filter = filter; partition = partition}
+   filter = filter; partition = partition; strictWith = strictWith}
 
 instance (C.OrdColl h a, Ord a) => C.OrdColl (Min h a) a where
   {minView = minView; minElem = minElem; maxView = maxView; 

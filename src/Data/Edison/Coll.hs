@@ -212,6 +212,17 @@ class (Eq a,Monoid c) => CollX c a | c -> a where
   --   This function is always /unambiguous/.
   count          :: a -> c -> Int
 
+  -- | Semanticly, this function is a partial identity function.  If the
+  --   datastructure is infinite in size or contains exceptions or non-termination
+  --   in the structure itself, then @strict@ will result in bottom.  Operationally,
+  --   this function walks the datastructure forcing any closures.  In many
+  --   collections, the collction \"shape\" depends on the value of the elemnts;
+  --   in such cases, the values of the elements will be forced to the extent
+  --   necessary to force the structure of the collection, but no further.
+  --
+  --   This function is always /unambiguous/.
+  strict         :: c -> c
+
   -- | A method to facilitate unit testing.  Returns 'True' if the structural
   --   invariants of the implementation hold for the given collection.  If
   --   this function returns 'False', it represents a bug; generally, either
@@ -464,6 +475,18 @@ class CollX c a => Coll c a | c -> a where
   --   This function is always /unambiguous/.
   partition  :: (a -> Bool) -> c -> (c, c)
 
+  -- | Similar to 'strict', this function walks the datastructure forcing closures.
+  --   However, @strictWith@ will additionally apply the given function to the
+  --   collection elements, force the result using @seq@, and then ignore it.
+  --   This function can be used to perform various levels of forcing on the
+  --   sequence elements.  In particular:
+  --
+  -- > strictWith id xs
+  --
+  --   will force the spine of the datastructure and reduce each element to WHNF.
+  --
+  --   This function is always /unambiguous/.
+  strictWith :: (a -> b) -> c -> c
 
 
 -- | Collections with observable elements where the elements additionally

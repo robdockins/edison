@@ -19,11 +19,11 @@ module Data.Edison.Coll.LeftistHeap (
 
     -- * CollX operations
     empty,singleton,fromSeq,insert,insertSeq,union,unionSeq,delete,deleteAll,
-    deleteSeq,null,size,member,count,structuralInvariant,
+    deleteSeq,null,size,member,count,strict,structuralInvariant,
 
     -- * Coll operations
     toSeq, lookup, lookupM, lookupAll, lookupWithDefault, fold, fold',
-    fold1, fold1', filter, partition,
+    fold1, fold1', filter, partition, strictWith,
 
     -- * OrdCollX operations
     deleteMin,deleteMax,unsafeInsertMin,unsafeInsertMax,unsafeFromOrdSeq,
@@ -372,6 +372,15 @@ unsafeMapMonotonic f E = E
 unsafeMapMonotonic f (L i x a b) =
   L i (f x) (unsafeMapMonotonic f a) (unsafeMapMonotonic f b)
 
+
+-- all fields are already fully strict!
+strict :: Heap a -> Heap a
+strict h = h
+
+strictWith :: (a -> b) -> Heap a -> Heap a
+strictWith f h@E = h
+strictWith f h@(L i x l r) = f x `seq` strictWith f l `seq` strictWith f r `seq` h
+
 -- the remaining functions all use default definitions
 
 fromSeq :: (Ord a,S.Sequence seq) => seq a -> Heap a
@@ -409,6 +418,7 @@ instance Ord a => C.CollX (Heap a) a where
    insertSeq = insertSeq; unionSeq = unionSeq; 
    delete = delete; deleteAll = deleteAll; deleteSeq = deleteSeq;
    null = null; size = size; member = member; count = count;
+   strict = strict;
    structuralInvariant = structuralInvariant; instanceName c = moduleName}
 
 instance Ord a => C.OrdCollX (Heap a) a where
@@ -423,7 +433,7 @@ instance Ord a => C.Coll (Heap a) a where
   {toSeq = toSeq; lookup = lookup; lookupM = lookupM; 
    lookupAll = lookupAll; lookupWithDefault = lookupWithDefault; 
    fold = fold; fold' = fold'; fold1 = fold1; fold1' = fold1';
-   filter = filter; partition = partition}
+   filter = filter; partition = partition; strictWith = strictWith}
 
 instance Ord a => C.OrdColl (Heap a) a where
   {minView = minView; minElem = minElem; maxView = maxView; 

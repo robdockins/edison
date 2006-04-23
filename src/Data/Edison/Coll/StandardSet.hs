@@ -15,11 +15,11 @@ module Data.Edison.Coll.StandardSet (
 
     -- * CollX operations
     empty,singleton,fromSeq,insert,insertSeq,union,unionSeq,delete,deleteAll,
-    deleteSeq,null,size,member,count,
+    deleteSeq,null,size,member,count,strict,
 
     -- * Coll operations
     toSeq,lookup,lookupM,lookupAll,lookupWithDefault,fold,fold',
-    fold1,fold1',filter,partition,structuralInvariant,
+    fold1,fold1',filter,partition,strictWith,structuralInvariant,
 
     -- * OrdCollX operations
     deleteMin,deleteMax,unsafeInsertMin,unsafeInsertMax,unsafeFromOrdSeq,
@@ -70,6 +70,7 @@ null       :: Set a -> Bool
 size       :: Set a -> Int
 member     :: Ord a => a -> Set a -> Bool
 count      :: Ord a => a -> Set a -> Int
+strict     :: Ord a => Set a -> Set a
 
 toSeq      :: (Ord a,S.Sequence seq) => Set a -> seq a
 lookup     :: Ord a => a -> Set a -> a
@@ -82,6 +83,7 @@ fold'      :: (a -> b -> b) -> b -> Set a -> b
 fold1'     :: (a -> a -> a) -> Set a -> a
 filter     :: Ord a => (a -> Bool) -> Set a -> Set a
 partition  :: Ord a => (a -> Bool) -> Set a -> (Set a, Set a)
+strictWith :: Ord a => (a -> b) -> Set a -> Set a
 
 deleteMin        :: Ord a => Set a -> Set a
 deleteMax        :: Ord a => Set a -> Set a
@@ -148,6 +150,7 @@ null               = DS.null
 size               = DS.size
 member             = DS.member
 count              = countUsingMember
+strict xs          = DS.fold (flip const) () xs `seq` xs
 
 toSeq              = toSeqUsingFold
 lookup el set      = DS.findMin (DS.intersection set (DS.singleton el))
@@ -160,6 +163,7 @@ fold1 f set        = let (x,s) = DS.deleteFindMin set in DS.fold f x s
 fold1' f xs        = L.foldl1' (flip f) (DS.toList xs)
 filter             = DS.filter
 partition          = DS.partition
+strictWith f xs    = DS.fold (\x z -> f x `seq` z) () xs `seq` xs
 
 deleteMin          = DS.deleteMin
 deleteMax          = DS.deleteMax
@@ -221,6 +225,7 @@ instance Ord a => C.CollX (Set a) a where
    insertSeq = insertSeq; unionSeq = unionSeq; 
    delete = delete; deleteAll = deleteAll; deleteSeq = deleteSeq;
    null = null; size = size; member = member; count = count;
+   strict = strict;
    structuralInvariant = structuralInvariant; instanceName c = moduleName}
 
 instance Ord a => C.OrdCollX (Set a) a where
@@ -235,7 +240,7 @@ instance Ord a => C.Coll (Set a) a where
   {toSeq = toSeq; lookup = lookup; lookupM = lookupM; 
    lookupAll = lookupAll; lookupWithDefault = lookupWithDefault; 
    fold = fold; fold' = fold'; fold1 = fold1; fold1' = fold1';
-   filter = filter; partition = partition}
+   filter = filter; partition = partition; strictWith = strictWith}
 
 instance Ord a => C.OrdColl (Set a) a where
   {minView = minView; minElem = minElem; maxView = maxView; 

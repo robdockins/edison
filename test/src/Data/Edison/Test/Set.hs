@@ -110,6 +110,7 @@ setTests set = TestLabel ("Set Test "++(instanceName set)) . TestList $
    , qcTest $ prop_intersectWith set
    , qcTest $ prop_unsafeMapMonotonic set
    , qcTest $ prop_symmetricDifference set
+   , qcTest $ prop_strict set
    ]
 
 -----------------------------------------------------
@@ -447,3 +448,9 @@ prop_show_read set xs = xs === read (show xs)
 prop_symmetricDifference :: SetTest a set => set a -> set a -> set a -> Bool
 prop_symmetricDifference set xs ys =
    union (difference xs ys) (difference ys xs) === symmetricDifference xs ys
+
+prop_strict :: SetTest a set => set a -> set a -> Bool
+prop_strict set xs =
+   strict xs === xs
+   &&
+   strictWith (+1) xs === xs

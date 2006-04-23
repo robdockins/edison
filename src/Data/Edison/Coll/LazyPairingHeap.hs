@@ -20,11 +20,11 @@ module Data.Edison.Coll.LazyPairingHeap (
 
     -- * CollX operations
     empty,singleton,fromSeq,insert,insertSeq,union,unionSeq,delete,deleteAll,
-    deleteSeq,null,size,member,count,structuralInvariant,
+    deleteSeq,null,size,member,count,strict,structuralInvariant,
 
     -- * Coll operations
     toSeq, lookup, lookupM, lookupAll, lookupWithDefault, fold, fold',
-    fold1, fold1', filter, partition,
+    fold1, fold1', filter, partition, strictWith,
 
     -- * OrdCollX operations
     deleteMin,deleteMax,unsafeInsertMin,unsafeInsertMax,unsafeFromOrdSeq,
@@ -439,6 +439,18 @@ unsafeMapMonotonic = mapm
         mapm f (H1 x xs) = H1 (f x) (mapm f xs)
         mapm f (H2 x h xs) = H2 (f x) (mapm f h) (mapm f xs)
 
+
+strict :: Heap a -> Heap a
+strict h@E = h
+strict h@(H1 x xs) = strict xs `seq` h
+strict h@(H2 x h' xs) = strict h' `seq` strict xs `seq` h
+
+strictWith :: (a -> b) -> Heap a -> Heap a
+strictWith f h@E = h
+strictWith f h@(H1 x xs) = f x `seq` strictWith f xs `seq` h
+strictWith f h@(H2 x h' xs) = f x `seq` strictWith f h' `seq` strictWith f xs `seq` h
+
+
 -- the remaining functions all use default definitions
 
 fromSeq :: (Ord a,S.Sequence seq) => seq a -> Heap a
@@ -475,6 +487,7 @@ instance Ord a => C.CollX (Heap a) a where
    insertSeq = insertSeq; unionSeq = unionSeq; 
    delete = delete; deleteAll = deleteAll; deleteSeq = deleteSeq;
    null = null; size = size; member = member; count = count;
+   strict = strict;
    structuralInvariant = structuralInvariant; instanceName c = moduleName}
 
 instance Ord a => C.OrdCollX (Heap a) a where
@@ -489,7 +502,7 @@ instance Ord a => C.Coll (Heap a) a where
   {toSeq = toSeq; lookup = lookup; lookupM = lookupM; 
    lookupAll = lookupAll; lookupWithDefault = lookupWithDefault; 
    fold = fold; fold' = fold'; fold1 = fold1; fold1' = fold1';
-   filter = filter; partition = partition}
+   filter = filter; partition = partition; strictWith = strictWith}
 
 instance Ord a => C.OrdColl (Heap a) a where
   {minView = minView; minElem = minElem; maxView = maxView; 
