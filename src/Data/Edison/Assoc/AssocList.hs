@@ -475,16 +475,16 @@ partitionLE_GT k   = spanFM (<=k) . mergeSortFM
 partitionLT_GT k   = (\(x,y) -> (x,delete k y)) . spanFM (<k)  . mergeSortFM
 
 minViewWithKey E   = fail $ moduleName++".minViewWithKey: empty map"
-minViewWithKey (I k a m) = let (k',x) = findMin k a m in return ((k',x),delete k' m)
+minViewWithKey n@(I k a m) = let (k',x) = findMin k a m in return ((k',x),delete k' n)
 
 minElemWithKey E   = error $ moduleName++".minElemWithKey: empty map"
-minElemWithKey (I k a m) = let (k',x) = findMin k a m in (k',x)
+minElemWithKey (I k a m) = findMin k a m
 
 maxViewWithKey E   = fail $ moduleName++".maxViewWithKey: empty map"
-maxViewWithKey (I k a m) = let (k',x) = findMin k a m in return ((k',x),delete k' m)
+maxViewWithKey n@(I k a m) = let (k',x) = findMax k a m in return ((k',x),delete k' n)
 
 maxElemWithKey E   = error $ moduleName++".maxElemWithKey: empty map"
-maxElemWithKey (I k a m) = let (k',x) = findMin k a m in (k',x)
+maxElemWithKey (I k a m) = findMax k a m
 
 foldrWithKey  f z   = foldrWithKeyFM  f z . mergeSortFM
 foldrWithKey' f z   = foldrWithKeyFM' f z . mergeSortFM
