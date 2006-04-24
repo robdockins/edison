@@ -309,10 +309,10 @@ unzipWith3 f g h (C j x xs _)
   where (as,bs,cs) = unzipWith3 f g h xs
 
 strict s@E = s
-strict s@(C i x xs j) = strict xs `seq` strict j `seq` s
+strict s@(C i x xs _) = strict xs `seq` s
 
 strictWith f s@E = s
-strictWith f s@(C i x xs j) = f x `seq` strictWith f xs `seq` strictWith f j `seq` s
+strictWith f s@(C i x xs _) = f x `seq` strictWith f xs `seq` s
 
 -- the remaining functions all use defaults
 
