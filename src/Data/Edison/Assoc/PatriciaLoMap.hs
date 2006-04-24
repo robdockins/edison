@@ -56,16 +56,41 @@ import Test.QuickCheck (Arbitrary(..), variant)
 
 moduleName = "Data.Edison.Assoc.PatriciaLoMap"
 
-
 data FM a
   = E
   | L Int a
   | B Int Int !(FM a) !(FM a)
 
--- FIXME what are the invariants?
-structuralInvariant :: FM a -> Bool
-structuralInvariant = const True
+-- Invariants:
+-- * No B node has an E child
+-- * first argument to B is a prefix
+-- * second argument to B is the "branching bit" and is
+--   always an exact power of two
+-- * all bits in the prefix >= the branching bit are zeros
+-- * valid prefix bits match all subnodes
 
+structuralInvariant :: FM a -> Bool
+structuralInvariant E = True
+structuralInvariant (L k x) = True
+structuralInvariant x = inv 0 0 x
+
+inv :: Int -> Int -> FM a -> Bool
+inv pre msk E = False
+inv pre msk (L k x) = k .&. msk == pre
+inv pre msk (B p m t0 t1) =
+    (p .&. msk == pre) &&
+    (bitcount 0 m == 1) &&
+    (p .&. (complement (m - 1)) == 0) &&
+    inv p0 msk' t0 &&
+    inv p1 msk' t1
+
+  where p0 = p
+        p1 = p .|. m
+        msk' = (m `shiftL` 1) - 1
+
+bitcount :: Int -> Int -> Int
+bitcount a 0 = a
+bitcount a x = a `seq` bitcount (a+1) (x .&. (x-1))
 
 -- auxiliary functions
 
