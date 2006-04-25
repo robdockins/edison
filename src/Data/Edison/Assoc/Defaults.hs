@@ -226,6 +226,42 @@ adjustOrDeleteAllDefault f k m =
       ins (Just x) m = insert k x m
   in L.foldr ins m' adjSeq
 
+minElemUsingMinView :: OrdAssocX m k => m a -> a
+minElemUsingMinView fm =
+  case minView fm of
+     Nothing    -> error $ (instanceName fm)++".minElem: empty map"
+     Just (x,_) -> x
+
+deleteMinUsingMinView :: OrdAssocX m k => m a -> m a
+deleteMinUsingMinView fm =
+  case minView fm of
+     Nothing    -> error $ (instanceName fm)++".deleteMin: empty map"
+     Just (_,m) -> m
+
+minElemWithKeyUsingMinViewWithKey :: OrdAssoc m k => m a -> (k,a)
+minElemWithKeyUsingMinViewWithKey fm =
+  case minViewWithKey fm of
+     Nothing    -> error $ (instanceName fm)++".minElemWithKey: empty map"
+     Just (x,_) -> x
+
+maxElemUsingMaxView :: OrdAssocX m k => m a -> a
+maxElemUsingMaxView fm =
+  case maxView fm of
+     Nothing    -> error $ (instanceName fm)++".maxElem: empty map"
+     Just (x,_) -> x
+
+deleteMaxUsingMaxView :: OrdAssocX m k => m a -> m a
+deleteMaxUsingMaxView fm =
+  case maxView fm of
+     Nothing    -> error $ (instanceName fm)++".deleteMax: empty map"
+     Just (_,m) -> m
+
+maxElemWithKeyUsingMaxViewWithKey :: OrdAssoc m k => m a -> (k,a)
+maxElemWithKeyUsingMaxViewWithKey fm =
+  case maxViewWithKey fm of
+     Nothing    -> error $ (instanceName fm)++".maxElemWithKey: empty map"
+     Just (x,_) -> x
+
 showsPrecUsingToList :: (Show k, Show a, Assoc m k) => Int -> m a -> ShowS
 showsPrecUsingToList i xs rest
    | i == 0    = concat [    instanceName xs,".fromSeq ",showsPrec 10 (toList xs) rest]

@@ -43,8 +43,11 @@ instance (Ord a, Show a, Arbitrary a,
 
 instance (Ord a, Show a, Arbitrary a,
           Ord k, Show k, Arbitrary k) => FMTest k a (AL.FM k)
+
 instance (Ord a, Show a, Arbitrary a,
           Ord k, Show k, Arbitrary k) => OrdFMTest k a (AL.FM k)
+
+instance (Ord a, Show a, Arbitrary a) => OrdFMTest Int a PLM.FM
 
 ---------------------------------------------------------------
 -- List of all permutations of finite map types to test
@@ -57,6 +60,7 @@ allFMTests = TestList
    , fmTests (empty :: (Ord a) => TT.FM Int a)
    , ordFMTests (empty :: (Ord a) => SM.FM Int a)
    , ordFMTests (empty :: (Ord a) => AL.FM Int a)
+   , ordFMTests (empty :: (Ord a) => PLM.FM a)
    , qcTest $ prop_show_read (empty :: (Ord a) => AL.FM Int a)
    , qcTest $ prop_show_read (empty :: (Ord a) => PLM.FM a)
    , qcTest $ prop_show_read (empty :: (Ord a) => TT.FM Int a)
@@ -140,7 +144,7 @@ ordFMTests fm = TestLabel ("Ord FM test "++(instanceName fm)) . TestList $
    , qcTest $ prop_minViewWithKey fm
    , qcTest $ prop_maxViewWithKey fm
    , qcTest $ prop_foldrWithKey fm
-   , qcTest $ prop_foldlWithKey fm
+   , qcTest $ prop_foldlWithKey fm     -- 10
    , qcTest $ prop_toOrdSeq fm
    ]
 

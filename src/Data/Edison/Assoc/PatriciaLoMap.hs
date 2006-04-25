@@ -38,6 +38,18 @@ module Data.Edison.Assoc.PatriciaLoMap (
     -- * FiniteMap operations
     unionWithKey,unionSeqWithKey,intersectionWithKey,
 
+    -- * OrdAssocX operations
+    minView, minElem, deleteMin, unsafeInsertMin,
+    maxView, maxElem, deleteMax, unsafeInsertMax,
+    foldr, foldr', foldr1, foldr1', foldl, foldl', foldl1, foldl1',
+    unsafeFromOrdSeq, unsafeAppend, filterLT, filterLE, filterGT, filterGE,
+    partitionLT_GE, partitionLE_GT, partitionLT_GT,
+
+    -- * OrdAssoc operations
+    minViewWithKey, minElemWithKey, maxViewWithKey, maxElemWithKey,
+    foldrWithKey, foldrWithKey', foldlWithKey, foldlWithKey',
+    toOrdSeq,
+
     -- * Documentation
     moduleName
 ) where
@@ -49,6 +61,7 @@ import Data.Monoid
 import Data.Edison.Prelude
 import qualified Data.Edison.Assoc as A
 import qualified Data.Edison.Seq as S
+import qualified Data.Edison.Seq.ListSeq as L
 import Data.Edison.Assoc.Defaults
 import Data.Int
 import Data.Bits
@@ -537,6 +550,146 @@ strictWith f n@E = n
 strictWith f n@(L i x) = f x `seq` n
 strictWith f n@(B i j m1 m2) = strictWith f m1 `seq` strictWith f m2 `seq` n
 
+
+ordListFM :: FM a -> [(Int,a)]
+ordListFM E = []
+ordListFM (L k x) = [(k,x)]
+ordListFM (B p m t0 t1) = merge (ordListFM t0) (ordListFM t1)
+  where merge [] ys = ys
+        merge xs [] = xs
+        merge (x@(k1,_):xs) (y@(k2,_):ys) =
+           case compare k1 k2 of
+              LT -> x : merge xs (y:ys)
+              GT -> y : merge (x:xs) ys
+              EQ -> error "PatriciaLoMap: bug in ordListFM"
+
+ordListFM_rev :: FM a -> [(Int,a)]
+ordListFM_rev E = []
+ordListFM_rev (L k x) = [(k,x)]
+ordListFM_rev (B p m t0 t1) = merge (ordListFM_rev t0) (ordListFM_rev t1)
+  where merge [] ys = ys
+        merge xs [] = xs
+        merge (x@(k1,_):xs) (y@(k2,_):ys) =
+         case compare k1 k2 of
+            LT -> y : merge (x:xs) ys
+            GT -> x : merge xs (y:ys)
+            EQ -> error "PatriciaLoMap: bug in ordListFM_rev"
+
+minView :: Monad m => FM a -> m (a, FM a)
+minView fm = 
+   case ordListFM fm of
+     [] -> fail $ moduleName++".minView: empty map"
+     ((k,x):_) -> return (x,delete k fm)
+
+minViewWithKey :: Monad m => FM a -> m ((Int, a), FM a)
+minViewWithKey fm =
+   case ordListFM fm of
+     [] -> fail $ moduleName++".minViewWithKey: empty map"
+     ((k,x):_) -> return ((k,x),delete k fm)
+
+maxView :: Monad m => FM a -> m (a, FM a)
+maxView fm =
+  case ordListFM_rev fm of
+     [] -> fail $ moduleName++".maxView: empty map"
+     ((k,x):_) -> return (x,delete k fm)
+
+maxViewWithKey :: Monad m => FM a -> m ((Int, a), FM a)
+maxViewWithKey fm =
+   case ordListFM_rev fm of
+     [] -> fail $ moduleName++".maxViewWithKey: empty map"
+     ((k,x):_) -> return ((k,x),delete k fm)
+
+minElem :: FM a -> a
+minElem = minElemUsingMinView
+
+minElemWithKey :: FM a -> (Int,a)
+minElemWithKey = minElemWithKeyUsingMinViewWithKey
+
+deleteMin :: FM a -> FM a
+deleteMin = deleteMinUsingMinView
+
+unsafeInsertMin :: Int -> a -> FM a -> FM a
+unsafeInsertMin = insert
+
+maxElem :: FM a -> a
+maxElem = maxElemUsingMaxView
+
+deleteMax :: FM a -> FM a
+deleteMax = deleteMaxUsingMaxView
+
+maxElemWithKey :: FM a -> (Int,a)
+maxElemWithKey = maxElemWithKeyUsingMaxViewWithKey
+
+unsafeInsertMax :: Int -> a -> FM a -> FM a
+unsafeInsertMax = insert
+
+foldr :: (a -> b -> b) -> b -> FM a -> b
+foldr f z fm = L.foldr f z . L.map snd . ordListFM $ fm
+
+foldr' :: (a -> b -> b) -> b -> FM a -> b
+foldr' f z fm = L.foldl' (flip f) z . L.map snd . ordListFM_rev $ fm
+
+foldr1 :: (a -> a -> a) -> FM a -> a
+foldr1 f fm = L.foldr1 f . L.map snd . ordListFM $ fm
+
+foldr1' :: (a -> a -> a) -> FM a -> a
+foldr1' f fm = L.foldl1' (flip f) . L.map snd . ordListFM_rev $ fm
+
+foldl :: (b -> a -> b) -> b -> FM a -> b
+foldl f z fm = L.foldr (flip f) z . L.map snd . ordListFM_rev $ fm
+
+foldl' :: (b -> a -> b) -> b -> FM a -> b
+foldl' f z fm = L.foldl' f z . L.map snd . ordListFM $ fm
+
+foldl1 :: (a -> a -> a) -> FM a -> a
+foldl1 f fm = L.foldr1 (flip f) . L.map snd . ordListFM_rev $ fm
+
+foldl1' :: (a -> a -> a) -> FM a -> a
+foldl1' f fm = L.foldl1' f . L.map snd . ordListFM $ fm
+
+foldrWithKey :: (Int -> a -> b -> b) -> b -> FM a -> b
+foldrWithKey f z fm = L.foldr (uncurry f) z . ordListFM $ fm
+
+foldrWithKey' :: (Int -> a -> b -> b) -> b -> FM a -> b
+foldrWithKey' f z fm = L.foldl' (flip (uncurry f)) z . ordListFM_rev $ fm
+
+foldlWithKey :: (b -> Int -> a -> b) -> b -> FM a -> b
+foldlWithKey f z fm = L.foldr (\ (k,x) z -> f z k x) z . ordListFM_rev $ fm
+
+foldlWithKey' :: (b -> Int -> a -> b) -> b -> FM a -> b
+foldlWithKey' f z fm = L.foldl' (\ z (k,x) -> f z k x) z . ordListFM $ fm
+
+
+unsafeFromOrdSeq :: S.Sequence seq => seq (Int,a) -> FM a
+unsafeFromOrdSeq = fromSeq
+
+unsafeAppend :: FM a -> FM a -> FM a
+unsafeAppend = union
+
+filterLT :: Int -> FM a -> FM a
+filterLT k = filterWithKey (\k' _ -> k' < k)
+
+filterLE :: Int -> FM a -> FM a
+filterLE k = filterWithKey (\k' _ -> k' <= k)
+
+filterGT :: Int -> FM a -> FM a
+filterGT k = filterWithKey (\k' _ -> k' > k)
+
+filterGE :: Int -> FM a -> FM a
+filterGE k = filterWithKey (\k' _ -> k' >= k)
+
+partitionLT_GE :: Int -> FM a -> (FM a, FM a)
+partitionLT_GE k fm = (filterLT k fm,filterGE k fm)
+
+partitionLE_GT :: Int -> FM a -> (FM a,FM a)
+partitionLE_GT k fm = (filterLE k fm,filterGT k fm)
+
+partitionLT_GT :: Int -> FM a -> (FM a,FM a)
+partitionLT_GT k fm = (filterLT k fm,filterGT k fm)
+
+toOrdSeq :: S.Sequence seq => FM a -> seq (Int,a)
+toOrdSeq = L.foldr S.lcons S.empty . ordListFM
+
 -- defaults
 
 insertSeq :: S.Sequence seq => seq (Int,a) -> FM a -> FM a
@@ -633,6 +786,27 @@ instance A.FiniteMapX FM Int where
 instance A.FiniteMap FM Int where
   {unionWithKey = unionWithKey; unionSeqWithKey = unionSeqWithKey; 
    intersectionWithKey = intersectionWithKey}
+
+instance A.OrdAssocX FM Int where
+  {minView = minView; minElem = minElem; deleteMin = deleteMin;
+   unsafeInsertMin = unsafeInsertMin; maxView = maxView; maxElem = maxElem;
+   deleteMax = deleteMax; unsafeInsertMax = unsafeInsertMax;
+   foldr = foldr; foldr' = foldr'; foldl = foldl; foldl' = foldl';
+   foldr1 = foldr1; foldr1' = foldr1'; foldl1 = foldl1; foldl1' = foldl1';
+   unsafeFromOrdSeq = unsafeFromOrdSeq; unsafeAppend = unsafeAppend;
+   filterLT = filterLT; filterGT = filterGT; filterLE = filterLE;
+   filterGE = filterGE; partitionLT_GE = partitionLT_GE;
+   partitionLE_GT = partitionLE_GT; partitionLT_GT = partitionLT_GT}
+
+instance A.OrdAssoc FM Int where
+  {minViewWithKey = minViewWithKey; minElemWithKey = minElemWithKey;
+   maxViewWithKey = maxViewWithKey; maxElemWithKey = maxElemWithKey;
+   foldrWithKey = foldrWithKey; foldrWithKey' = foldrWithKey';
+   foldlWithKey = foldlWithKey; foldlWithKey' = foldlWithKey';
+   toOrdSeq = toOrdSeq}
+
+instance A.OrdFiniteMapX FM Int
+instance A.OrdFiniteMap FM Int
 
 instance Functor FM where
   fmap = map
