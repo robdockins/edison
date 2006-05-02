@@ -262,6 +262,9 @@ maxElemWithKeyUsingMaxViewWithKey fm =
      Nothing    -> error $ (instanceName fm)++".maxElemWithKey: empty map"
      Just (x,_) -> x
 
+toOrdSeqUsingFoldrWithKey :: (OrdAssoc m k,S.Sequence seq) => m a -> seq (k,a)
+toOrdSeqUsingFoldrWithKey = foldrWithKey (\k x z -> S.lcons (k,x) z) S.empty
+
 showsPrecUsingToList :: (Show k, Show a, Assoc m k) => Int -> m a -> ShowS
 showsPrecUsingToList i xs rest
    | i == 0    = concat [    instanceName xs,".fromSeq ",showsPrec 10 (toList xs) rest]

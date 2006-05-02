@@ -49,6 +49,9 @@ instance (Ord a, Show a, Arbitrary a,
 
 instance (Ord a, Show a, Arbitrary a) => OrdFMTest Int a PLM.FM
 
+instance (Ord a, Show a, Arbitrary a,
+          Ord k, Show k, Arbitrary k) => OrdFMTest [k] a (TT.FM k)
+
 ---------------------------------------------------------------
 -- List of all permutations of finite map types to test
 
@@ -61,6 +64,7 @@ allFMTests = TestList
    , ordFMTests (empty :: (Ord a) => SM.FM Int a)
    , ordFMTests (empty :: (Ord a) => AL.FM Int a)
    , ordFMTests (empty :: (Ord a) => PLM.FM a)
+   , ordFMTests (empty :: (Ord a) => TT.FM Int a)
    , qcTest $ prop_show_read (empty :: (Ord a) => AL.FM Int a)
    , qcTest $ prop_show_read (empty :: (Ord a) => PLM.FM a)
    , qcTest $ prop_show_read (empty :: (Ord a) => TT.FM Int a)
@@ -137,14 +141,17 @@ ordFMTests fm = TestLabel ("Ord FM test "++(instanceName fm)) . TestList $
    , qcTest $ prop_max fm
    , qcTest $ prop_foldr fm
    , qcTest $ prop_foldl fm
-   , qcTest $ prop_ord_filter fm
+   , qcTest $ prop_filterLT fm
+   , qcTest $ prop_filterLE fm
+   , qcTest $ prop_filterGT fm
+   , qcTest $ prop_filterGE fm
    , qcTest $ prop_ord_partition fm
    , qcTest $ prop_fromOrdSeq fm
-   , qcTest $ prop_unsafeAppend fm
+   , qcTest $ prop_unsafeAppend fm     -- 10
    , qcTest $ prop_minViewWithKey fm
    , qcTest $ prop_maxViewWithKey fm
    , qcTest $ prop_foldrWithKey fm
-   , qcTest $ prop_foldlWithKey fm     -- 10
+   , qcTest $ prop_foldlWithKey fm
    , qcTest $ prop_toOrdSeq fm
    ]
 
@@ -542,17 +549,25 @@ prop_foldl fm xs =
         map = fromSeq (removeDups xs) `asTypeOf` fm
         xs' = L.sortBy (\x y -> compare (fst x) (fst y)) (removeDups xs)
 
-prop_ord_filter :: OrdFMTest k Int fm =>
+prop_filterLT :: OrdFMTest k Int fm =>
           fm Int -> k -> fm Int -> Bool
-prop_ord_filter fm k xs =
+prop_filterLT fm k xs =
         filterLT k xs === filterWithKey (\k' _ -> k' < k) xs
-        &&
-        filterLE k xs === filterWithKey (\k' _ -> k' <= k) xs
-        &&
-        filterGT k xs === filterWithKey (\k' _ -> k' > k) xs
-        &&
-        filterGE k xs === filterWithKey (\k' _ -> k' >= k) xs
 
+prop_filterLE :: OrdFMTest k Int fm =>
+          fm Int -> k -> fm Int -> Bool
+prop_filterLE fm k xs =
+        filterLE k xs === filterWithKey (\k' _ -> k' <= k) xs
+
+prop_filterGT :: OrdFMTest k Int fm =>
+          fm Int -> k -> fm Int -> Bool
+prop_filterGT fm k xs =
+        filterGT k xs === filterWithKey (\k' _ -> k' > k) xs
+
+prop_filterGE :: OrdFMTest k Int fm =>
+          fm Int -> k -> fm Int -> Bool
+prop_filterGE fm k xs =
+        filterGE k xs === filterWithKey (\k' _ -> k' >= k) xs
 
 prop_ord_partition :: OrdFMTest k Int fm =>
           fm Int -> k -> fm Int -> Bool

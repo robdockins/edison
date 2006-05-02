@@ -11,8 +11,7 @@
 
 module Data.Edison.Assoc.TernaryTrie (
     -- * Type of ternary search tries
-    FM, -- instance of Assoc(X), FiniteMap(X)
-        -- also instance of Functor
+    FM,
 
     -- * AssocX operations
     empty,singleton,fromSeq,insert,insertSeq,union,unionSeq,delete,deleteAll,
@@ -34,8 +33,20 @@ module Data.Edison.Assoc.TernaryTrie (
     -- * FiniteMap operations
     unionWithKey,unionSeqWithKey,intersectionWithKey,
 
+    -- * OrdAssocX operations
+    minView, minElem, deleteMin, unsafeInsertMin,
+    maxView, maxElem, deleteMax, unsafeInsertMax,
+    foldr, foldr', foldr1, foldr1', foldl, foldl', foldl1, foldl1',
+    unsafeFromOrdSeq, unsafeAppend, filterLT, filterLE, filterGT, filterGE,
+    partitionLT_GE, partitionLE_GT, partitionLT_GT,
+
+    -- * OrdAssoc operations
+    minViewWithKey, minElemWithKey, maxViewWithKey, maxElemWithKey,
+    foldrWithKey, foldrWithKey', foldlWithKey, foldlWithKey',
+    toOrdSeq,
+
     -- * Other supported operations
-    mergeKVFM,
+    mergeVFM, mergeKVFM,
 
     -- * Documentation
     moduleName
@@ -131,6 +142,17 @@ unionSeqWithKey  :: (Ord k,S.Sequence seq) =>
                        ([k] -> a -> a -> a) -> seq (FM k a) -> FM k a
 intersectionWithKey :: Ord k => ([k] -> a -> b -> c) -> FM k a -> FM k b -> FM k c
 
+foldr          :: Ord k => (a -> b -> b) -> b -> FM k a -> b
+foldr1         :: Ord k => (a -> a -> a) -> FM k a -> a
+foldr'         :: Ord k => (a -> b -> b) -> b -> FM k a -> b
+foldr1'        :: Ord k => (a -> a -> a) -> FM k a -> a
+
+foldrWithKey   :: Ord k => ([k] -> a -> b -> b) -> b -> FM k a -> b
+foldrWithKey'  :: Ord k => ([k] -> a -> b -> b) -> b -> FM k a -> b
+foldlWithKey   :: Ord k => (b -> [k] -> a -> b) -> b -> FM k a -> b
+foldlWithKey'  :: Ord k => (b -> [k] -> a -> b) -> b -> FM k a -> b
+toOrdSeq       :: (Ord k,S.Sequence seq) => FM k a -> seq ([k],a)
+
 moduleName = "Data.Edison.Assoc.TernaryTrie"
 
 
@@ -141,8 +163,8 @@ data FMB k v
   = E
   | I !Int !k !(Maybe v) !(FMB k v) !(FMB' k v) !(FMB k v)
 
-data FMB' k v
-  = FMB' !(FMB k v)
+newtype FMB' k v
+  = FMB' (FMB k v)
 
 balance :: Int
 balance = 6
@@ -552,7 +574,7 @@ adjustAllOrInsert = adjustOrInsert
 
 adjustOrDelete f k
   = addToFM k (\mv -> case mv of
-                        Nothing -> Nothing
+                        Nothing -> mv
                         Just v  -> f v)
 
 adjustOrDeleteAll = adjustOrDelete
@@ -562,8 +584,11 @@ map f
                         Nothing -> Nothing
                         Just v  -> Just (f v))
 
-fold op r (FM n fmb)
-  = foldMV n . foldFMB fmb $ r
+fold = foldr
+fold' = foldr'
+
+foldr op z (FM n fmb)
+  = foldMV n . foldFMB fmb $ z
   where
     foldMV Nothing  = id
     foldMV (Just v) = op v
@@ -573,25 +598,99 @@ fold op r (FM n fmb)
     foldFMB (I _ _ v l (FMB' m) r)
       = foldFMB l . foldMV v . foldFMB m . foldFMB r
 
--- FIXME, undestand this code to strictify it
-fold' = fold
-
-fold1 f (FM v fmb)
-  = comb (basecase v) (fold1FMB fmb) id (error "TernaryTrie.fold1: empty map")
+foldrWithKey f z (FM n fmb)
+  = foldMV [] n . foldFMB id fmb $ z
   where
-      basecase Nothing  = \j n -> n
-      basecase (Just x) = \j n -> j x
+     foldMV ks Nothing  = id
+     foldMV ks (Just v) = f ks v
 
-      comb p1 p2
-        = \j n -> p1 (\x -> p2 (\y -> j (f x y)) (j x)) (p2 j n)
+     foldFMB kf E = id
+     foldFMB kf (I _ k mv l (FMB' m) r)
+       = foldFMB kf l . foldMV (kf [k]) mv . foldFMB (kf . (k:)) m . foldFMB kf r
 
+foldlWithKey f z (FM n fmb)
+  = foldFMB id fmb . foldMV [] n $ z
+  where
+     g k x a = f a k x
+
+     foldMV ks Nothing  = id
+     foldMV ks (Just v) = g ks v
+
+     foldFMB kf E = id
+     foldFMB kf (I _ k mv l (FMB' m) r)
+       = foldFMB kf r . foldFMB (kf . (k:)) m . foldMV (kf [k]) mv . foldFMB kf l
+
+foldrWithKey' = foldrWithKey
+foldlWithKey' = foldlWithKey
+
+foldl op z (FM n fmb)
+  = foldFMB fmb . foldMV n $ z
+  where 
+    foldMV Nothing  = id
+    foldMV (Just v) = (flip op) v
+
+    foldFMB E = id
+    foldFMB (I _ _ v l (FMB' m) r)
+      = foldFMB r . foldFMB m . foldMV v . foldFMB l
+
+
+-- FIXME, undestand this code to strictify it
+foldr' = foldr
+foldl' = foldl
+
+foldr1 f fm = 
+  case maxView fm of
+     Just (z,fm') -> foldr f z fm'
+     Nothing      -> error $ moduleName++".foldr1: empty map"
+
+foldl1 f fm =
+  case minView fm of
+     Just (z,fm') -> foldl f z fm'
+     Nothing      -> error $ moduleName++".foldl1: empty map"
+
+
+basecase Nothing  = \j n -> n
+basecase (Just x) = \j n -> j x
+
+comb f p1 p2
+   = \j n -> p1 (\x -> p2 (\y -> j (f x y)) (j x)) (p2 j n)
+
+fold1 f (FM mv fmb)
+  = comb f (basecase mv) (fold1FMB fmb) id (error $ moduleName++".fold1: empty map")
+  where
+      fold1FMB E
+        = \j n -> n
+      fold1FMB (I _ _ mv l (FMB' m) r)
+        = comb f (basecase mv) $ comb f (fold1FMB l) $ comb f (fold1FMB m) $ (fold1FMB r)
+
+fold1' = fold1
+
+{-
+FIXME -- can these be somehow fixed to have the right order...
+
+foldr1 f (FM v fmb)
+  = comb f (basecase v) (fold1FMB fmb) id (error $ moduleName++".foldr1: empty map")
+  where
       fold1FMB E
         = \j n -> n
       fold1FMB (I _ _ v l (FMB' m) r)
-        = comb (basecase v) . comb (fold1FMB l) . comb (fold1FMB m) $ (fold1FMB r)
+        = comb f (fold1FMB l) $ comb f (basecase v) $ comb f (fold1FMB m) $ (fold1FMB r)
+
+
+foldl1 f (FM v fmb)
+  = comb f (fold1FMB fmb) (basecase v) id (error $ moduleName++".foldl1: empty map")
+  where
+      fold1FMB E
+        = \j n -> n
+      fold1FMB (I _ _ v l (FMB' m) r)
+        = comb f (fold1FMB r) $ comb f (fold1FMB m) $ comb f (basecase v) $ (fold1FMB l)
+-}
+
+
 
 -- FIXME, undestand this code to strictify it
-fold1' = fold1
+foldr1' = foldr1
+foldl1' = foldl1
 
 
 filter p = mapVFM (\mv -> case mv of
@@ -742,6 +841,182 @@ intersectionWithKey f
             Nothing -> Nothing
             Just v2 -> Just (f k v1 v2))
 
+-- OrdAssocX
+
+minViewFMB :: Monad m => FMB k a -> (FMB k a -> FM k a) -> m (a, FM k a)
+minViewFMB E f = fail $ moduleName++".minView: empty map"
+minViewFMB (I i k (Just v) E m r)        f = return (v, f (I i k Nothing E m r))
+minViewFMB (I i k Nothing  E (FMB' E) r) f = error $ moduleName++".minView: bug!"
+minViewFMB (I i k Nothing  E (FMB' m) r) f = minViewFMB m (\m' -> f (mkVBalancedFMB k Nothing E (FMB' m') r))
+minViewFMB (I i k mv l m r)              f = minViewFMB l (\l' -> f (mkVBalancedFMB k mv l' m r))
+
+minView :: Monad m => FM k a -> m (a,FM k a)
+minView (FM (Just v) fmb) = return (v, FM Nothing fmb)
+minView (FM Nothing fmb)  = minViewFMB fmb (FM Nothing)
+
+minViewWithKeyFMB :: Monad m => FMB k a -> ([k] -> [k]) -> (FMB k a -> FM k a) -> m (([k],a),FM k a)
+minViewWithKeyFMB E fk f = fail $ moduleName++".minView: empty map"
+minViewWithKeyFMB (I i k (Just v) E m r)        kf f = return ((kf [k],v),f (I i k Nothing E m r))
+minViewWithKeyFMB (I i k Nothing  E (FMB' E) r) kf f = error $ moduleName++".minViewWithKey: bug!"
+minViewWithKeyFMB (I i k Nothing  E (FMB' m) r) kf f = minViewWithKeyFMB m (kf . (k:)) 
+	                                                (\m' -> f (mkVBalancedFMB k Nothing E (FMB' m') r))
+minViewWithKeyFMB (I i k mv l m r)              kf f = minViewWithKeyFMB l kf
+                                                        (\l' -> f (mkVBalancedFMB k mv l' m r))
+
+minViewWithKey :: Monad m => FM k a -> m (([k],a),FM k a)
+minViewWithKey (FM (Just v) fmb) = return (([],v),FM Nothing fmb)
+minViewWithKey (FM Nothing fmb)  = minViewWithKeyFMB fmb id (FM Nothing)
+
+
+minElemFMB :: FMB k a -> a
+minElemFMB E = error $ moduleName++".minElem: empty map"
+minElemFMB (I i k (Just v) E m r)        = v
+minElemFMB (I i k Nothing  E (FMB' m) r) = minElemFMB m
+minElemFMB (I i k mv l m r)              = minElemFMB l
+
+minElem (FM (Just v) fmb) = v
+minElem (FM Nothing  fmb) = minElemFMB fmb
+
+
+minElemWithKeyFMB :: ([k] -> [k]) -> FMB k a -> ([k],a)
+minElemWithKeyFMB kf E = error $ moduleName++".minElemWithKey: empty map"
+minElemWithKeyFMB kf (I i k (Just v) E m r)        = (kf [k],v)
+minElemWithKeyFMB kf (I i k Nothing  E (FMB' m) r) = minElemWithKeyFMB (kf . (k:)) m
+minElemWithKeyFMB kf (I i k mv l m r)              = minElemWithKeyFMB kf l
+
+minElemWithKey :: FM k a -> ([k],a)
+minElemWithKey (FM (Just v) fmb) = ([],v)
+minElemWithKey (FM Nothing  fmb) = minElemWithKeyFMB id fmb
+
+deleteMin :: Ord k => FM k a -> FM k a
+deleteMin = deleteMinUsingMinView
+
+unsafeInsertMin :: Ord k => [k] -> a -> FM k a -> FM k a
+unsafeInsertMin = insert
+
+maxViewFMB :: Monad m => FMB k a -> (FMB k a -> FM k a) -> m (a, FM k a)
+maxViewFMB (I i k (Just v) l (FMB' E) E) f = return (v, f l)
+--maxViewFMB (I i k (Just v) l (FMB' E) E) f = return (v, f (I i k Nothing l (FMB' E) E))
+maxViewFMB (I i k Nothing  l (FMB' E) E) f = error $ moduleName++".maxView: bug!"
+maxViewFMB (I i k mv l (FMB' m) E)       f = maxViewFMB m (\m' -> f (I i k mv l (FMB' m') E))
+maxViewFMB (I i k mv l m r)              f = maxViewFMB r (\r' -> f (mkVBalancedFMB k mv l m r'))
+maxViewFMB E                             f = error $ moduleName++".maxView: bug!"
+
+maxView :: Monad m => FM k a -> m (a, FM k a)
+maxView (FM Nothing E)  = fail $ moduleName++".maxView: empty map"
+maxView (FM (Just v) E) = return (v,FM Nothing E)
+maxView (FM mv fmb)     = maxViewFMB fmb (FM mv)
+
+
+maxViewWithKeyFMB :: Monad m => FMB k a -> ([k] -> [k]) -> (FMB k a -> FM k a) -> m (([k],a),FM k a)
+maxViewWithKeyFMB (I i k (Just v) l (FMB' E) E) kf f = return ((kf [k],v),f l)
+maxViewWithKeyFMB (I i k Nothing  l (FMB' E) E) kf f = error $ moduleName++".maxViewWithKey: bug!"
+maxViewWithKeyFMB (I i k mv l (FMB' m) E)       kf f = maxViewWithKeyFMB m (kf . (k:))
+                                                        (\m' -> f (I i k mv l (FMB' m') E))
+maxViewWithKeyFMB (I i k mv l m r)              kf f = maxViewWithKeyFMB r kf
+                                                        (\r' -> f (mkVBalancedFMB k mv l m r'))
+maxViewWithKeyFMB E                             kf f = error $ moduleName++".maxViewWithKey: bug!"
+
+
+maxViewWithKey :: Monad m => FM k a -> m (([k],a), FM k a)
+maxViewWithKey (FM Nothing E)  = fail $ moduleName++".maxViewWithKey: empty map"
+maxViewWithKey (FM (Just v) E) = return (([],v),FM Nothing E)
+maxViewWithKey (FM mv fmb)     = maxViewWithKeyFMB fmb id (FM mv)
+
+
+
+maxElemFMB :: FMB k a -> a
+maxElemFMB (I i k (Just v) l (FMB' E) E) = v
+maxElemFMB (I i k Nothing  l (FMB' E) E) = error $ moduleName++".maxElem: bug!"
+maxElemFMB (I i k mv l (FMB' m) E)       = maxElemFMB m
+maxElemFMB (I i k mv l m r)              = maxElemFMB r
+maxElemFMB E                             = error $ moduleName++".maxElem: bug!"
+
+maxElem :: FM k a -> a
+maxElem (FM (Just v) E) = v
+maxElem (FM Nothing  E) = error $ moduleName++".maxElem: empty map"
+maxElem (FM _ fmb)      = maxElemFMB fmb
+
+maxElemWithKeyFMB :: FMB k a -> ([k] -> [k]) -> ([k],a)
+maxElemWithKeyFMB (I i k (Just v) l (FMB' E) E) kf = (kf [k],v)
+maxElemWithKeyFMB (I i k Nothing  l (FMB' E) E) kf = error $ moduleName++".maxElemWithKey: bug!"
+maxElemWithKeyFMB (I i k mv l (FMB' m) E)       kf = maxElemWithKeyFMB m (kf . (k:))
+maxElemWithKeyFMB (I i k mv l m r)              kf = maxElemWithKeyFMB r kf
+maxElemWithKeyFMB E                             kf = error $ moduleName++".maxElemWithKey: bug!"
+
+
+maxElemWithKey :: FM k a -> ([k],a)
+maxElemWithKey (FM (Just v) E) = ([],v)
+maxElemWithKey (FM Nothing E)  = error $ moduleName++".maxElemWithKey: empty map"
+maxElemWithKey (FM _ fmb)      = maxElemWithKeyFMB fmb id
+
+
+deleteMax :: Ord k => FM k a -> FM k a
+deleteMax = deleteMaxUsingMaxView
+
+unsafeInsertMax :: Ord k => [k] -> a -> FM k a -> FM k a
+unsafeInsertMax = insert
+
+unsafeFromOrdSeq :: (Ord k,S.Sequence seq) => seq ([k],a) -> FM k a
+unsafeFromOrdSeq = fromSeq
+
+unsafeAppend :: Ord k => FM k a -> FM k a -> FM k a
+unsafeAppend = union
+
+-- FIXME this doesn't respect the structural invariant... why??
+{-
+unsafeAppend (FM (Just v) fmb1) (FM Nothing fmb2) = FM (Just v) (appendFMB fmb1 fmb2)
+unsafeAppend (FM Nothing  fmb1) (FM mv fmb2)      = FM mv       (appendFMB fmb1 fmb2)
+unsafeAppend (FM (Just _) _) (FM (Just _) _)      = error $ moduleName++".unsafeAppend: bug!"
+-}
+
+filterL_FMB :: Ord k => (k -> Maybe a -> FMB k a -> FMB k a) -> k -> [k] -> FMB k a -> FMB k a
+filterL_FMB f k ks E = E
+filterL_FMB f k ks (I i key mv l (FMB' m) r)
+    | key < k   = mkVBalancedFMB key mv l (FMB' m) (filterL_FMB f k ks r)
+    | key > k   = filterL_FMB f k ks l
+    | otherwise = case ks of
+                    []       -> f k mv l
+                    (k':ks') -> mkVBalancedFMB key mv l (FMB' (filterL_FMB f k' ks' m)) E
+
+filterLT :: Ord k => [k] -> FM k a -> FM k a
+filterLT [] _               = FM Nothing E
+filterLT (k:ks) (FM mv fmb) = FM mv (filterL_FMB (\k mv l -> l) k ks fmb)
+
+filterLE :: Ord k => [k] -> FM k a -> FM k a
+filterLE [] (FM mv _)       = FM mv E
+filterLE (k:ks) (FM mv fmb) = FM mv (filterL_FMB (\k mv l -> mkVBalancedFMB k mv l (FMB' E) E) k ks fmb)
+
+
+
+filterG_FMB :: Ord k => (k -> Maybe a -> FMB k a -> FMB k a -> FMB k a) -> k -> [k] -> FMB k a -> FMB k a
+filterG_FMB f k ks E = E
+filterG_FMB f k ks (I i key mv l (FMB' m) r)
+    | key < k   = filterG_FMB f k ks r
+    | key > k   = mkVBalancedFMB key mv (filterG_FMB f k ks l) (FMB' m) r
+    | otherwise = case ks of
+                    []       -> f k mv m r
+                    (k':ks') -> mkVBalancedFMB key Nothing E (FMB' (filterG_FMB f k' ks' m)) r
+
+filterGT :: Ord k => [k] -> FM k a -> FM k a
+filterGT []     (FM _  fmb) = FM Nothing fmb
+filterGT (k:ks) (FM mv fmb) = FM Nothing (filterG_FMB (\k mv m r -> mkVBalancedFMB k Nothing E (FMB' m) r) k ks fmb)
+
+filterGE :: Ord k => [k] -> FM k a -> FM k a
+filterGE []     fm          = fm
+filterGE (k:ks) (FM mv fmb) = FM Nothing (filterG_FMB (\k mv m r -> mkVBalancedFMB k mv E (FMB' m) r) k ks fmb)
+
+--FIXME do better...
+partitionLT_GE :: Ord k => [k] -> FM k a -> (FM k a,FM k a)
+partitionLT_GE ks fm = (filterLT ks fm, filterGE ks fm)
+
+partitionLE_GT :: Ord k => [k] -> FM k a -> (FM k a,FM k a)
+partitionLE_GT ks fm = (filterLE ks fm, filterGT ks fm)
+
+partitionLT_GT :: Ord k => [k] -> FM k a -> (FM k a,FM k a)
+partitionLT_GT ks fm = (filterLT ks fm, filterGT ks fm)
+
+toOrdSeq = toOrdSeqUsingFoldrWithKey
 
 -- instance declarations
 
@@ -782,6 +1057,28 @@ instance Ord k => A.FiniteMap (FM k) [k] where
   {unionWithKey = unionWithKey; unionSeqWithKey = unionSeqWithKey; 
    intersectionWithKey = intersectionWithKey}
 
+instance Ord k => A.OrdAssocX (FM k) [k] where
+  {minView = minView; minElem = minElem; deleteMin = deleteMin;
+   unsafeInsertMin = unsafeInsertMin; maxView = maxView; maxElem = maxElem;
+   deleteMax = deleteMax; unsafeInsertMax = unsafeInsertMax;
+   foldr = foldr; foldr' = foldr'; foldl = foldl; foldl' = foldl';
+   foldr1 = foldr1; foldr1' = foldr1'; foldl1 = foldl1; foldl1' = foldl1';
+   unsafeFromOrdSeq = unsafeFromOrdSeq; unsafeAppend = unsafeAppend;
+   filterLT = filterLT; filterLE = filterLE; filterGT = filterGT;
+   filterGE = filterGE;  partitionLT_GE = partitionLT_GE;
+   partitionLE_GT = partitionLE_GT; partitionLT_GT = partitionLT_GT}
+
+instance Ord k => A.OrdAssoc (FM k) [k] where
+  {minViewWithKey = minViewWithKey; minElemWithKey = minElemWithKey;
+   maxViewWithKey = maxViewWithKey; maxElemWithKey = maxElemWithKey;
+   foldrWithKey = foldrWithKey; foldrWithKey' = foldrWithKey';
+   foldlWithKey = foldlWithKey; foldlWithKey' = foldlWithKey';
+   toOrdSeq = toOrdSeq}
+
+instance Ord k => A.OrdFiniteMapX (FM k) [k] 
+instance Ord k => A.OrdFiniteMap (FM k) [k]
+
+
 instance Ord k => Functor (FM k) where
   fmap = map
 
@@ -794,10 +1091,8 @@ instance (Ord k, Read k, Read a) => Read (FM k a) where
 instance (Ord k, Eq a) => Eq (FM k a) where
   (==) = sameMap
 
--- FIXME
---instance (Ord k, Ord a) => Ord (FM k a) where
---  compare = compareUsingToOrdList
-
+instance (Ord k, Ord a) => Ord (FM k a) where
+  compare = compareUsingToOrdList
 
 --
 -- Test code follows
