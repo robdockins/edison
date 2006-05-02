@@ -13,10 +13,10 @@
 --   match usual symbolic usage.
 --
 --   The symbols are intended to evoke the the operations they
---   represent.  Unfortunately, ASCII is pretty limited, and Haskell
+--   represent.  Unfortunately, ASCII is pretty limited, and Haskell 98
 --   only allocates a few symbols to the operator lexical class.
 --   Thus, some of the operators are less evocative than one would
---   like.  A future version may introduce unicode operators, which
+--   like.  A future version of Edison may introduce unicode operators, which
 --   will allow a wider range of operations to be represented symbolicly.
 --
 --   Unlike most of the modules in Edison, this module is intended to be
@@ -31,6 +31,11 @@ import qualified Prelude as P
 import qualified Data.Edison.Seq as S
 import qualified Data.Edison.Coll as C
 import qualified Data.Edison.Coll as A
+
+-- pull in the Sequence instance for lists to make sure (++)
+-- works as advertised
+import qualified Data.Edison.Seq.ListSeq
+
 
 -- | Left (front) cons on a sequence.  The new element appears on the left.
 --   Identical to 'S.lcons'.
@@ -47,7 +52,7 @@ import qualified Data.Edison.Coll as A
 (++) :: S.Sequence seq => seq a -> seq a -> seq a
 (++) = S.append
 
--- | Lookup an element in a sequence.  Identical to 'S.lookup' with 
+-- | Lookup an element in a sequence.  Identical to 'S.lookup' with
 --   reversed arguments.
 (!) :: S.Sequence seq => seq a -> P.Int -> a
 (!) = P.flip S.lookup

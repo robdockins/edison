@@ -8,8 +8,7 @@
 --   Portability :  non-portable (MPTC and FD)
 --
 --   The /collection/ abstraction includes sets, bags and priority queues
---   (heaps).  Collections are defined in Edison as a set of eight classes,
---   organized in the hierarchy shown here FIXME.
+--   (heaps).  Collections are defined in Edison as a set of eight classes.
 --
 --   All collections assume at least an equality relation of elements, and
 --   may also assume an ordering relation.
@@ -734,4 +733,3 @@ toOrdList = toOrdSeq
 fromListWith = fromSeqWith
 insertListWith = insertSeqWith
 unionListWith = unionSeqWith
-

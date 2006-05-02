@@ -10,11 +10,12 @@
 --   The /associative collection/ abstraction includes finite maps, finite
 --   relations, and priority queues where the priority is separate from the
 --   element.  Associative collections are defined in Edison as a set of eight
---   classes, organized in the hierarchy shown here FIXME.
+--   classes.
 --
 --   Note that this
 --   hierarchy mirrors the hierarchy for collections, but with the addition
---   of 'Functor' as a superclass of every associative collection.
+--   of 'Functor' as a superclass of every associative collection. See 
+--   "Data.Edison.Coll" for a description of the class hierarchy.
 --
 --   In almost all cases, associative collections make no guarantees about
 --   behavior with respect to the actual keys stored and (in the case of
@@ -26,7 +27,6 @@
 --   In all cases where an operation is ambiguous with respect to the key,
 --   the operation is rendered /unambiguous/ if the @Eq@ instance on keys
 --   corresponds to indistinguisability.
-
 
 module Data.Edison.Assoc (
     -- * Superclass aliases
@@ -929,37 +929,3 @@ toList = toSeq
 keysList = keys
 toOrdList = toOrdSeq
 unionListWithKey = unionSeqWithKey
-
-{-
-Leave out until somebody asks for:
-witness????
-compose????
-
-  nub           :: m a -> m a  -- ???
-  nubWith       :: (a -> a -> a) -> m a -> m a
-  nubWithKey :: (k -> a -> a -> a) -> m a -> m a
-
-  group         :: m a -> m [a] -- ???
-?????  unsafeMapMonotonim :: (a -> a) -> m a -> m a
-
-
--- adjustPartial??? (adjustOrDelete???)
--- adjustAll       :: (a -> a) -> k -> m a -> m a
--- unionMap???
--- mapPartial???
-
-  anyViewKey :: (Monad rm) => m a -> rm (k, a, m a)
-  anyKeyElem :: m a -> (k,a) -- signals error if collection is empty
-  deleteAny :: m a -> m a -- could go in AssocX but no point
-    -- anyKeyElem and deleteAny must be consistent
-    -- do they need to be consistent with anyView?
-
--- unionMap???
--- mapPartial???
-
-  deleteAllList :: [k] -> m a -> m a
-
-  disjoint      :: m a -> m b -> Bool
-
--}
-

@@ -1287,12 +1287,3 @@ class (Functor s, MonadPlus s) => Sequence s where
   deleteAt i s = if i < 0 then s else append before (ltail after)
     where (before, after) = splitAt i s
 -}
-
-{-
-class AsSequence t s | t -> s where
-    asSequence :: t -> s
-
-instance (Sequence s) => AsSequence s s where
-    asSequence = id
--}
-

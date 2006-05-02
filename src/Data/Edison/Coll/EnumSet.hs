@@ -8,12 +8,6 @@
 -- Portability :  non-portable (MPTC and FD)
 --
 -- An efficient implementation of sets over small enumerations.
---
--- This module is intended to be imported @qualified@, to avoid name
--- clashes with "Prelude" functions.  eg.
---
--- >  import EnumSet as Set
---
 -- The implementation of 'EnumSet' is based on bit-wise operations.
 --
 -- For this implementation to work as expected at type @A@, there are a number
@@ -33,13 +27,13 @@
 -- > forall x y::A, x == y <==> toEnum x == toEnum y 
 --
 -- Additionally, for operations that require an @Ord A@ context, we require that
--- toEnum be monotonic.  That is, we must have:
+-- toEnum be monotonic with respect to comparison.  That is, we must have:
 --
 -- > forall x y::A, x < y <==> toEnum x < toEnum y
 --
--- Derived @Eq@, @Ord@ and @Enum@ instances will fulfull these conditions, if
+-- Derived @Eq@, @Ord@ and @Enum@ instances will fulfill these conditions, if
 -- the enumerated type has sufficently few constructors.
------------------------------------------------------------------------------
+
 {-
 Copyright (c) 2006, David F. Place
 All rights reserved.
@@ -56,7 +50,6 @@ met:
     notice, this list of conditions and the following disclaimer in
     the documentation and/or other materials provided with the
     distribution.
-
 
 * Neither the name of David F. Place nor the names of its
   contributors may be used to endorse or promote products derived from
@@ -476,7 +469,7 @@ partition p (Set w) = (Set yay,Set nay)
 -- for some @(x,y)@, @x \/= y && f x == f y@
 map :: (Enum a,Enum b) => (a -> b) -> Set a -> Set b
 map f0 (Set w) = Set $ foldlBits' f 0 w
-    where 
+    where
       f z i = setBit z $ check "map" $ fromEnum $ f0 (toEnum i)
 
 unsafeMapMonotonic :: (Enum a) => (a -> a) -> Set a -> Set a
@@ -606,10 +599,10 @@ splitMember x (Set w) = (Set lesser,isMember,Set greater)
 ----------------------------------------------------------------}
 
 strict :: Set a -> Set a
-strict s@(Set w) = s
+strict s@(Set w) = w `seq` s
 
 strictWith :: (a -> b) -> Set a -> Set a
-strictWith f s@(Set w) = s
+strictWith f s@(Set w) = w `seq` s
 
 {--------------------------------------------------------------------
   Utility functions. 

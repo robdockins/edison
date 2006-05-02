@@ -46,17 +46,18 @@
 --   Argument orders are selected with the following points in mind:
 --
 --   * /Partial application:/ arguments more likely to be static usually
---     appear before other arguments.
+--     appear before other arguments in order to facilitate partial
+--     application.
 --
---   * /Collection appears last:/ in all cases where a function queries a
+--   * /Collection appears last:/ in all cases where an operation queries a
 --     single collection or modifies an existing collection, the collection
 --     argument will appear last.  This is something of a de facto standard
+--     for Haskell datastructure libraries
 --     and lends a degree of consistency to the API.
 --
---   * /Most natural order:/ where the function represents a well-known
---     mathematical function on more than one collection, the arguments
+--   * /Most usual order:/ where an operation represents a well-known
+--     mathematical function on more than one datastructure, the arguments
 --     are chosen to match the most usual argument order for the function.
---
 --
 --
 --   /Type classes:/
@@ -82,12 +83,13 @@
 --   /Notes on Eq and Ord instances:/
 --
 --   Many Edison data structures require @Eq@ or @Ord@ contexts to define equivalence
---   and\/or total ordering on elements or keys.  Edison makes the following assumptions
+--   and total ordering on elements or keys.  Edison makes the following assumptions
 --   about all such required instances:
 --
 --   * An @Eq@ instance correctly defines an equivalence relation (but not necessarily
 --     structural equality); that is, we assume @(==)@ (considered as a
---     relation) is reflexive, symmetric and transitive.
+--     relation) is reflexive, symmetric and transitive, but allow that equivalent
+--     items may be distinguishable by other means.
 --
 --   * An @Ord@ instance correctly defines a total order which is consistent with
 --     the @Eq@ instance for that type.
@@ -100,20 +102,22 @@
 --
 --   /Notes on Read and Show instances:/
 --
---   The usual Haskell convention for @Read@ and @Show@ (as advanced by the automaticly derived
---   instances), is that @show@ generates a string which is a valid Haskell expression built up
---   using the data type's data constructors that, if interpreted as Haskell code, would generate
---   an identical data item.  Furthermore, the derived  @Read@ instances are able to parse such
---   strings, such that @(read . show) === id@.  So, derived instances of @Read@ and @Show@ exhibit
+--   The usual Haskell convention for @Read@ and @Show@ instances (as championed by the
+--   Haskell \"deriving\" mechanism), is that @show@ generates a string which is a
+--   valid Haskell expression built up
+--   using the data type's data constructors such that, if interpreted as Haskell code, the
+--   string would generate an identical data item.  Furthermore, the derived  @Read@
+--   instances are able to parse such strings, such that @(read . show) === id@.
+--   So, derived instances of @Read@ and @Show@ exhibit
 --   the following useful properties:
 --
 --   * @read@ and @show@ are complementary; that is, @read@ is a useful inverse for @show@
 --
 --   * @show@ generates a string which is legal Haskell code representing the data item
 --
---   This all works fine for many data types, but becomes a problem for abstract data types.
---   For abstract types, the derived @Read@ instance may allow users to create data which
---   violates invariants. Furthermore, the strings resulting from @show@ reference hidden
+--   For concrete data types, the deriving mechanism is usually quite sufficent.
+--   However, for abstract types the derived @Read@ instance may allow users to create data
+--   which violates invariants. Furthermore, the strings resulting from @show@ reference hidden
 --   data constructors which violates good software engineering principles and also
 --   cannot be compiled because the constructors are not available outside the defining module.
 --
@@ -121,11 +125,10 @@
 --   doing conversions to and from lists and inserting explicit calls to the list conversion
 --   operations.  The corresponding @Read@ instance strips the list conversion call before
 --   parsing the list.  In this way, private data constructors are not revealed and @show@ strings
---   are still legal, compilable Haskell code.  Furthermore, one can change the concrete data
---   type by simply changing the name of the conversion call (which is always fully qualified with
---   the module name).
+--   are still legal, compilable Haskell code.  Furthermore, the showed strings gain a degree of
+--   independence from the underlying datastructure implementation.
 --
---   For example, calling @show@ on an empty Bankers's queue will result in the following string:
+--   For example, calling @show@ on an empty Banker's queue will result in the following string:
 --
 -- > Data.Edison.Seq.BankersQueue.fromList []
 --
@@ -139,12 +142,12 @@
 --
 --   There are a number of different notions of what constitutes an unsafe function.
 --   In Haskell, a function is generally called \"unsafe\" if it can subvert
---   type safety or referential integrity, such as @unsafePerformIO@.  In Edison,
---   however, we downgrade the meaning of \"unsafe\" somewhat.  An \"unsafe\" Edison
---   function is one which, if misused, can violate the structural invariants of
---   a data structure.  Misusing an Edison \"unsafe\" function should never cause
---   your runtime to crash or break referential integrity, but it may cause later
---   uses of a data structure to behave in undefined ways.  Almost all unsafe functions
+--   type safety or referential integrity, such as @unsafePerformIO@ or @unsafeCoerce#@.
+--   In Edison, however, we downgrade the meaning of \"unsafe\" somewhat.  An
+--   \"unsafe\" Edison function is one which, if misused, can violate the structural
+--   invariants of a data structure.  Misusing an Edison \"unsafe\" function should
+--   never cause your runtime to crash or break referential integrity, but it may cause
+--   later uses of a data structure to behave in undefined ways.  Almost all unsafe functions
 --   in Edison are labeled with the @unsafe@ prefix.  An exception to this rule is the
 --   @With@ functions in the 'Set' class, which are also unsafe but do not have
 --   the prefix.  Unsafe functions will have explicit preconditions listed in their
@@ -155,33 +158,32 @@
 --   /Notes on ambiguous functions:/
 --
 --   Edison also contains some functions which are labeled \"ambiguous\".  These
---   functions cannot violate the structural integrity of a data structure, but, under
+--   functions cannot violate the structural invariants of a data structure, but, under
 --   some conditions, the result of applying an ambiguous function is not well defined.
 --   For ambiguous functions, the result of applying the function may depend on otherwise
 --   unobservable internal state of the data structure, such as the actual shape of a
 --   balanced tree.  For example, the 'AssocX' class contains the @fold@ function, which
 --   folds over the elements in the collection in an arbitrary order.  If the combining
 --   function passed to @fold@ is not fold-commutative (see below), then the result of
---   the fold can will depend on the actual order that elements are presented to the
+--   the fold will depend on the actual order that elements are presented to the
 --   combining function, which is not defined.
 --
 --   To aid programmers, each API function is labeled /ambiguous/ or /unambiguous/ in its
 --   documentation.  If a function is unambiguous only under some circumstances,
 --   that will also be explicitly stated.
 --
---   \"Unambiguous\" does /not/ mean that applying the function will not result in bottom.
---   It only means that all correct implementations of the operation will return
---   \"indistinguishable\" results (if the operation terminates).  For concrete data types,
---   indistinguishable means structural equality.  An instance of an abstract data type
---   is considered indistinguishable from another if all possible applications of unambiguous
---   operations to both yield indistinguishable results.  In this context, we consider bottom
---   to be distinguishable from non-bottom results, and indistinguishable from other
---   bottom results.
+--   An \"unambiguous\" operation is one where all correct implementations of the operation
+--   will return \"indistinguishable\" results.  For concrete data types, \"indistinguishable\"
+--   means structural equality.  An instance of an abstract data type is considered
+--   indistinguishable from another if all possible applications of unambiguous
+--   operations to both yield indistinguishable results.  (Note: this definition is
+--   impredicative and rather imprecise.  Should it become an issue, I will attempt to
+--   develop a better definition.  I hope the intent is sufficiently clear).
 --
---   A higher-order unambiguous operation may be rendered ambiguous if passed a function which
+--   A higher-order unambiguous operation may be rendered ambiguous if passed a \"function\" which
 --   does not respect referential integrity (one containing @unsafePerformIO@ for example).
---   Only do something like this if you are 110% sure you know what you are doing, and maybe
---   not even then.
+--   Only do something like this if you are 110% sure you know what you are doing, and even then
+--   think it over two or three times.
 --
 --
 --
@@ -197,14 +199,16 @@
 --   guarantees give data structure implementers more leeway to provide efficient
 --   implementations.  For example, if you which to fold a commutative, associative
 --   function, you should chose @fold@ (which does not guarantee an order) over @foldl@
---   or @foldr@, which specify particular orders.  Also, if your function is strict in
---   one or both arguments, you should prefer the strict folds (eg, @fold'@); they will
+--   or @foldr@, which specify particular orders.
+--
+--   Also, if your function is strict in
+--   the accumulating argument, you should prefer the strict folds (eg, @fold'@); they will
 --   often provide better space behavior.  /Be aware/, however, that the \"strict\" folds
 --   are not /necessarily/ more strict than the \"non-strict\" folds; they merely give
 --   implementers the option to provide additional strictness if it improves performance.
---   For associative collections, only use with @WithKey@ folds if you need the value
---   of the key.
 --
+--   For associative collections, only use with @WithKey@ folds if you actually need the
+--   value of the key.
 --
 --
 --   /Painfully detailed information about ambiguous folds:/
@@ -215,16 +219,17 @@
 --   of the fold order chosen.  Here we formalize this property, which we call
 --   \"fold commutativity\".
 --
---   We say @f :: a -> b -> b@ is fold-commutative iff @f@ is unambiguous and
+--   We say @f :: a -> b -> b@ is /fold-commutative/ iff @f@ is unambiguous and
 --
--- >    forall z, w :: b; m, n :: a
+-- >    forall w, z :: b; m, n :: a
 -- >
 -- >       w = z ==> f m (f n w) = f n (f m z)
 -- >
 --
 --   where @=@ means indistinguishability.
 --
---   This property is sufficient to ensure that, for any collection of elements to
+--   This property is sufficient (but not necessary) to ensure that, for any
+--   collection of elements to
 --   fold over, folds over all permutations of those elements will generate
 --   indistinguishable results.  In other words, an ambiguous fold applied to a
 --   fold-commutative combining function becomes /unambiguous/.
