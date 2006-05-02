@@ -1,5 +1,5 @@
 -- |
---   Module      :  Data.Edison.Assoc.OatriciaLoMap
+--   Module      :  Data.Edison.Assoc.PatriciaLoMap
 --   Copyright   :  Copyright (c) 1998 Chris Okasaki
 --   License     :  BSD3; see COPYRIGHT file for terms and conditions
 --
@@ -16,8 +16,7 @@
 
 module Data.Edison.Assoc.PatriciaLoMap (
     -- * Type of little-endian Patricia trees
-    FM, -- instance of Assoc(X), FiniteMap(X)
-        -- also instance of Functor
+    FM,
 
     -- * AssocX operations
     empty,singleton,fromSeq,insert,insertSeq,union,unionSeq,delete,deleteAll,
@@ -820,9 +819,8 @@ instance (Read a) => Read (FM a) where
 instance (Eq a) => Eq (FM a) where
   (==) = sameMap
 
--- FIXME
---instance (Ord a) => Ord (FM a) where
---  compare = compareUsingToOrdList
+instance (Ord a) => Ord (FM a) where
+  compare = compareUsingToOrdList
 
 instance (Arbitrary a) => Arbitrary (FM a) where
    arbitrary = do xs <- arbitrary
