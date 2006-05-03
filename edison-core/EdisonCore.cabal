@@ -1,26 +1,20 @@
-Name:           Edison
+Name:           EdisonCore
 Version:        1.2
 License:        BSD3
 License-File:   COPYRIGHT
 Author:         Chris Okasaki
 Maintainer:     robdockins AT fastmail DOT fm
-Synopsis:       A library of efficent, purely-functional data structures
+Synopsis:       A library of efficent, purely-functional data structures (Core Implementations)
 Category:       Data structures
-Stability:      provisional
+Stability:      stable
 Hs-Source-Dir:  src
 Exposed-modules:
-     Data.Edison
-     Data.Edison.Prelude
-     Data.Edison.Sym
-     Data.Edison.Assoc
      Data.Edison.Assoc.Defaults
      Data.Edison.Assoc.AssocList
      Data.Edison.Assoc.PatriciaLoMap
      Data.Edison.Assoc.StandardMap
      Data.Edison.Assoc.TernaryTrie
-     Data.Edison.Coll
      Data.Edison.Coll.Defaults
-     Data.Edison.Coll.Utils
      Data.Edison.Coll.LazyPairingHeap
      Data.Edison.Coll.LeftistHeap
      Data.Edison.Coll.MinHeap
@@ -29,13 +23,11 @@ Exposed-modules:
      Data.Edison.Coll.StandardSet
      Data.Edison.Coll.EnumSet
      Data.Edison.Coll.UnbalancedSet
-     Data.Edison.Seq
      Data.Edison.Seq.Defaults
      Data.Edison.Seq.BankersQueue
      Data.Edison.Seq.BinaryRandList
      Data.Edison.Seq.BraunSeq
      Data.Edison.Seq.JoinList
-     Data.Edison.Seq.ListSeq
      Data.Edison.Seq.MyersStack
      Data.Edison.Seq.RandList
      Data.Edison.Seq.RevSeq
@@ -45,9 +37,11 @@ Build-Depends:
      base >= 1.0,
      haskell98 >= 1.0,
      mtl >= 1.0,
-     QuickCheck >= 1.0
+     QuickCheck >= 1.0,
+     EdisonAPI >=1.2,
+     EdisonAPI < 1.3
 Extensions:
      MultiParamTypeClasses
      FunctionalDependencies
-     AllowUndecidableInstances
+     UndecidableInstances
 Ghc-Options: -funbox-strict-fields -fwarn-incomplete-patterns -O2

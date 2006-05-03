@@ -13,7 +13,8 @@ Build-Depends:
      mtl >= 1.0,
      QuickCheck >= 1.0,
      HUnit >= 1.1,
-     Edison == 1.2
+     EdisonAPI == 1.2,
+     EdisonCore == 1.2
 
 Executable: testSuite
 Main-Is: Main.hs
@@ -21,4 +22,4 @@ Hs-Source-Dir:  src
 Extensions:
      MultiParamTypeClasses
      FunctionalDependencies
-     AllowUndecidableInstances
+     UndecidableInstances
