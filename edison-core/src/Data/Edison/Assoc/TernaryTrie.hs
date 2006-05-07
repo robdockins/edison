@@ -370,7 +370,6 @@ data FMBCtx k v
   = T
   | L !k !(Maybe v) !(FMBCtx k v) !(FMB' k v) !(FMB k v)
   | R !k !(Maybe v) !(FMB k v) !(FMB' k v) !(FMBCtx k v)
-      deriving (Show)
 
 splayFMB :: (Ord k) => k -> FMB k a -> (Maybe a, FMB k a, FMB' k a, FMB k a)
 splayFMB key fmb
