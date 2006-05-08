@@ -1,3 +1,15 @@
+Changes in 1.2rc4
+  * introduce strict/strictWith operations for all APIs
+  * add Ord* instances for PatriciaLoMap and TernaryTrie
+  * add David F. Place's EnumSet implementation
+  * complete the FiniteMap unit test coverage and fix a bunch
+    of bugs in finite map implementations
+  * add 'symmetricDifference' to Collection and
+    Associated Collection APIs
+  * add Ord instances for data structures
+  * add Monoid instances for data structures
+
+
 Changes in 1.2rc3
   * introduce the ambiguous/unambiguous concept and document
     all API operations
@@ -12,8 +24,8 @@ Changes in 1.2rc3
   * add Eq instances for concrete associated collections
   * break out the test suite into a separate sub-package
 
-Changes in 1.2rc2
 
+Changes in 1.2rc2
   * add strict variants of all folds and reduces
   * reverse argument orders to 'rcons' and 'lookup*' in
     Sequence
@@ -28,7 +40,6 @@ Changes in 1.2rc2
 
 
 Changes in 1.2rc1
-
   * modules re-organized into a hierarchy
   * user's guide distributed throughout source code
     as Haddock comments

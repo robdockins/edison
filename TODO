@@ -1,8 +1,5 @@
-strictify folds for TernaryTrie
-structuralInvariant for MyersStack (get a copy of the relevant paper...)
-structuralInvariant for PatriciaLoMap
-make TernaryTrie and PatriciaLoMap instance of OrdAssoc, etc
-complete test coverage for Assoc
+structuralInvariant for MyersStack
+look into FIXMEs
 add docs to the implementations to help decide when to use which ones
 put together some kind of benchmarking
 use 'assert' to check preconditions?
