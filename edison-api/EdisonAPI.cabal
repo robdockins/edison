@@ -7,7 +7,7 @@ Maintainer:     robdockins AT fastmail DOT fm
 Synopsis:       A library of efficent, purely-functional data structures (API)
 Category:       Data structures
 Stability:      stable
-Hs-Source-Dir:  src
+Hs-Source-Dirs: src
 Exposed-modules:
      Data.Edison
      Data.Edison.Prelude

@@ -68,6 +68,20 @@ the package subdirectory:
 runhaskell Setup.hs haddock
 
 
+A Note about Cabal versions
+-----------------------------------
+
+This version of edison builds correctly with Cabal version 1.1.4,
+which is shipped with GHC 6.4.2.  To build on earlier versions,
+it should suffice to:
+
+s/UndecidableInstance/AllowUndecidableInstances/ 
+s/Hs-Build-Dirs:/Hs-BuildDir:/
+
+in the .cabal files.
+
+
+
 Notes on portability
 ----------------------
 

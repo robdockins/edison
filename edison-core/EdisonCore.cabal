@@ -7,7 +7,7 @@ Maintainer:     robdockins AT fastmail DOT fm
 Synopsis:       A library of efficent, purely-functional data structures (Core Implementations)
 Category:       Data structures
 Stability:      stable
-Hs-Source-Dir:  src
+Hs-Source-Dirs: src
 Exposed-modules:
      Data.Edison.Assoc.Defaults
      Data.Edison.Assoc.AssocList
