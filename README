@@ -1,6 +1,6 @@
 Edison: A Library of Efficient Data Structures
 (Haskell Version 1.2rc4)
-May 8, 2006
+May 13, 2006
 
 
 About Edison
@@ -134,7 +134,8 @@ As the maintainer of Edison, I take API stability very seriously.  My goal is
 that programs written against Edison will not suffer from version drift.
 However, I also wish to allow Edison to incorporate new ideas and evolve into a
 better way to use data structures in Haskell.  In order to help accomidate these
-somewhat opposing goals, I have adopted the following versioning scheme.
+somewhat opposing goals, I have adopted the following versioning scheme.  Respect
+the versioning scheme, and you should have no compatibility problems.
 
 
 Each Edison release number is composed of four components:
