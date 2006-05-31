@@ -29,6 +29,8 @@ help:
 	@echo "this directory. Also be sure to use the -98 option when calling Hugs to enable"
 	@echo "extensions."
 	@echo ""
+	@echo "To generate the API documentation, type 'make docs'.  This will generate Haddock"
+	@echo "documentation in the 'dist/doc/html' directory."
 
 user : api-user core-user
 system : api-system core-system
@@ -78,3 +80,7 @@ hugs :
 	mkdir hugs/
 	cp -r edison-api/src/* hugs/
 	cp -r edison-core/src/* hugs/
+
+docs :
+	mkdir -p dist/doc/html
+	find edison-api/src edison-core/src -name '*.hs' -or -name '*.lhs' | xargs haddock -o dist/doc/html -h -t Edison
