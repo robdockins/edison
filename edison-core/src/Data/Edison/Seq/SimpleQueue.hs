@@ -14,8 +14,6 @@
 --
 --   * lview, ltail*   @O( 1 )@ if single threaded, @O( n )@ otherwise
 --
---   * copy    @O( i )@
---
 --   * inBounds, lookup, update, drop, splitAt  @O( n )@
 --
 --   /References:/

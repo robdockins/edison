@@ -10,20 +10,28 @@
 --   One-sided Braun sequences.  All running times are as listed in 
 --   "Data.Edison.Seq" except the following:
 --
---   * lview, lcons*, ltail*   @O( log n )@
+--   * lview, lcons, ltail*   @O( log n )@
 --
---   * rcons*, rview, rhead*, rtail*, size   @O( log^2 n )@
+--   * rcons, rview, rhead*, rtail*, size   @O( log^2 n )@
 --
 --   * copy, inBounds, lookup*, update, adjust  @O( log i )@
 --
---   * append          @O( n1 log n2 )@
+--   * append            @O( n1 log n2 )@
 --
---   * take            @O( i )@
+--   * concat            @O( n + m log m )@
 --
---   * concat          @O( n + m log m )@
+--   * drop, splitAt     @O( i log n )@
 --
---   By keeping track of the size, we could get rcons
---   down to @O(log n)@ as well.
+--   * subseq            @O( i log n + len )@
+--
+--   * reverseOnto       @O( n1 log n2 )@
+--
+--   * concatMap, (>>=)  @O( n * t + m log m )@, where @n@ is the length of the input sequence
+--                                               @m@ is the length of the output sequence and @t@
+--                                               is the running time of @f@
+--
+--   By keeping track of the size, we could get rcons, rview, rhead*, and rtail*
+--   down to @O(log n)@ as well; furthermore, size would be @O( 1 )@.
 --
 --   /References:/
 --

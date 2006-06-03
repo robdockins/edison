@@ -18,6 +18,10 @@
 --
 --  * take, splitAt  @O( i + log n )@
 --
+--  * subseq         @O( log n + len )@
+--
+--  * zip            @O( min( n1, n2 ) + log max( n1, n2 ) )@
+--
 --    /References:/
 --
 --  * Chris Okasaki. /Purely Functional Data Structures/. 1998.

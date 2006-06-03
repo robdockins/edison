@@ -115,7 +115,7 @@
 --
 --   * @show@ generates a string which is legal Haskell code representing the data item
 --
---   For concrete data types, the deriving mechanism is usually quite sufficent.
+--   For concrete data types, the deriving mechanism is usually quite sufficient.
 --   However, for abstract types the derived @Read@ instance may allow users to create data
 --   which violates invariants. Furthermore, the strings resulting from @show@ reference hidden
 --   data constructors which violates good software engineering principles and also
@@ -137,6 +137,14 @@
 --   not also provide the properties that Edison native @Read@ and @Show@ instances do.
 --
 --
+--   /Notes on time complexities:/
+--
+--   Some Edison data structures (only the sequences currently) have detailed time complexity
+--   information.  Unless otherwise stated, these are amortized time complexities, assuming
+--   persistent usage of the datastructure.  Much of this data comes from:
+--
+--   Martin Holters. /Efficent Data Structures in a Lazy Functional Language/.  Master's Thesis.
+--   Chalmers University of Technology, Sweden. 2003.
 --
 --   /Notes on unsafe functions:/
 --

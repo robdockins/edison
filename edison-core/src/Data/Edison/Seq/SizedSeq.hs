@@ -14,7 +14,7 @@
 --   each sequence.
 --
 --   All time complexities are determined by the underlying
---   sequence.
+--   sequence, except that size becomes @O( 1 )@.
 
 module Data.Edison.Seq.SizedSeq (
     -- * Sized Sequence Type

@@ -143,7 +143,7 @@ empty = mzero
 --
 --   This function is always /unambiguous/.
 --
---   Default running time: @O( n )@
+--   Default running time: @O( n1 )@
 append    :: Sequence s => s a -> s a -> s a
 append = mplus
 
@@ -432,7 +432,7 @@ class (Functor s, MonadPlus s) => Sequence s where
   --
   --   This function is always /unambiguous/.
   --
-  --   Default running time: @O( n )@
+  --   Default running time: @O( n1 )@
   reverseOnto  :: s a -> s a -> s a
 
 
@@ -1104,7 +1104,7 @@ class (Functor s, MonadPlus s) => Sequence s where
   --
   --   This function is always /unambiguous/.
   --
-  --   Default running time: @O( min( n1, n2) )@
+  --   Default running time: @O( min( n1, n2 ) )@
   zip         :: s a -> s b -> s (a,b)
 
   -- | Like 'zip', but combines three sequences into triples.

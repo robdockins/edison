@@ -14,6 +14,8 @@
 --
 -- * rhead*, size  @O( log n )@
 --
+-- * subseq        @O( min (i, log n) + len )@
+--
 --   /References:/
 --
 -- * Eugene Myers. \"An applicative random-access stack\". /Information

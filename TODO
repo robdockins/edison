@@ -3,3 +3,4 @@ look into FIXMEs
 add docs to the implementations to help decide when to use which ones
 put together some kind of benchmarking
 use 'assert' to check preconditions?
+find or reimplement the data structures from Martin Holter's thesis.

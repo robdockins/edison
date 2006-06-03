@@ -10,8 +10,10 @@
 --   This module packages the standard prelude list type as a
 --   sequence.  This is the baseline sequence implementation and
 --   all methods have the default running times listed in
---   "Data.Edison.Seq".
-
+--   "Data.Edison.Seq", except for the following two trivial operations:
+--
+--   * toList, fromList     @O( 1 )@
+--
 module Data.Edison.Seq.ListSeq (
     -- * Sequence Type
     Seq,

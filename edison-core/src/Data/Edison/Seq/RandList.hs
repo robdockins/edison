@@ -16,6 +16,8 @@
 --
 --   * lookup*, update, adjust, drop @O( min( i, log n ) )@
 --
+--   * subseq            @O( min( i, log n ) + len )@
+--
 --   /References:/
 --
 --   * Chris Okasaki. /Purely Functional Data Structures/. 1998.

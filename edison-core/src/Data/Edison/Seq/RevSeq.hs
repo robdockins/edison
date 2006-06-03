@@ -7,13 +7,13 @@
 --   Stability   :  provisional
 --   Portability :  non-portable (MPTC and FD)
 --
---   This module defines a sequence adaptor Rev s.
+--   This module defines a sequence adaptor @Rev s@.
 --   If @s@ is a sequence type constructor, then @Rev s@
 --   is a sequence type constructor that is identical to @s@,
 --   except that it is kept in the opposite order.
 --   Also keeps explicit track of the size of the sequence,
 --   similar to the @Sized@ adaptor in "Data.Edison.Seq.SizedSeq".
-
+--
 --   This module is most useful when s is a sequence type
 --   that offers fast access to the front but slow access
 --   to the rear, and your application needs the opposite
@@ -21,7 +21,9 @@
 --   front).
 --
 --   All time complexities are determined by the underlying
---   sequence.
+--   sequence, except that the complexities for accessing
+--   the left and right sides of the sequence are exchanged,
+--   and size becomes @O( 1 )@.
 
 module Data.Edison.Seq.RevSeq (
     -- * Rev Sequence Type
