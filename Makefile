@@ -39,6 +39,7 @@ clean : api-clean core-clean test-clean
 	- rm -r hugs/
 	- rm -r *.tar.gz
 	find . -name '*~' -exec rm '{}' ';'
+	find . -type d -and -name 'dist' -exec rm -r '{}' ';'
 
 api-system :
 	cd edison-api && \
