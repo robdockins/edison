@@ -147,7 +147,7 @@ Edison Versioning
 As the maintainer of Edison, I take API stability very seriously.  My goal is
 that programs written against Edison will not suffer from version drift.
 However, I also wish to allow Edison to incorporate new ideas and evolve into a
-better way to use data structures in Haskell.  In order to help accomidate these
+better way to use data structures in Haskell.  In order to help accommodate these
 somewhat opposing goals, I have adopted the following versioning scheme.  Respect
 the versioning scheme, and you should have no compatibility problems.
 
@@ -183,7 +183,7 @@ only be changed if it was originally in violation of the contract (ie, a bug).
 
 *NOTE*
 THE EXACT BEHAVIOR OF AMBIGUOUS OPERATIONS IS NOT CONSIDERED USER-VISIBLE BEHAVIOR,
-nor is the behaviour of unsafe operations when used in violation of their preconditions.
+nor is the behavior of unsafe operations when used in violation of their preconditions.
 Ambiguous operations may change their behavior in stable releases as long as such
 changes still obey the design contract.
 
