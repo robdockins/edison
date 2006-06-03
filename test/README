@@ -6,7 +6,7 @@ in your path).
 
 runhaskell Setup.hs configure --user
 runhaskell Setup.hs build
-./dist/build/src/testSuite
+./dist/build/testSuite/testSuite
 
 The tests suite should run to completion with no errors.  Errors
 found by the test suite may indicate bugs in a data structure
