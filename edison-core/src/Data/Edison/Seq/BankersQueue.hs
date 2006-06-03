@@ -12,6 +12,8 @@
 --
 --   * rcons   @O( 1 )@
 --
+--   * size    @O( 1 )@
+--
 --   /References:/
 --
 --   * Chris Okasaki, /Purely Functional Data Structures/,

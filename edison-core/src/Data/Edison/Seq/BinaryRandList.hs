@@ -10,9 +10,17 @@
 --   Binary Random-Access lists.  All functions have the standard running
 --   times from "Data.Edison.Seq" except the following:
 --
+--  * lhead, ltail*, lview*   @O( log n )@
+--
+--  * rhead*   @O( log n )@
+--
 --  * lookup   @O( log n )@
 --
 --  * update   @O( log n )@
+--
+--  * take     @O( log n )@
+--
+--  * drop     @O( log^2 n )@
 --
 --    /References:/
 --

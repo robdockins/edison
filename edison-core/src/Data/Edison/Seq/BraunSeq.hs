@@ -10,13 +10,19 @@
 --   One-sided Braun sequences.  All running times are as listed in 
 --   "Data.Edison.Seq" except the following:
 --
---   * lcons   @O( log n )@
+--   * lview, lcons*, ltail*   @O( log n )@
 --
---   * rcons   @O( log^2 n )@
+--   * rview, rcons*   @O( log^2 n )@
 --
---   * lookup  @O( log i )@
+--   * rtail*          @O( log n )@
 --
---   * update  @O( log i )@
+--   * size            @O( log^2 n )@
+--
+--   * reverse         @O( log^2 n )@ ?
+--
+--   * lookup*         @O( log i )@
+--
+--   * update, adjust  @O( log i )@
 --
 --   By keeping track of the size, we could get rcons
 --   down to @O(log n)@ as well.
