@@ -5,7 +5,7 @@
 --
 --   Maintainer  :  robdockins AT fastmail DOT fm
 --   Stability   :  internal (unstable)
---   Portability :  non-portable (MPTC and FD)
+--   Portability :  GHC / Hugs (MPTC and FD)
 --
 --   This module provides default implementations of many of the collection methods.  The functions
 --   in this module are used to fill out collection implementations and are not intended to be

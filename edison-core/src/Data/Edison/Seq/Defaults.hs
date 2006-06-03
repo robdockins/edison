@@ -5,7 +5,7 @@
 --
 --   Maintainer  :  robdockins AT fastmail DOT fm
 --   Stability   :  internal (unstable)
---   Portability :  non-portable (MPTC and FD)
+--   Portability :  GHC, Hugs (MPTC and FD)
 --
 --   This module provides default implementations of many of
 --   the sequence operations.  It is used to fill in implementations

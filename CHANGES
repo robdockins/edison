@@ -1,3 +1,7 @@
+Changes in 1.2 final
+  * Fix documentation for sequences to reflect correct
+    time complexities
+
 Changes in 1.2rc4
   * introduce strict/strictWith operations for all APIs
   * add Ord* instances for PatriciaLoMap and TernaryTrie

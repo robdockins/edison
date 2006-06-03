@@ -4,8 +4,8 @@
 --   License     :  BSD3; see COPYRIGHT file for terms and conditions
 --
 --   Maintainer  :  robdockins AT fastmail DOT fm
---   Stability   :  provisional
---   Portability :  non-portable (MPTC and FD)
+--   Stability   :  stable
+--   Portability :  GHC, Hugs (MPTC and FD)
 --
 --   The standard library "Data.Map" repackaged as an Edison
 --   associative collection.

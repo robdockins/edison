@@ -4,8 +4,8 @@
 --   License     :  BSD3; see COPYRIGHT file for terms and conditions
 --
 --   Maintainer  :  robdockins AT fastmail DOT fm
---   Stability   :  provisional
---   Portability :  non-portable (MPTC and FD)
+--   Stability   :  stable
+--   Portability :  GHC, Hugs (MPTC and FD)
 --
 --   The sequence abstraction is usually viewed as a hierarchy of ADTs
 --   including lists, queues, deques, catenable lists, etc. However, such

@@ -4,8 +4,8 @@
 --   License     :  BSD3; see COPYRIGHT file for terms and conditions
 --
 --   Maintainer  :  robdockins AT fastmail DOT fm
---   Stability   :  provisional
---   Portability :  non-portable (MPTC and FD)
+--   Stability   :  stable
+--   Portability :  GHC, Hugs (MPTC and FD)
 --
 --   Edison is a library of purely functional data structures written by
 --   Chris Okasaki.  It is named after Thomas Alva Edison and for the

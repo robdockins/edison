@@ -4,8 +4,8 @@
 --   License     :  BSD3; see COPYRIGHT file for terms and conditions
 --
 --   Maintainer  :  robdockins AT fastmail DOT fm
---   Stability   :  provisional
---   Portability :  non-portable (MPTC and FD)
+--   Stability   :  stable
+--   Portability :  GHC, Hugs (MPTC and FD)
 --
 --   This module packages the standard prelude list type as a
 --   sequence.  This is the baseline sequence implementation and

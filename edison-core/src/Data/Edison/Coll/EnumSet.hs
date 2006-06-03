@@ -1,11 +1,12 @@
 -----------------------------------------------------------------------------
 -- |
--- Module      :  Data.Edison.Coll.EnumSet
--- Copyright   :  (c) David F. Place 2006
--- License     :  BSD
--- Maintainer  :  robdockins AT fastmail DOT fm
--- Stability   :  Experimental
--- Portability :  non-portable (MPTC and FD)
+--   Module      :  Data.Edison.Coll.EnumSet
+--   Copyright   :  (c) David F. Place 2006
+--   License     :  BSD
+--
+--   Maintainer  :  robdockins AT fastmail DOT fm
+--   Stability   :  stable
+--   Portability :  GHC, Hugs (MPTC and FD)
 --
 -- An efficient implementation of sets over small enumerations.
 -- The implementation of 'EnumSet' is based on bit-wise operations.

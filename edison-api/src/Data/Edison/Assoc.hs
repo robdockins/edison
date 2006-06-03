@@ -4,8 +4,8 @@
 --   License     :  BSD3; see COPYRIGHT file for terms and conditions
 --
 --   Maintainer  :  robdockins AT fastmail DOT fm
---   Stability   :  provisional
---   Portability :  non-portable (MPTC and FD)
+--   Stability   :  stable
+--   Portability :  GHC, Hugs (MPTC and FD)
 --
 --   The /associative collection/ abstraction includes finite maps, finite
 --   relations, and priority queues where the priority is separate from the
