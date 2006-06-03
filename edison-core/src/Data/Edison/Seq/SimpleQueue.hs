@@ -10,11 +10,13 @@
 --   Simple Queues.  All operations have running times as listed in
 --   "Data.Edison.Seq" except for the following:
 --
---   * rcons   @O( 1 )@
+--   * rcons, fromList   @O( 1 )@
 --
---   * lview   @O( 1 )@ if single threaded, @O( n )@ otherwise
+--   * lview, ltail*   @O( 1 )@ if single threaded, @O( n )@ otherwise
 --
---   * ltail*  @O( 1 )@ if single threaded, @O( n )@ otherwise
+--   * copy    @O( i )@
+--
+--   * inBounds, lookup, update, drop, splitAt  @O( n )@
 --
 --   /References:/
 --

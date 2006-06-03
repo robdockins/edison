@@ -10,17 +10,17 @@
 --   Join lists. All running times are as listed in "Data.Edison.Seq" except
 --   for the following:
 --
---   * rcons   @O( 1 )@
+--   * rcons, append   @O( 1 )@
 --
---   * append  @O( 1 )@
+--   * lview, lhead*, ltail*   @O( n )@  (but @O( 1 )@ in practice)
 --
---   * lview   @O( n )@  (but @O( 1 )@ in practice)
+--   * rview, rhead*, rtail*   @O( n )@  (but @O( 1 )@ in practice)
 --
---   * ltail*  @O( n )@  (but @O( 1 )@ in practice)
+--   * inBounds, lookup @O( n )@
 --
---   * rview   @O( n )@  (but @O( 1 )@ in practice)
+--   * copy @O( log i )@
 --
---   * rtail*  @O( n )@  (but @O( 1 )@ in practice)
+--   * concat @O( n )@
 
 module Data.Edison.Seq.JoinList (
     -- * Sequence Type

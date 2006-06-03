@@ -12,17 +12,15 @@
 --
 --   * lview, lcons*, ltail*   @O( log n )@
 --
---   * rview, rcons*   @O( log^2 n )@
+--   * rcons*, rview, rhead*, rtail*, size   @O( log^2 n )@
 --
---   * rtail*          @O( log n )@
+--   * copy, inBounds, lookup*, update, adjust  @O( log i )@
 --
---   * size            @O( log^2 n )@
+--   * append          @O( n1 log n2 )@
 --
---   * reverse         @O( log^2 n )@ ?
+--   * take            @O( i )@
 --
---   * lookup*         @O( log i )@
---
---   * update, adjust  @O( log i )@
+--   * concat          @O( n + m log m )@
 --
 --   By keeping track of the size, we could get rcons
 --   down to @O(log n)@ as well.

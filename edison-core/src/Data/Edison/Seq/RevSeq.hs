@@ -19,6 +19,9 @@
 --   to the rear, and your application needs the opposite
 --   (i.e., fast access to the rear but slow access to the
 --   front).
+--
+--   All time complexities are determined by the underlying
+--   sequence.
 
 module Data.Edison.Seq.RevSeq (
     -- * Rev Sequence Type

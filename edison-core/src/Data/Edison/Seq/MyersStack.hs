@@ -10,13 +10,9 @@
 --   Meyers Stacks.  All operations are as listed in "Data.Edison.Seq" except
 --   the following:
 --
--- * lookup  @O( log n )@
+-- * lookup, inBounds, drop  @O( min(i, log n) )@
 --
--- * rhead*  @O( log n )@
---
--- * size    @O( log n )@
---
--- * drop    @O( log n )@
+-- * rhead*, size  @O( log n )@
 --
 --   /References:/
 --

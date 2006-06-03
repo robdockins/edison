@@ -10,15 +10,11 @@
 --   Random-Access Lists.  All operations are as listed in "Data.Edison.Seq"
 --   except the following:
 --
---   * rhead*  @O( log n )@
+--   * rhead*, size  @O( log n )@
 --
---   * lookup* @O( log n )@
+--   * copy, inBounds    @O( log i )@
 --
---   * update, adjust  @O( log n )@
---
---   * size    @O( log n )@
---
---   * drop    @O( log n )@
+--   * lookup*, update, adjust, drop @O( min( i, log n ) )@
 --
 --   /References:/
 --

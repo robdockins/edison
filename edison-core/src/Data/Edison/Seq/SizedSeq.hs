@@ -12,6 +12,9 @@
 --   is a sequence type constructor that is identical to @s@,
 --   except that it also keeps track of the current size of
 --   each sequence.
+--
+--   All time complexities are determined by the underlying
+--   sequence.
 
 module Data.Edison.Seq.SizedSeq (
     -- * Sized Sequence Type

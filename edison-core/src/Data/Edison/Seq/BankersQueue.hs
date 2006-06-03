@@ -10,9 +10,7 @@
 --   This module implements Banker's Queues. It has the standard running
 --   times from "Data.Edison.Seq" except for the following:
 --
---   * rcons   @O( 1 )@
---
---   * size    @O( 1 )@
+--   * rcons, size, inBounds   @O( 1 )@
 --
 --   /References:/
 --
