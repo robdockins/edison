@@ -1,10 +1,11 @@
 RUNHS=runhaskell
+VERSION=1.2
 
 help:
 	@echo ""
 	@echo "****************************************************************"
 	@echo "****************************************************************"
-	@echo "*** Edison 1.2   Makefile help"
+	@echo "*** Edison $(VERSION)   Makefile help"
 	@echo ""
 	@echo "This Makefile will assist you to compile Edison.  The Edison source"
 	@echo "distribution is broken into a number of Cabal sub-packages, some of which"
@@ -36,6 +37,8 @@ user : api-user core-user
 system : api-system core-system
 clean : api-clean core-clean test-clean
 	- rm -r hugs/
+	- rm -r *.tar.gz
+	find . -name '*~' -exec rm '{}' ';'
 
 api-system :
 	cd edison-api && \
@@ -83,4 +86,17 @@ hugs :
 
 docs :
 	mkdir -p dist/doc/html
-	find edison-api/src edison-core/src -name '*.hs' -or -name '*.lhs' | xargs haddock -o dist/doc/html -h -t Edison
+	find edison-api/src edison-core/src -name '*.hs' -or -name '*.lhs' | xargs haddock -o dist/doc/html -h -t Edison-$(VERSION)
+
+tarball : docs
+	darcs dist -d edison-$(VERSION)-source
+	mkdir edison-api-$(VERSION)-source && \
+           cp -r COPYRIGHT README edison-api edison-api-$(VERSION)-source && \
+           tar cfz edison-api-$(VERSION)-source.tar.gz edison-api-$(VERSION)-source
+	mkdir edison-core-$(VERSION)-source && \
+           cp -r COPYRIGHT README edison-core edison-core-$(VERSION)-source && \
+           tar cfz edison-core-$(VERSION)-source.tar.gz edison-core-$(VERSION)-source
+	mkdir edison-$(VERSION)-docs && \
+           cp -r ./dist/doc/html/* edison-$(VERSION)-docs && \
+           tar cfz edison-$(VERSION)-docs.tar.gz edison-$(VERSION)-docs
+	- rm -r edison-api-$(VERSION)-source edison-core-$(VERSION)-source edison-$(VERSION)-docs
