@@ -238,14 +238,16 @@ class (Eq a,Monoid c) => CollX c a | c -> a where
 class (CollX c a, Ord a) => OrdCollX c a | c -> a where
 
   -- | Delete the minimum element from the collection.  If there is more
-  --   than one minimum, it is unspecified which is deleted.
+  --   than one minimum, it is unspecified which is deleted.  If the collection
+  --   is empty, it will be returned unchanged.
   --
   --   This function is /ambiguous/ at bag types if more than one minimum
   --   element exists in the bag.  Otherwise it is /unambiguous/.
   deleteMin          :: c -> c
 
   -- | Delete the maximum element from the collection.  If there is more
-  --   than one maximum, it is unspecified which is deleted.
+  --   than one maximum, it is unspecified which is deleted.  If the collection
+  --   is empty, it will be returned unchanged.
   --
   --   This function is /ambiguous/ at bag types if more than one maximum
   --   element exists in the bag.  Otherwise it is /unambiguous/.
@@ -498,7 +500,7 @@ class (Coll c a, OrdCollX c a) => OrdColl c a | c -> a where
   --   the collection without that element.  If there are multiple
   --   copies of the minimum element, it is unspecified which is chosen.
   --   /Note/ that 'minView', 'minElem', and 'deleteMin' may make different
-  --   choices.
+  --   choices.  Calls 'fail' if the collection is empty.
   --
   --   This function is /ambiguous/ at bag types, if more than one minimum
   --   element exists in the bag.  Otherwise, it is /unambiguous/.
@@ -507,7 +509,7 @@ class (Coll c a, OrdCollX c a) => OrdColl c a | c -> a where
   -- | Return the minimum element in the collection.  If there are multiple
   --   copies of the minimum element, it is unspecified which is chosen.
   --   /Note/ that 'minView', 'minElem', and 'deleteMin' may make different
-  --   choices.
+  --   choices.  Signals an error if the collection is empty.
   --
   --   This function is /ambiguous/ at bag types, if more than one minimum
   --   element exists in the bag.  Otherwise, it is /unambiguous/.
@@ -517,7 +519,7 @@ class (Coll c a, OrdCollX c a) => OrdColl c a | c -> a where
   --   the collection without that element.  If there are multiple
   --   copies of the maximum element, it is unspecified which is chosen.
   --   /Note/ that 'maxView', 'maxElem' and 'deleteMax' may make different
-  --   choices.
+  --   choices.  Calls 'fail' if the collection is empty.
   --
   --   This function is /ambiguous/ at bag types, if more than one maximum
   --   element exists in the bag.  Otherwise, it is /unambiguous/.
@@ -526,7 +528,7 @@ class (Coll c a, OrdCollX c a) => OrdColl c a | c -> a where
   -- | Return the maximum element in the collection.  If there are multiple
   --   copies of the maximum element, it is unspecified which is chosen.
   --   /Note/ that 'maxView', 'maxElem' and 'deleteMax' may make different
-  --   choices.
+  --   choices.  Signals an error if the collection is empty.
   --
   --   This function is /ambiguous/ at bag types, if more than one maximum
   --   element exists in the bag.  Otherwise, it is /unambiguous/.
