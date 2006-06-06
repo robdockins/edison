@@ -310,46 +310,39 @@ subset x y = (x `union` y) == y
   Minimal, Maximal
 --------------------------------------------------------------------}
 
-findMinIndex :: Word -> Int
-findMinIndex 0 =
-    error "EnumSet.findMin: empty set has no minimal element"
-findMinIndex w = lsb w
-
-findMaxIndex :: Word -> Int
-findMaxIndex 0 = 
-    error "EnumSet.findMax: empty set has no maximal element"
-findMaxIndex w = msb w
-
-
 -- | /O(1)/. The minimal element of a set.
-minElem :: (Eq a, Enum a) => Set a -> a
-minElem (Set w) = toEnum $ findMinIndex w
-
+minElem :: (Enum a) => Set a -> a
+minElem (Set w) 
+   | w == 0    = error $ moduleName++".minElem: empty set"
+   | otherwise = toEnum $ lsb w
 
 -- | /O(1)/. The maximal element of a set.
-maxElem :: (Eq a, Enum a) => Set a -> a
-maxElem (Set w) = toEnum $ findMaxIndex w
-
+maxElem :: (Enum a) => Set a -> a
+maxElem (Set w)
+   | w == 0    = error $ moduleName++".maxElem: empty set"
+   | otherwise = toEnum $ msb w
 
 -- | /O(1)/. Delete the minimal element.
-deleteMin :: (Ord a, Enum a) => Set a -> Set a
-deleteMin (Set 0) = empty
-deleteMin (Set w) = Set $ clearBit w $ findMinIndex w
+deleteMin :: (Enum a) => Set a -> Set a
+deleteMin (Set w) 
+   | w == 0    = empty
+   | otherwise = Set $ clearBit w $ lsb w
 
 -- | /O(1)/. Delete the maximal element.
-deleteMax :: (Ord a, Enum a) => Set a -> Set a
-deleteMax (Set 0) = empty
-deleteMax (Set w) = Set $ clearBit w $ findMaxIndex w
+deleteMax :: (Enum a) => Set a -> Set a
+deleteMax (Set w)
+   | w == 0    = empty
+   | otherwise = Set $ clearBit w $ msb w
 
-minView :: (Eq a, Enum a, Monad m) => Set a -> m (a, Set a)
-minView s@(Set 0) = fail (moduleName++".minView: empty set")
-minView s = return (min,delete min s)
-    where min = minElem s
+minView :: (Enum a, Monad m) => Set a -> m (a, Set a)
+minView (Set w)
+   | w == 0    = fail (moduleName++".minView: empty set")
+   | otherwise = let i = lsb w in return (toEnum i,Set $ clearBit w i)
 
-maxView :: (Eq a, Enum a, Monad m) => Set a -> m (a, Set a)
-maxView s@(Set 0) = fail (moduleName++".maxView: empty set")
-maxView s = return (max,delete max s)
-    where max = maxElem s
+maxView :: (Enum a, Monad m) => Set a -> m (a, Set a)
+maxView (Set w)
+   | w == 0    = fail (moduleName++".maxView: empty set")
+   | otherwise = let i = msb w in return (toEnum i, Set $ clearBit w i)
 
 unsafeInsertMin :: (Ord a, Enum a) => a -> Set a -> Set a
 unsafeInsertMin = insert
@@ -511,14 +504,14 @@ fold1 :: (Eq a, Enum a) => (a -> a -> a) -> Set a -> a
 fold1 f (Set 0) = error (moduleName++".fold1: empty set")
 fold1 f (Set w) = foldrBits folder (toEnum max) (clearBit w max)
     where
-      max = findMaxIndex w
+      max = msb w
       folder i z = f (toEnum i) z
 
 fold1' :: (Eq a, Enum a) => (a -> a -> a) -> Set a -> a
 fold1' f (Set 0) = error (moduleName++".fold1': empty set")
 fold1' f (Set w) = foldrBits folder (toEnum max) (clearBit w max)
     where
-      max = findMaxIndex w
+      max = msb w
       folder i z = f (toEnum i) z
 
 foldr :: (Ord a, Enum a) => (a -> b -> b) -> b -> Set a -> b
@@ -533,14 +526,14 @@ foldr1 :: (Ord a, Enum a) => (a -> a -> a) -> Set a -> a
 foldr1 f (Set 0) = error (moduleName++".foldr1: empty set")
 foldr1 f (Set w) = foldrBits folder (toEnum max) (clearBit w max)
     where
-      max = findMaxIndex w
+      max = msb w
       folder i z = f (toEnum i) z
 
 foldr1' :: (Ord a, Enum a) => (a -> a -> a) -> Set a -> a
 foldr1' f (Set 0) = error (moduleName++".foldr1': empty set")
 foldr1' f (Set w) = foldrBits folder (toEnum max) (clearBit w max)
     where
-      max = findMaxIndex w
+      max = msb w
       folder i z = f (toEnum i) z
 
 foldl :: (Ord a, Enum a) => (c -> a -> c) -> c -> Set a -> c
@@ -555,14 +548,14 @@ foldl1 :: (Ord a, Enum a) => (a -> a -> a) -> Set a -> a
 foldl1 f (Set 0) = error (moduleName++".foldl1: empty set")
 foldl1 f (Set w) = foldlBits folder (toEnum min) (clearBit w min)
   where
-    min = findMinIndex w
+    min = lsb w
     folder z i = f z (toEnum i)
 
 foldl1' :: (Ord a, Enum a) => (a -> a -> a) -> Set a -> a
 foldl1' f (Set 0) = error (moduleName++".foldl1': empty set")
 foldl1' f (Set w) = foldlBits' folder (toEnum min) (clearBit w min)
   where
-    min = findMinIndex w
+    min = lsb w
     folder z i = f z (toEnum i)
 
 {--------------------------------------------------------------------
@@ -749,7 +742,7 @@ instance (Eq a, Enum a) => C.CollX (Set a) a where
    strict = strict;
    structuralInvariant = structuralInvariant; instanceName c = moduleName}
 
-instance (Ord a, Enum a) => C.OrdCollX (Set a) a where  
+instance (Ord a, Enum a) => C.OrdCollX (Set a) a where
   {deleteMin = deleteMin; deleteMax = deleteMax; 
    unsafeInsertMin = unsafeInsertMin; unsafeInsertMax = unsafeInsertMax; 
    unsafeFromOrdSeq = unsafeFromOrdSeq; unsafeAppend = unsafeAppend; 
