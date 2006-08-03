@@ -1,5 +1,5 @@
 Name:           EdisonCore
-Version:        1.2
+Version:        1.2.0.1
 License:        BSD3
 License-File:   COPYRIGHT
 Author:         Chris Okasaki
@@ -38,7 +38,7 @@ Build-Depends:
      haskell98 >= 1.0,
      mtl >= 1.0,
      QuickCheck >= 1.0,
-     EdisonAPI ==1.2
+     EdisonAPI == 1.2
 Extensions:
      MultiParamTypeClasses
      FunctionalDependencies
