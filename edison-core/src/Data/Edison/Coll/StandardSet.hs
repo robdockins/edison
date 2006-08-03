@@ -171,9 +171,9 @@ unsafeInsertMin    = DS.insert
 unsafeInsertMax    = DS.insert
 unsafeFromOrdSeq   = DS.fromDistinctAscList . S.toList
 unsafeAppend       = DS.union
-filterLT x         = DS.filter (<x)
+filterLT x         = fst . DS.split x
 filterLE x         = DS.filter (<=x)
-filterGT x         = DS.filter (>x)
+filterGT x         = snd . DS.split x
 filterGE x         = DS.filter (>=x)
 partitionLT_GE x   = DS.partition (<x)
 partitionLE_GT x   = DS.partition (<=x)

@@ -251,14 +251,13 @@ foldr1' f   m      = L.foldr1' f   (DM.elems m)
 foldl1' f   m      = L.foldl1' f   (DM.elems m)
 unsafeFromOrdSeq   = DM.fromAscList . S.toList
 unsafeAppend       = DM.union
-filterLT k m       = fst . DM.split k $ m
-filterGT k m       = snd . DM.split k $ m
-filterLE k m       = DM.filterWithKey (\k' _ -> k' <= k) m
-filterGE k m       = DM.filterWithKey (\k' _ -> k' >= k) m
-partitionLT_GE k m = DM.partitionWithKey (\k' _ -> k' <  k) m
-partitionLE_GT k m = DM.partitionWithKey (\k' _ -> k' <= k) m
+filterLT k         = fst . DM.split k
+filterGT k         = snd . DM.split k
+filterLE k m       = let (lt, mx, _ ) = DM.splitLookup k m in maybe lt (\x -> insert k x lt) mx
+filterGE k m       = let (_ , mx, gt) = DM.splitLookup k m in maybe gt (\x -> insert k x gt) mx
+partitionLT_GE k m = let (lt, mx, gt) = DM.splitLookup k m in (lt, maybe gt (\x -> insert k x gt) mx)
+partitionLE_GT k m = let (lt, mx, gt) = DM.splitLookup k m in (maybe lt (\x -> insert k x lt) mx, gt)
 partitionLT_GT     = DM.split
-
 fromSeqWith    f s = DM.fromListWith    f (S.toList s)
 fromSeqWithKey f s = DM.fromListWithKey f (S.toList s)
 insertWith         = DM.insertWith
