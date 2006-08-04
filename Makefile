@@ -1,5 +1,5 @@
 RUNHS=runhaskell
-VERSION=1.2
+VERSION=1.2.0.1
 
 help:
 	@echo ""
@@ -32,6 +32,14 @@ help:
 	@echo ""
 	@echo "To generate the API documentation, type 'make docs'.  This will generate Haddock"
 	@echo "documentation in the 'dist/doc/html' directory."
+	@echo ""
+
+version:
+	@sed -E -n 's/Version:[[:space:]]*(.*)/API version:      \1/p' edison-api/EdisonAPI.cabal
+	@sed -E -n 's/Version:[[:space:]]*(.*)/Core version:     \1/p' edison-core/EdisonCore.cabal
+	@echo "Makefile version: $(VERSION)"
+	@sed -E -n 's/Version:[[:space:]]*(.*)/README version:   \1/p' README
+	@darcs changes | grep '^  tagged' | sed -E -n '1 s/^  tagged (.*)/Darcs version:    \1/p'
 
 user : api-user core-user
 system : api-system core-system
