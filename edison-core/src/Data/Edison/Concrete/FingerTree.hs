@@ -34,7 +34,6 @@ module Data.Edison.Concrete.FingerTree (
 	Measured(..),
 	-- * Construction
 	empty, singleton,
-        (<|), (|>), (><),
         fromList,
         -- * Deconstruction
         null,
@@ -42,19 +41,21 @@ module Data.Edison.Concrete.FingerTree (
         split, takeUntil, dropUntil,
         -- * Transformation
         reverse,
-        fmap', traverse'
+--        fmap', traverse'
         ) where
 
 import Prelude hiding (null, reverse)
 
-import Control.Applicative (Applicative(pure, (<*>)), (<$>))
-import Data.Monoid
-import Data.Foldable (Foldable(foldMap), toList)
-import Data.Traversable (Traversable(traverse))
 
-infixr 5 ><
-infixr 5 <|, :<
-infixl 5 |>, :>
+import Data.Monoid
+
+
+--import Control.Applicative (Applicative(pure, (<*>)), (<$>))
+--import Data.Foldable (Foldable(foldMap), toList)
+--import Data.Traversable (Traversable(traverse))
+
+infixr 5 <|
+infixl 5 |>
 
 -- | View of the left end of a sequence.
 data ViewL s a
@@ -77,6 +78,8 @@ instance Functor s => Functor (ViewR s) where
         fmap f EmptyR             = EmptyR
         fmap f (xs :> x)        = fmap f xs :> f x
 
+
+
 -- Explicit Digit type (Exercise 1)
 
 data Digit a
@@ -86,11 +89,21 @@ data Digit a
         | Four a a a a
         deriving Show
 
+{-
 instance Foldable Digit where
         foldMap f (One a) = f a
         foldMap f (Two a b) = f a `mappend` f b
         foldMap f (Three a b c) = f a `mappend` f b `mappend` f c
         foldMap f (Four a b c d) = f a `mappend` f b `mappend` f c `mappend` f d
+-}
+
+
+foldDigit :: Monoid b => (a -> b) -> Digit a -> b
+foldDigit f (One a) = f a
+foldDigit f (Two a b) = f a `mappend` f b
+foldDigit f (Three a b c) = f a `mappend` f b `mappend` f c
+foldDigit f (Four a b c d) = f a `mappend` f b `mappend` f c `mappend` f d
+
 
 -------------------
 -- 4.1 Measurements
@@ -101,7 +114,7 @@ class (Monoid v) => Measured v a | a -> v where
         measure :: a -> v
 
 instance (Measured v a) => Measured v (Digit a) where
-        measure =  foldMap measure
+        measure =  foldDigit measure
 
 ---------------------------
 -- 4.2 Caching measurements
@@ -110,9 +123,16 @@ instance (Measured v a) => Measured v (Digit a) where
 data Node v a = Node2 !v a a | Node3 !v a a a
         deriving Show
 
+{-
 instance Foldable (Node v) where
         foldMap f (Node2 _ a b) = f a `mappend` f b
         foldMap f (Node3 _ a b c) = f a `mappend` f b `mappend` f c
+-}
+
+foldNode :: Monoid b => (a -> b) -> Node v a -> b
+foldNode f (Node2 _ a b) = f a `mappend` f b
+foldNode f (Node3 _ a b c) = f a `mappend` f b `mappend` f c
+
 
 node2        ::  (Measured v a) => a -> a -> Node v a
 node2 a b    =   Node2 (measure a `mappend` measure b) a b
@@ -144,11 +164,20 @@ instance (Measured v a) => Measured v (FingerTree v a) where
         measure (Single x)      =  measure x
         measure (Deep v _ _ _)  =  v
 
+foldFT :: Monoid b => (a -> b) -> FingerTree v a -> b
+foldFT _ Empty = mempty
+foldFT f (Single x) = f x
+foldFT f (Deep _ pr m sf) =
+             foldDigit f pr `mappend` foldFT (foldNode f) m `mappend` foldDigit f sf
+
+
+{-
 instance Foldable (FingerTree v) where
         foldMap _ Empty = mempty
         foldMap f (Single x) = f x
         foldMap f (Deep _ pr m sf) =
                 foldMap f pr `mappend` foldMap (foldMap f) m `mappend` foldMap f sf
+
 
 instance (Measured v a, Eq a) => Eq (FingerTree v a) where
         xs == ys = toList xs == toList ys
@@ -205,6 +234,8 @@ traverseDigit f (One a) = One <$> f a
 traverseDigit f (Two a b) = Two <$> f a <*> f b
 traverseDigit f (Three a b c) = Three <$> f a <*> f b <*> f c
 traverseDigit f (Four a b c d) = Four <$> f a <*> f b <*> f c <*> f d
+
+-}
 
 -----------------------------------------------------
 -- 4.3 Construction, deconstruction and concatenation
@@ -361,7 +392,7 @@ appendTree1 Empty a xs =
 appendTree1 xs a Empty =
 	xs |> a
 appendTree1 (Single x) a xs =
-	x <| a <| xs
+	x <| (a <| xs)
 appendTree1 xs a (Single x) =
 	xs |> a |> x
 appendTree1 (Deep _ pr1 m1 sf1) a (Deep _ pr2 m2 sf2) =
@@ -403,11 +434,11 @@ addDigits1 m1 (Four a b c d) e (Four f g h i) m2 =
 
 appendTree2 :: (Measured v a) => FingerTree v a -> a -> a -> FingerTree v a -> FingerTree v a
 appendTree2 Empty a b xs =
-	a <| b <| xs
+	a <| (b <| xs)
 appendTree2 xs a b Empty =
 	xs |> a |> b
 appendTree2 (Single x) a b xs =
-	x <| a <| b <| xs
+	x <| (a <| (b <| xs))
 appendTree2 xs a b (Single x) =
 	xs |> a |> b |> x
 appendTree2 (Deep _ pr1 m1 sf1) a b (Deep _ pr2 m2 sf2) =
@@ -449,11 +480,11 @@ addDigits2 m1 (Four a b c d) e f (Four g h i j) m2 =
 
 appendTree3 :: (Measured v a) => FingerTree v a -> a -> a -> a -> FingerTree v a -> FingerTree v a
 appendTree3 Empty a b c xs =
-	a <| b <| c <| xs
+	a <| (b <| (c <| xs))
 appendTree3 xs a b c Empty =
 	xs |> a |> b |> c
 appendTree3 (Single x) a b c xs =
-	x <| a <| b <| c <| xs
+	x <| (a <| (b <| (c <| xs)))
 appendTree3 xs a b c (Single x) =
 	xs |> a |> b |> c |> x
 appendTree3 (Deep _ pr1 m1 sf1) a b c (Deep _ pr2 m2 sf2) =
