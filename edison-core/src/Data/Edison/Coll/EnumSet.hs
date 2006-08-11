@@ -147,6 +147,8 @@ module Data.Edison.Coll.EnumSet (
             , map
             , setCoerce
             , complement
+            , toBits
+            , fromBits
 
             -- * Documenation
             , moduleName
@@ -476,10 +478,22 @@ map f0 (Set w) = Set $ foldlBits' f 0 w
 unsafeMapMonotonic :: (Enum a) => (a -> a) -> Set a -> Set a
 unsafeMapMonotonic = map
 
--- | Changes the type of the elements in the set without changing
---   the representation.  Equivalant to @map (toEnum . fromEnum)@.
+-- | /O(1)/ Changes the type of the elements in the set without changing
+--   the representation.  Equivalant to @map (toEnum . fromEnum)@, and
+--   to @(fromBits . toBits)@.  This method is operationally a no-op.
 setCoerce :: (Enum a, Enum b) => Set a -> Set b
 setCoerce (Set w) = Set w
+
+-- | /O(1)/ Get the underlying bit-encoded representation.
+--   This method is operationally a no-op.
+toBits :: Set a -> Word
+toBits (Set w) = w
+
+-- | /O(1)/ Create an EnumSet from a bit-encoded representation.
+--   This method is operationally a no-op.
+fromBits :: Word -> Set a
+fromBits w = Set w
+
 
 {--------------------------------------------------------------------
   Fold
