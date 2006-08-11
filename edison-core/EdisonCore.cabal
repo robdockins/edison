@@ -28,6 +28,7 @@ Exposed-modules:
      Data.Edison.Seq.BankersQueue
      Data.Edison.Seq.BinaryRandList
      Data.Edison.Seq.BraunSeq
+     Data.Edison.Seq.FingerSeq
      Data.Edison.Seq.JoinList
      Data.Edison.Seq.MyersStack
      Data.Edison.Seq.RandList

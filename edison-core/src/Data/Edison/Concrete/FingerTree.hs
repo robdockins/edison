@@ -37,10 +37,16 @@ module Data.Edison.Concrete.FingerTree (
         fromList, toList,
         -- * Deconstruction
         null,
-        viewl, viewr,
+        lview, rview,
         split, takeUntil, dropUntil,
         -- * Transformation
-        reverse, fmap',
+        reverse, fmap', foldFT,
+
+        -- * Strictness
+        strict, strictWith,
+
+        -- * Unit testing
+        structuralInvariant
 
         -- traverse'
         ) where
@@ -60,11 +66,11 @@ data Digit a
         | Four a a a a
         deriving Show
 
-foldDigit :: Monoid b => (a -> b) -> Digit a -> b
-foldDigit f (One a) = f a
-foldDigit f (Two a b) = f a `mappend` f b
-foldDigit f (Three a b c) = f a `mappend` f b `mappend` f c
-foldDigit f (Four a b c d) = f a `mappend` f b `mappend` f c `mappend` f d
+foldDigit :: b -> (b -> b -> b) -> (a -> b) -> Digit a -> b
+foldDigit mz mapp f (One a) = f a
+foldDigit mz mapp f (Two a b) = f a `mapp` f b
+foldDigit mz mapp f (Three a b c) = f a `mapp` f b `mapp` f c
+foldDigit mz mapp f (Four a b c d) = f a `mapp` f b `mapp` f c `mapp` f d
 
 digitToList :: Digit a -> [a] -> [a]
 digitToList (One a)        xs = a : xs
@@ -81,7 +87,7 @@ class (Monoid v) => Measured v a | a -> v where
         measure :: a -> v
 
 instance (Measured v a) => Measured v (Digit a) where
-        measure =  foldDigit measure
+        measure =  foldDigit mempty mappend measure
 
 ---------------------------
 -- 4.2 Caching measurements
@@ -90,9 +96,9 @@ instance (Measured v a) => Measured v (Digit a) where
 data Node v a = Node2 !v a a | Node3 !v a a a
         deriving Show
 
-foldNode :: Monoid b => (a -> b) -> Node v a -> b
-foldNode f (Node2 _ a b) = f a `mappend` f b
-foldNode f (Node3 _ a b c) = f a `mappend` f b `mappend` f c
+foldNode :: b -> (b -> b -> b) -> (a -> b) -> Node v a -> b
+foldNode mz mapp f (Node2 _ a b)   = f a `mapp` f b
+foldNode mz mapp f (Node3 _ a b c) = f a `mapp` f b `mapp` f c
 
 nodeToList :: Node v a -> [a] -> [a]
 nodeToList (Node2 _ a b)   xs = a : b : xs
@@ -123,16 +129,25 @@ deep ::  (Measured v a) =>
          Digit a -> FingerTree v (Node v a) -> Digit a -> FingerTree v a
 deep pr m sf  =   Deep ((measure pr `mappendVal` m) `mappend` measure sf) pr m sf
 
+structuralInvariant :: (Eq v, Measured v a) => FingerTree v a -> Bool
+structuralInvariant Empty      = True
+structuralInvariant (Single _) = True
+structuralInvariant (Deep v pr m sf) =
+     v == foldDigit mempty mappend measure pr `mappend`
+          foldFT    mempty mappend (foldNode mempty mappend measure) m `mappend`
+          foldDigit mempty mappend measure sf
+
+
 instance (Measured v a) => Measured v (FingerTree v a) where
         measure Empty           =  mempty
         measure (Single x)      =  measure x
         measure (Deep v _ _ _)  =  v
 
-foldFT :: Monoid b => (a -> b) -> FingerTree v a -> b
-foldFT _ Empty = mempty
-foldFT f (Single x) = f x
-foldFT f (Deep _ pr m sf) =
-             foldDigit f pr `mappend` foldFT (foldNode f) m `mappend` foldDigit f sf
+foldFT :: b -> (b -> b -> b) -> (a -> b) -> FingerTree v a -> b
+foldFT mz mapp _ Empty      = mz
+foldFT mz mapp f (Single x) = f x
+foldFT mz mapp f (Deep _ pr m sf) =
+             foldDigit mz mapp f pr `mapp` foldFT mz mapp (foldNode mz mapp f) m `mapp` foldDigit mz mapp f sf
 
 ftToList :: FingerTree v a -> [a] -> [a]
 ftToList Empty xs             = xs
@@ -141,6 +156,12 @@ ftToList (Deep _ d1 ft d2) xs = digitToList d1 (foldr nodeToList [] . ftToList f
 
 toList :: FingerTree v a -> [a]
 toList ft = ftToList ft []
+
+strict :: FingerTree v a -> FingerTree v a
+strict xs       = foldFT () seq (const ()) xs `seq` xs
+
+strictWith :: (a -> b) -> FingerTree v a -> FingerTree v a
+strictWith f xs = foldFT () seq (\x -> f x `seq` ()) xs `seq` xs
 
 instance (Measured v a, Eq a) => Eq (FingerTree v a) where
         xs == ys = toList xs == toList ys
@@ -255,15 +276,15 @@ null Empty = True
 null _ = False
 
 -- | /O(1)/. Analyse the left end of a sequence.
-viewl :: (Measured v a, Monad m) => FingerTree v a -> m (a,FingerTree v a)
-viewl Empty                 =  fail "FingerTree.viewl: empty tree"
-viewl (Single x)            =  return (x, Empty)
-viewl (Deep _ (One x) m sf) =  return . (,) x $
-        case viewl m of
+lview :: (Measured v a, Monad m) => FingerTree v a -> m (a,FingerTree v a)
+lview Empty                 =  fail "FingerTree.lview: empty tree"
+lview (Single x)            =  return (x, Empty)
+lview (Deep _ (One x) m sf) =  return . (,) x $
+        case lview m of
           Nothing     -> digitToTree sf
           Just (a,m') -> deep (nodeToDigit a) m' sf
 
-viewl (Deep _ pr m sf)      =  return (lheadDigit pr, deep (ltailDigit pr) m sf)
+lview (Deep _ pr m sf)      =  return (lheadDigit pr, deep (ltailDigit pr) m sf)
 
 lheadDigit :: Digit a -> a
 lheadDigit (One a) = a
@@ -278,15 +299,15 @@ ltailDigit (Four _ b c d) = Three b c d
 ltailDigit _ = error "FingerTree.ltailDigit: bug!"
 
 -- | /O(1)/. Analyse the right end of a sequence.
-viewr :: (Measured v a, Monad m) => FingerTree v a -> m (a, FingerTree v a)
-viewr Empty                  = fail "FingerTree.viewr: empty tree"
-viewr (Single x)             = return (x, Empty)
-viewr (Deep _ pr m (One x))  = return . (,) x $
-        case viewr m of
+rview :: (Measured v a, Monad m) => FingerTree v a -> m (a, FingerTree v a)
+rview Empty                  = fail "FingerTree.rview: empty tree"
+rview (Single x)             = return (x, Empty)
+rview (Deep _ pr m (One x))  = return . (,) x $
+        case rview m of
            Nothing      -> digitToTree pr
            Just (a,m')  -> deep pr m' (nodeToDigit a)
 
-viewr (Deep _ pr m sf)       =  return (rheadDigit sf, deep pr m (rtailDigit sf))
+rview (Deep _ pr m sf)       =  return (rheadDigit sf, deep pr m (rtailDigit sf))
 
 
 rheadDigit :: Digit a -> a
@@ -589,14 +610,14 @@ mappendVal v t = v `mappend` measure t
 
 deepL          ::  (Measured v a) =>
         Maybe (Digit a) -> FingerTree v (Node v a) -> Digit a -> FingerTree v a
-deepL Nothing m sf      =   case viewl m of
+deepL Nothing m sf      =   case lview m of
         Nothing     ->  digitToTree sf
         Just (a,m') ->  deep (nodeToDigit a) m' sf
 deepL (Just pr) m sf    =   deep pr m sf
 
 deepR          ::  (Measured v a) =>
         Digit a -> FingerTree v (Node v a) -> Maybe (Digit a) -> FingerTree v a
-deepR pr m Nothing      =   case viewr m of
+deepR pr m Nothing      =   case rview m of
         Nothing     ->  digitToTree pr
         Just (a,m') ->  deep pr m' (nodeToDigit a)
 deepR pr m (Just sf)    =   deep pr m sf

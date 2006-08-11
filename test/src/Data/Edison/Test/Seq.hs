@@ -22,6 +22,7 @@ import Test.HUnit (Test(..))
 import qualified Data.Edison.Seq.BankersQueue as BQ
 import qualified Data.Edison.Seq.BinaryRandList as BRL
 import qualified Data.Edison.Seq.BraunSeq as BS
+import qualified Data.Edison.Seq.FingerSeq as FS
 import qualified Data.Edison.Seq.JoinList as JL
 import qualified Data.Edison.Seq.ListSeq as LS
 import qualified Data.Edison.Seq.MyersStack as MS
@@ -43,6 +44,7 @@ instance (Eq a,Arbitrary a,Show a,Read a) => SeqTest a []
 instance (Eq a,Arbitrary a,Show a,Read a) => SeqTest a BQ.Seq
 instance (Eq a,Arbitrary a,Show a,Read a) => SeqTest a BS.Seq
 instance (Eq a,Arbitrary a,Show a,Read a) => SeqTest a JL.Seq
+instance (Eq a,Arbitrary a,Show a,Read a) => SeqTest a FS.Seq
 instance (Eq a,Arbitrary a,Show a,Read a) => SeqTest a MS.Seq
 instance (Eq a,Arbitrary a,Show a,Read a) => SeqTest a RL.Seq
 instance (Eq a,Arbitrary a,Show a,Read a) => SeqTest a SQ.Seq
@@ -65,6 +67,9 @@ allSequenceTests = TestList
    , seqTests (empty :: BS.Seq a)
    , seqTests (empty :: Sized.Sized BS.Seq a)
    , seqTests (empty :: Rev.Rev BS.Seq a)
+   , seqTests (empty :: FS.Seq a)
+   , seqTests (empty :: Sized.Sized FS.Seq a)
+   , seqTests (empty :: Rev.Rev FS.Seq a)
    , seqTests (empty :: JL.Seq a)
    , seqTests (empty :: Sized.Sized JL.Seq a)
    , seqTests (empty :: Rev.Rev JL.Seq a)
