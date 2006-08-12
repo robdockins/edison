@@ -32,11 +32,12 @@
 module Data.Edison.Concrete.FingerTree (
         FingerTree,
         Measured(..),
+        Split(..),
 
         empty, singleton, lcons, rcons, append,
         fromList, toList, null,
         lview, rview,
-        split, takeUntil, dropUntil,
+        split, takeUntil, dropUntil, splitTree,
         reverse, mapTree, foldFT, reduce1, reduce1',
         strict, strictWith, structuralInvariant
 
@@ -50,7 +51,9 @@ import Test.QuickCheck
 infixr 5 `lcons`
 infixl 5 `rcons0`
 
--- Explicit Digit type (Exercise 1)
+class (Monoid v) => Measured v a | a -> v where
+        measure :: a -> v
+
 
 data Digit a
         = One a
@@ -78,20 +81,10 @@ digitToList (Two a b)      xs = a : b : xs
 digitToList (Three a b c)  xs = a : b : c : xs
 digitToList (Four a b c d) xs = a : b : c : d : xs
 
--------------------
--- 4.1 Measurements
--------------------
-
--- | Things that can be measured.
-class (Monoid v) => Measured v a | a -> v where
-        measure :: a -> v
 
 instance (Measured v a) => Measured v (Digit a) where
         measure = foldDigit mappend measure
 
----------------------------
--- 4.2 Caching measurements
----------------------------
 
 data Node v a = Node2 !v a a | Node3 !v a a a
         deriving Show
@@ -118,6 +111,7 @@ nodeToDigit :: Node v a -> Digit a
 nodeToDigit (Node2 _ a b) = Two a b
 nodeToDigit (Node3 _ a b c) = Three a b c
 
+
 -- | Finger trees with element type @a@, annotated with measures of type @v@.
 -- The operations enforce the constraint @'Measured' v a@.
 data FingerTree v a
@@ -136,7 +130,6 @@ structuralInvariant (Deep v pr m sf) =
      v == foldDigit mappend measure pr `mappend`
           foldFT    mempty mappend (foldNode mappend measure) m `mappend`
           foldDigit mappend measure sf
-
 
 instance (Measured v a) => Measured v (FingerTree v a) where
         measure Empty           =  mempty
@@ -246,11 +239,6 @@ traverseDigit f (Three a b c) = Three <$> f a <*> f b <*> f c
 traverseDigit f (Four a b c d) = Four <$> f a <*> f b <*> f c <*> f d
 -}
 
-
------------------------------------------------------
--- 4.3 Construction, deconstruction and concatenation
------------------------------------------------------
-
 -- | /O(1)/. The empty sequence.
 empty :: Measured v a => FingerTree v a
 empty = Empty
@@ -352,9 +340,6 @@ digitToTree (Two a b) = deep (One a) Empty (One b)
 digitToTree (Three a b c) = deep (Two a b) Empty (One c)
 digitToTree (Four a b c d) = deep (Two a b) Empty (Two c d)
 
-----------------
--- Concatenation
-----------------
 
 -- | /O(log(min(n1,n2)))/. Concatenate two sequences.
 append :: (Measured v a) => FingerTree v a -> FingerTree v a -> FingerTree v a
@@ -590,9 +575,6 @@ addDigits4 m1 (Four a b c d) e f g h (Three i j k) m2 =
 addDigits4 m1 (Four a b c d) e f g h (Four i j k l) m2 =
         appendTree4 m1 (node3 a b c) (node3 d e f) (node3 g h i) (node3 j k l) m2
 
-----------------
--- 4.4 Splitting
-----------------
 
 -- | /O(log(min(i,n-i)))/. Split a sequence at a point where the predicate
 -- on the accumulated measure changes from 'False' to 'True'.
@@ -627,7 +609,6 @@ splitTree p i (Deep _ pr m sf)
   where vpr     =  i    `mappend`  measure pr
         vm      =  vpr  `mappendVal` m
 
--- Avoid relying on right identity (cf Exercise 7)
 mappendVal :: (Measured v a) => v -> FingerTree v a -> v
 mappendVal v Empty = v
 mappendVal v t = v `mappend` measure t
@@ -681,9 +662,6 @@ splitDigit p i (Four a b c d)
         vab     = va `mappend` measure b
         vabc    = vab `mappend` measure c
 
-------------------
--- Transformations
-------------------
 
 -- | /O(n)/. The reverse of a sequence.
 reverse :: (Measured v a) => FingerTree v a -> FingerTree v a

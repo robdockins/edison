@@ -45,4 +45,5 @@ Extensions:
      MultiParamTypeClasses
      FunctionalDependencies
      UndecidableInstances
+     CPP
 Ghc-Options: -funbox-strict-fields -fwarn-incomplete-patterns -O2

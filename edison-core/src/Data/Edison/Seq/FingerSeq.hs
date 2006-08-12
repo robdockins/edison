@@ -44,11 +44,17 @@ import Control.Monad.Identity
 import Data.Monoid
 import Test.QuickCheck
 
-import qualified Data.Edison.Concrete.FingerTree as FT
+#ifdef __GLASGOW_HASKELL__
+import GHC.Base (unsafeCoerce#)
+#endif
 
+
+import qualified Data.Edison.Concrete.FingerTree as FT
 
 moduleName     :: String
 moduleName = "Data.Edison.Seq.FingerSeq"
+
+
 
 newtype SizeM = SizeM Int deriving (Eq,Ord,Num,Enum,Show)
 unSizeM (SizeM x) = x
@@ -56,6 +62,7 @@ unSizeM (SizeM x) = x
 instance Monoid SizeM where
    mempty  = 0
    mappend = (+)
+
 
 newtype Elem a = Elem a
 unElem (Elem x) = x
@@ -65,6 +72,8 @@ instance FT.Measured SizeM (Elem a) where
 
 newtype Seq a = Seq (FT.FingerTree SizeM (Elem a))
 unSeq (Seq ft) = ft
+
+
 
 empty          :: Seq a
 singleton      :: a -> Seq a
@@ -141,6 +150,17 @@ strict         :: Seq a -> Seq a
 strictWith     :: (a -> b) -> Seq a -> Seq a
 structuralInvariant :: Seq a -> Bool
 
+#ifdef __GLASGOW_HASKELL__
+
+mapElem   = unsafeCoerce#
+mapUnElem = unsafeCoerce#
+
+#else
+
+mapElem   = Prelude.map Elem
+mapUnElem = Prelude.map unElem
+
+#endif
 
 null         = FT.null . unSeq
 empty        = Seq FT.empty
@@ -148,16 +168,31 @@ singleton    = Seq . FT.singleton . Elem
 lcons x      = Seq . FT.lcons (Elem x) . unSeq
 rcons x      = Seq . FT.rcons (Elem x) . unSeq
 append p q   = Seq $ FT.append (unSeq p) (unSeq q)
-fromList     = Seq . FT.fromList . Prelude.map Elem
-toList       = Prelude.map unElem . FT.toList . unSeq
+fromList     = Seq . FT.fromList . mapElem
+toList       = mapUnElem . FT.toList . unSeq
 reverse      = Seq . FT.reverse . unSeq
 size         = unSizeM . FT.measure . unSeq
 strict       = Seq . FT.strict . unSeq
 strictWith f = Seq . FT.strictWith (f . unElem) . unSeq
 structuralInvariant = FT.structuralInvariant . unSeq
 
+#ifdef __GLASGOW_HASKELL__
+
+lview (Seq xs) =
+  let f = unsafeCoerce# :: Monad m => m (Elem a,FT.FingerTree SizeM (Elem a)) -> m (a,Seq a)
+  in  f (FT.lview xs)
+
+rview (Seq xs) =
+  let f = unsafeCoerce# :: Monad m => m (Elem a,FT.FingerTree SizeM (Elem a)) -> m (a,Seq a)
+  in  f (FT.rview xs)
+
+#else
+
 lview (Seq xs) = FT.lview xs >>= \(Elem a, zs) -> return (a, Seq zs)
 rview (Seq xs) = FT.rview xs >>= \(Elem a, zs) -> return (a, Seq zs)
+
+#endif
+
 
 lheadM xs = lview xs >>= return . fst
 ltailM xs = lview xs >>= return . snd
@@ -173,54 +208,92 @@ fold'    = foldr'
 fold1    = foldr1
 fold1'   = foldr1'
 
+#ifdef __GLASGOW_HASKELL__
+
+foldr  f z (Seq xs) = unElem $ FT.foldFT id (.) (unsafeCoerce# f) xs (Elem z)
+foldr' f z (Seq xs) = unElem $ FT.foldFT id (.) (unsafeCoerce# f) xs (Elem z)
+
+reduce1  f (Seq xs) = unElem $ FT.reduce1  (unsafeCoerce# f) xs
+reduce1' f (Seq xs) = unElem $ FT.reduce1' (unsafeCoerce# f) xs
+
+map f (Seq xs) = Seq $ FT.mapTree (unsafeCoerce# f) xs
+
+#else
+
 foldr  f z (Seq xs) = unElem $ FT.foldFT id (.) ( \(Elem x) (Elem y) -> Elem $ f x y) xs (Elem z)
 foldr' f z (Seq xs) = unElem $ FT.foldFT id (.) ( \(Elem x) (Elem y) -> Elem $ f x y) xs (Elem z)
-foldr1  = foldr1UsingLview
-foldr1' = foldr1'UsingLview
-foldl   = foldlUsingLists
-foldl'  = foldl'UsingLists
-foldl1  = foldl1UsingLists
-foldl1' = foldl1'UsingLists
 
 reduce1  f (Seq xs) = unElem $ FT.reduce1  ( \(Elem x) (Elem y) -> Elem $ f x y) xs
 reduce1' f (Seq xs) = unElem $ FT.reduce1' ( \(Elem x) (Elem y) -> Elem $ f x y) xs
+
+map f (Seq xs) = Seq $ FT.mapTree ( \(Elem x) -> Elem $ f x) xs
+
+#endif
+
+lookupM i (Seq xs)
+    | inBounds i (Seq xs) =
+	case FT.splitTree (> (SizeM i)) (SizeM 0) xs of
+           FT.Split _ (Elem x) _ -> return x
+
+    | otherwise = fail "FingerSeq.lookupM: index out of bounds"
+
+lookupWithDefault d i (Seq xs)
+    | inBounds i (Seq xs) =
+	case FT.splitTree (> (SizeM i)) (SizeM 0) xs of
+           FT.Split _ (Elem x) _ -> x
+
+    | otherwise = d
+
+update i x (Seq xs)
+    | inBounds i (Seq xs) =
+	case FT.splitTree (> (SizeM i)) (SizeM 0) xs of
+           FT.Split l _ r -> Seq $ FT.append l $ FT.lcons (Elem x) $ r
+
+    | otherwise = Seq xs
+
+adjust f i (Seq xs)
+    | inBounds i (Seq xs) =
+	case FT.splitTree (> (SizeM i)) (SizeM 0) xs of
+           FT.Split l x r -> Seq $ FT.append l $ FT.lcons (Elem (f (unElem x))) $ r
+
+    | otherwise = Seq xs
+
+take i (Seq xs) = Seq $ FT.takeUntil (> (SizeM i)) xs
+drop i (Seq xs) = Seq $ FT.dropUntil (> (SizeM i)) xs
+splitAt i (Seq xs) = let (a,b) = FT.split (> (SizeM i)) xs in (Seq a, Seq b)
+
+
+inBounds = inBoundsUsingSize
+lookup   = lookupUsingLookupM
+
+foldr1   = foldr1UsingLists
+foldr1'  = foldr1'UsingLists
+foldl    = foldlUsingLists
+foldl'   = foldl'UsingLists
+foldl1   = foldl1UsingLists
+foldl1'  = foldl1'UsingLists
 
 reducer  = reducerUsingReduce1
 reducer' = reducer'UsingReduce1'
 reducel  = reducelUsingReduce1
 reducel' = reducel'UsingReduce1'
 
-map f (Seq xs) = Seq $ FT.mapTree ( \(Elem x) -> Elem $ f x) xs
 copy        = copyUsingLists
 concat      = concatUsingFoldr
 reverseOnto = reverseOntoUsingReverse
 concatMap   = concatMapUsingFoldr
+subseq      = subseqDefault
+filter      = filterUsingLview
+partition   = partitionUsingFoldr
+takeWhile   = takeWhileUsingLview
+dropWhile   = dropWhileUsingLview
+splitWhile  = splitWhileUsingLview
 
-
-inBounds = inBoundsUsingDrop
-lookup = lookupUsingDrop
-lookupM = lookupMUsingDrop
-lookupWithDefault = lookupWithDefaultUsingDrop
-
-update = updateUsingSplitAt
-adjust = adjustUsingSplitAt
-
-mapWithIndex = mapWithIndexUsingLists
+mapWithIndex    = mapWithIndexUsingLists
 foldrWithIndex  = foldrWithIndexUsingLists
 foldrWithIndex' = foldrWithIndex'UsingLists
 foldlWithIndex  = foldlWithIndexUsingLists
 foldlWithIndex' = foldlWithIndex'UsingLists
-
-take = takeUsingLview
-drop = dropUsingLtail
-splitAt = splitAtUsingLview
-subseq = subseqDefault
-        
-filter = filterUsingLview
-partition = partitionUsingFoldr
-takeWhile = takeWhileUsingLview
-dropWhile = dropWhileUsingLview
-splitWhile = splitWhileUsingLview
 
 zip = zipUsingLview
 zip3 = zip3UsingLview
