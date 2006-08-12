@@ -266,8 +266,17 @@ splitAt i (Seq xs) = let (a,b) = FT.split (> (SizeM i)) xs in (Seq a, Seq b)
 inBounds = inBoundsUsingSize
 lookup   = lookupUsingLookupM
 
-foldr1   = foldr1UsingLists
-foldr1'  = foldr1'UsingLists
+foldr1 f xs =
+   case rview xs of
+      Nothing      -> error "FingerSeq.foldr1: empty sequence"
+      Just (x,xs') -> foldr f x xs'
+
+foldr1' f xs =
+   case rview xs of
+      Nothing      -> error "FingerSeq.foldr1': empty sequence"
+      Just (x,xs') -> foldr' f x xs'
+
+
 foldl    = foldlUsingLists
 foldl'   = foldl'UsingLists
 foldl1   = foldl1UsingLists
