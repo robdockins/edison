@@ -139,7 +139,6 @@ unzipWith      :: (a -> b) -> (a -> c) -> Seq a -> (Seq b, Seq c)
 unzipWith3     :: (a -> b) -> (a -> c) -> (a -> d) -> Seq a -> (Seq b, Seq c, Seq d)
 strict         :: Seq a -> Seq a
 strictWith     :: (a -> b) -> Seq a -> Seq a
-
 structuralInvariant :: Seq a -> Bool
 
 
@@ -169,32 +168,34 @@ ltail = runIdentity . ltailM
 rhead = runIdentity . rheadM
 rtail = runIdentity . rtailM
 
-fold      = foldr
-fold' f   = foldl' (flip f)
-fold1     = foldr1
-fold1' f  = foldl1' (flip f)
+fold     = foldr
+fold'    = foldr'
+fold1    = foldr1
+fold1'   = foldr1'
 
-foldr   = foldrUsingLists
-foldr'  = foldr'UsingLists
-foldr1  = foldr1UsingLists
-foldr1' = foldr1'UsingLists
+foldr  f z (Seq xs) = unElem $ FT.foldFT id (.) ( \(Elem x) (Elem y) -> Elem $ f x y) xs (Elem z)
+foldr' f z (Seq xs) = unElem $ FT.foldFT id (.) ( \(Elem x) (Elem y) -> Elem $ f x y) xs (Elem z)
+foldr1  = foldr1UsingLview
+foldr1' = foldr1'UsingLview
 foldl   = foldlUsingLists
 foldl'  = foldl'UsingLists
 foldl1  = foldl1UsingLists
 foldl1' = foldl1'UsingLists
 
-map = mapUsingFoldr
-copy = copyUsingLists
-concat = concatUsingFoldr
-reverseOnto = reverseOntoUsingReverse
-concatMap = concatMapUsingFoldr
+reduce1  f (Seq xs) = unElem $ FT.reduce1  ( \(Elem x) (Elem y) -> Elem $ f x y) xs
+reduce1' f (Seq xs) = unElem $ FT.reduce1' ( \(Elem x) (Elem y) -> Elem $ f x y) xs
 
 reducer  = reducerUsingReduce1
 reducer' = reducer'UsingReduce1'
 reducel  = reducelUsingReduce1
 reducel' = reducel'UsingReduce1'
-reduce1  = reduce1UsingLists
-reduce1' = reduce1'UsingLists
+
+map f (Seq xs) = Seq $ FT.mapTree ( \(Elem x) -> Elem $ f x) xs
+copy        = copyUsingLists
+concat      = concatUsingFoldr
+reverseOnto = reverseOntoUsingReverse
+concatMap   = concatMapUsingFoldr
+
 
 inBounds = inBoundsUsingDrop
 lookup = lookupUsingDrop
@@ -281,9 +282,13 @@ instance Show a => Show (Seq a) where
 instance Read a => Read (Seq a) where
   readsPrec = readsPrecUsingFromList
 
+instance Arbitrary a => Arbitrary (Elem a) where
+   arbitrary   = arbitrary >>= return . Elem
+   coarbitrary = coarbitrary . unElem
+
 instance Arbitrary a => Arbitrary (Seq a) where
-  arbitrary   = arbitrary >>= return . fromList
-  coarbitrary = coarbitrary . toList
+   arbitrary   = arbitrary >>= return . Seq
+   coarbitrary = coarbitrary . unSeq
 
 instance Monoid (Seq a) where
   mempty  = empty

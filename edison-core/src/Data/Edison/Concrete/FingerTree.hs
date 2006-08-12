@@ -32,27 +32,20 @@
 module Data.Edison.Concrete.FingerTree (
         FingerTree,
         Measured(..),
-        -- * Construction
+
         empty, singleton, lcons, rcons, append,
-        fromList, toList,
-        -- * Deconstruction
-        null,
+        fromList, toList, null,
         lview, rview,
         split, takeUntil, dropUntil,
-        -- * Transformation
-        reverse, fmap', foldFT,
-
-        -- * Strictness
-        strict, strictWith,
-
-        -- * Unit testing
-        structuralInvariant
+        reverse, mapTree, foldFT, reduce1, reduce1',
+        strict, strictWith, structuralInvariant
 
         -- traverse'
         ) where
 
 import Prelude hiding (null, reverse)
 import Data.Monoid
+import Test.QuickCheck
 
 infixr 5 `lcons`
 infixl 5 `rcons0`
@@ -66,11 +59,18 @@ data Digit a
         | Four a a a a
         deriving Show
 
-foldDigit :: b -> (b -> b -> b) -> (a -> b) -> Digit a -> b
-foldDigit mz mapp f (One a) = f a
-foldDigit mz mapp f (Two a b) = f a `mapp` f b
-foldDigit mz mapp f (Three a b c) = f a `mapp` f b `mapp` f c
-foldDigit mz mapp f (Four a b c d) = f a `mapp` f b `mapp` f c `mapp` f d
+foldDigit :: (b -> b -> b) -> (a -> b) -> Digit a -> b
+foldDigit mapp f (One a) = f a
+foldDigit mapp f (Two a b) = f a `mapp` f b
+foldDigit mapp f (Three a b c) = f a `mapp` f b `mapp` f c
+foldDigit mapp f (Four a b c d) = f a `mapp` f b `mapp` f c `mapp` f d
+
+reduceDigit :: (b -> b -> b) -> (a -> b) -> Digit a -> b
+reduceDigit mapp f (One a) = f a
+reduceDigit mapp f (Two a b) = f a `mapp` f b
+reduceDigit mapp f (Three a b c) = f a `mapp` f b `mapp` f c
+reduceDigit mapp f (Four a b c d) = (f a `mapp` f b) `mapp` (f c `mapp` f d)
+
 
 digitToList :: Digit a -> [a] -> [a]
 digitToList (One a)        xs = a : xs
@@ -87,7 +87,7 @@ class (Monoid v) => Measured v a | a -> v where
         measure :: a -> v
 
 instance (Measured v a) => Measured v (Digit a) where
-        measure =  foldDigit mempty mappend measure
+        measure = foldDigit mappend measure
 
 ---------------------------
 -- 4.2 Caching measurements
@@ -96,9 +96,9 @@ instance (Measured v a) => Measured v (Digit a) where
 data Node v a = Node2 !v a a | Node3 !v a a a
         deriving Show
 
-foldNode :: b -> (b -> b -> b) -> (a -> b) -> Node v a -> b
-foldNode mz mapp f (Node2 _ a b)   = f a `mapp` f b
-foldNode mz mapp f (Node3 _ a b c) = f a `mapp` f b `mapp` f c
+foldNode :: (b -> b -> b) -> (a -> b) -> Node v a -> b
+foldNode mapp f (Node2 _ a b)   = f a `mapp` f b
+foldNode mapp f (Node3 _ a b c) = f a `mapp` f b `mapp` f c
 
 nodeToList :: Node v a -> [a] -> [a]
 nodeToList (Node2 _ a b)   xs = a : b : xs
@@ -133,9 +133,9 @@ structuralInvariant :: (Eq v, Measured v a) => FingerTree v a -> Bool
 structuralInvariant Empty      = True
 structuralInvariant (Single _) = True
 structuralInvariant (Deep v pr m sf) =
-     v == foldDigit mempty mappend measure pr `mappend`
-          foldFT    mempty mappend (foldNode mempty mappend measure) m `mappend`
-          foldDigit mempty mappend measure sf
+     v == foldDigit mappend measure pr `mappend`
+          foldFT    mempty mappend (foldNode mappend measure) m `mappend`
+          foldDigit mappend measure sf
 
 
 instance (Measured v a) => Measured v (FingerTree v a) where
@@ -147,7 +147,7 @@ foldFT :: b -> (b -> b -> b) -> (a -> b) -> FingerTree v a -> b
 foldFT mz mapp _ Empty      = mz
 foldFT mz mapp f (Single x) = f x
 foldFT mz mapp f (Deep _ pr m sf) =
-             foldDigit mz mapp f pr `mapp` foldFT mz mapp (foldNode mz mapp f) m `mapp` foldDigit mz mapp f sf
+             foldDigit  mapp f pr `mapp` foldFT mz mapp (foldNode mapp f) m `mapp` foldDigit mapp f sf
 
 ftToList :: FingerTree v a -> [a] -> [a]
 ftToList Empty xs             = xs
@@ -157,8 +157,37 @@ ftToList (Deep _ d1 ft d2) xs = digitToList d1 (foldr nodeToList [] . ftToList f
 toList :: FingerTree v a -> [a]
 toList ft = ftToList ft []
 
+reduce1_aux :: (b -> b -> b) -> (a -> b) -> Digit a -> FingerTree v (Node v a) -> Digit a -> b
+reduce1_aux mapp f pr Empty sf = 
+     (reduceDigit mapp f pr) `mapp`
+     (reduceDigit mapp f sf)
+
+reduce1_aux mapp f pr (Single x) sf =
+     (reduceDigit mapp f pr) `mapp`
+     (foldNode mapp f x)     `mapp`
+     (reduceDigit mapp f sf)
+
+reduce1_aux mapp f pr (Deep _ pr' m sf') sf =
+     (reduceDigit mapp f pr) `mapp` 
+     (reduce1_aux mapp
+        (foldNode mapp f)
+            pr' m sf')       `mapp`
+     (reduceDigit mapp f sf)
+
+reduce1 :: (a -> a -> a) -> FingerTree v a -> a
+reduce1 mapp Empty             = error "FingerTree.reduce1: empty tree"
+reduce1 mapp (Single x)        = x
+reduce1 mapp (Deep _ pr m sf)  = reduce1_aux mapp id pr m sf
+
+reduce1' :: (a -> a -> a) -> FingerTree v a -> a 
+reduce1' mapp Empty            = error "FingerTree.reduce1': empty tree"
+reduce1' mapp (Single x)       = x
+reduce1' mapp (Deep _ pr m sf) = reduce1_aux mapp' id pr m sf
+  where mapp' x y = x `seq` y `seq` mapp x y
+
+
 strict :: FingerTree v a -> FingerTree v a
-strict xs       = foldFT () seq (const ()) xs `seq` xs
+strict xs = foldFT () seq (const ()) xs `seq` xs
 
 strictWith :: (a -> b) -> FingerTree v a -> FingerTree v a
 strictWith f xs = foldFT () seq (\x -> f x `seq` ()) xs `seq` xs
@@ -172,11 +201,6 @@ instance (Measured v a, Ord a) => Ord (FingerTree v a) where
 instance (Measured v a, Show a) => Show (FingerTree v a) where
         showsPrec p xs = showParen (p > 10) $
                 showString "fromList " . shows (toList xs)
-
--- | Like 'fmap', but with a more constrained type.
-fmap' :: (Measured v1 a1, Measured v2 a2) =>
-        (a1 -> a2) -> FingerTree v1 a1 -> FingerTree v2 a2
-fmap' = mapTree
 
 mapTree :: (Measured v2 a2) =>
         (a1 -> a2) -> FingerTree v1 a1 -> FingerTree v2 a2
@@ -680,3 +704,49 @@ reverseDigit f (One a) = One (f a)
 reverseDigit f (Two a b) = Two (f b) (f a)
 reverseDigit f (Three a b c) = Three (f c) (f b) (f a)
 reverseDigit f (Four a b c d) = Four (f d) (f c) (f b) (f a)
+
+
+
+instance (Arbitrary a) => Arbitrary (Digit a) where
+  arbitrary = oneof 
+              [ arbitrary       >>= \x         -> return (One x)
+              , two arbitrary   >>= \(x,y)     -> return (Two x y)
+              , three arbitrary >>= \(x,y,z)   -> return (Three x y z)
+              , four arbitrary  >>= \(x,y,z,w) -> return (Four x y z w)
+              ]
+
+  coarbitrary p = case p of
+      One x        -> variant 0 . coarbitrary x
+      Two x y      -> variant 1 . coarbitrary x . coarbitrary y
+      Three x y z  -> variant 2 . coarbitrary x . coarbitrary y
+                      . coarbitrary z
+      Four x y z w -> variant 3 . coarbitrary x . coarbitrary y
+                      . coarbitrary z . coarbitrary w
+
+
+instance (Measured v a, Arbitrary a) => Arbitrary (Node v a) where
+  arbitrary = oneof
+              [ two arbitrary   >>= \(x,y)     -> return (node2 x y)
+              , three arbitrary >>= \(x,y,z)   -> return (node3 x y z)
+              ]
+
+  coarbitrary p = case p of
+       Node2 _ x y   -> variant 0 . coarbitrary x . coarbitrary y
+       Node3 _ x y z -> variant 1 . coarbitrary x . coarbitrary y . coarbitrary z
+
+
+instance (Measured v a, Arbitrary a) => Arbitrary (FingerTree v a) where
+  arbitrary = oneof
+               [ return Empty
+               , arbitrary >>= return . Single
+               , do 
+                   pf <- arbitrary
+                   m  <- arbitrary
+                   sf <- arbitrary
+                   return (deep pf m sf)
+               ]
+
+  coarbitrary p = case p of
+         Empty          -> variant 0
+         Single x       -> variant 1 . coarbitrary x
+         Deep _ sf m pf -> variant 2 . coarbitrary sf . coarbitrary m . coarbitrary pf
