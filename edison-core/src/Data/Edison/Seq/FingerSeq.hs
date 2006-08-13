@@ -55,7 +55,6 @@ moduleName     :: String
 moduleName = "Data.Edison.Seq.FingerSeq"
 
 
-
 newtype SizeM = SizeM Int deriving (Eq,Ord,Num,Enum,Show)
 unSizeM (SizeM x) = x
 
@@ -67,7 +66,7 @@ instance Monoid SizeM where
 newtype Elem a = Elem a
 unElem (Elem x) = x
 
-instance FT.Measured SizeM (Elem a) where
+instance Measured SizeM (Elem a) where
    measure _ = 1
 
 newtype Seq a = Seq (FT.FingerTree SizeM (Elem a))
@@ -171,7 +170,7 @@ append p q   = Seq $ FT.append (unSeq p) (unSeq q)
 fromList     = Seq . FT.fromList . mapElem
 toList       = mapUnElem . FT.toList . unSeq
 reverse      = Seq . FT.reverse . unSeq
-size         = unSizeM . FT.measure . unSeq
+size         = unSizeM . measure . unSeq
 strict       = Seq . FT.strict . unSeq
 strictWith f = Seq . FT.strictWith (f . unElem) . unSeq
 structuralInvariant = FT.structuralInvariant . unSeq
@@ -275,7 +274,6 @@ foldr1' f xs =
    case rview xs of
       Nothing      -> error "FingerSeq.foldr1': empty sequence"
       Just (x,xs') -> foldr' f x xs'
-
 
 foldl    = foldlUsingLists
 foldl'   = foldl'UsingLists

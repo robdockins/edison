@@ -31,12 +31,10 @@
 
 module Data.Edison.Concrete.FingerTree (
         FingerTree,
-        Measured(..),
         Split(..),
 
         empty, singleton, lcons, rcons, append,
-        fromList, toList, null,
-        lview, rview,
+        fromList, toList, null, size, lview, rview,
         split, takeUntil, dropUntil, splitTree,
         reverse, mapTree, foldFT, reduce1, reduce1',
         strict, strictWith, structuralInvariant
@@ -48,12 +46,11 @@ import Prelude hiding (null, reverse)
 import Data.Monoid
 import Test.QuickCheck
 
+import Data.Edison.Prelude
+
+
 infixr 5 `lcons`
 infixl 5 `rcons0`
-
-class (Monoid v) => Measured v a | a -> v where
-        measure :: a -> v
-
 
 data Digit a
         = One a
@@ -74,20 +71,27 @@ reduceDigit mapp f (Two a b) = f a `mapp` f b
 reduceDigit mapp f (Three a b c) = f a `mapp` f b `mapp` f c
 reduceDigit mapp f (Four a b c d) = (f a `mapp` f b) `mapp` (f c `mapp` f d)
 
-
 digitToList :: Digit a -> [a] -> [a]
 digitToList (One a)        xs = a : xs
 digitToList (Two a b)      xs = a : b : xs
 digitToList (Three a b c)  xs = a : b : c : xs
 digitToList (Four a b c d) xs = a : b : c : d : xs
 
+sizeDigit :: (a -> Int) -> Digit a -> Int
+sizeDigit f (One x)        = f x
+sizeDigit f (Two x y)      = f x + f y
+sizeDigit f (Three x y z)  = f x + f y + f z
+sizeDigit f (Four x y z w) = f x + f y + f z + f w
 
 instance (Measured v a) => Measured v (Digit a) where
         measure = foldDigit mappend measure
 
-
 data Node v a = Node2 !v a a | Node3 !v a a a
         deriving Show
+
+sizeNode :: (a -> Int) -> Node v a -> Int
+sizeNode f (Node2 _ x y)   = f x + f y
+sizeNode f (Node3 _ x y z) = f x + f y + f z
 
 foldNode :: (b -> b -> b) -> (a -> b) -> Node v a -> b
 foldNode mapp f (Node2 _ a b)   = f a `mapp` f b
@@ -135,6 +139,14 @@ instance (Measured v a) => Measured v (FingerTree v a) where
         measure Empty           =  mempty
         measure (Single x)      =  measure x
         measure (Deep v _ _ _)  =  v
+
+sizeFT :: (a -> Int) -> FingerTree v a -> Int
+sizeFT f Empty            = 0
+sizeFT f (Single x)       = f x
+sizeFT f (Deep _ d1 m d2) = sizeDigit f d1 + sizeFT (sizeNode f) m + sizeDigit f d2
+
+size :: FingerTree v a -> Int
+size = sizeFT (const 1)
 
 foldFT :: b -> (b -> b -> b) -> (a -> b) -> FingerTree v a -> b
 foldFT mz mapp _ Empty      = mz

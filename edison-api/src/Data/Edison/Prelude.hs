@@ -15,8 +15,10 @@ module Data.Edison.Prelude (
   Hash (..)
 , UniqueHash
 , ReversibleHash (..)
+, Measured (..)
 ) where
 
+import Data.Monoid
 
 -- | This class represents hashable objects. If obeys the 
 --   following invariant:
@@ -50,3 +52,13 @@ class Hash a => UniqueHash a
 
 class UniqueHash a => ReversibleHash a where
   unhash :: Int -> a
+
+
+-- | This class represents a quantity that can be measured.  It is
+--   calculated by an associative function with a unit (hence the
+--   @Monoid@ superclass, and by a function which gives the measurement
+--   for an individual item.  Some datastructures are able to speed up
+--   the calculation of a measure by caching intermediate values of
+--   the computation.
+class (Monoid v) => Measured v a | a -> v where
+  measure :: a -> v
