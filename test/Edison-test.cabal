@@ -1,5 +1,5 @@
 Name:           Edison-test
-Version:        1.2.0.1
+Version:        1.2.1
 License:        BSD3
 License-File:   COPYRIGHT
 Author:         Chris Okasaki
@@ -13,7 +13,7 @@ Build-Depends:
      mtl >= 1.0,
      QuickCheck >= 1.0,
      HUnit >= 1.1,
-     EdisonAPI == 1.2,
+     EdisonAPI == 1.2.1,
      EdisonCore >= 1.2
 
 Executable: testSuite
