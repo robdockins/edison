@@ -81,6 +81,7 @@ core-clean :
 
 test : api-user core-user
 	cd test && \
+          $(RUNHS) Setup.hs clean ; \
           $(RUNHS) Setup.hs configure --prefix=$(HOME) --user && \
           $(RUNHS) Setup.hs build && \
           ./dist/build/testSuite/testSuite
