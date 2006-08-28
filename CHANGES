@@ -1,3 +1,10 @@
+Changes in 1.2.1
+  * New sequence implementation based on Finger Trees
+  * Add the 'Measured' class to the Data.Edison.Prelude
+  * Addition of methods to EnumSet to project to a bit-encoded word and to
+    create an EnumSet from a bit-encoded word
+  * Additional minor changes to EnumSet
+
 Changes in 1.2.0.1
   * Change use more efficent operations for StandardSet.{filterGT,filterLT}
     and StandardMap.{filterLE,filterGE,partitionLE_GT,partitionLT_GE}
