@@ -35,11 +35,11 @@ help:
 	@echo ""
 
 version:
-	@sed -r -n 's/Version:[[:space:]]*(.*)/API version:      \1/p' edison-api/EdisonAPI.cabal
-	@sed -r -n 's/Version:[[:space:]]*(.*)/Core version:     \1/p' edison-core/EdisonCore.cabal
+	@sed -E -n 's/Version:[[:space:]]*(.*)/API version:      \1/p' edison-api/EdisonAPI.cabal
+	@sed -E -n 's/Version:[[:space:]]*(.*)/Core version:     \1/p' edison-core/EdisonCore.cabal
 	@echo "Makefile version: $(VERSION)"
-	@sed -r -n 's/Version:[[:space:]]*(.*)/README version:   \1/p' README
-	@darcs changes | grep '^  tagged' | sed -r -n '1 s/^  tagged (.*)/Darcs version:    \1/p'
+	@sed -E -n 's/Version:[[:space:]]*(.*)/README version:   \1/p' README
+	@darcs changes | grep '^  tagged' | sed -E -n '1 s/^  tagged (.*)/Darcs version:    \1/p'
 
 user : api-user core-user
 system : api-system core-system
