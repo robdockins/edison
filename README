@@ -75,8 +75,8 @@ This version of edison builds correctly with Cabal version 1.1.4,
 which is shipped with GHC 6.4.2.  To build on earlier versions,
 it should suffice to:
 
-s/UndecidableInstance/AllowUndecidableInstances/ 
-s/Hs-Build-Dirs:/Hs-BuildDir:/
+s/UndecidableInstances/AllowUndecidableInstances/ 
+s/Hs-Source-Dirs:/Hs-Source-Dir:/
 
 in the .cabal files.
 
