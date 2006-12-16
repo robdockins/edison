@@ -445,7 +445,7 @@ structuralInvariant (B _ l r) = isJust (check l r)
 
   where check E           E           = Just 1
         check (B _ E E)   E           = Just 2
-	check (B _ l1 l2) (B _ r1 r2) = do
+        check (B _ l1 l2) (B _ r1 r2) = do
            x <- check l1 l2
            y <- check r1 r2
            if (x == y) || (x == y + 1)

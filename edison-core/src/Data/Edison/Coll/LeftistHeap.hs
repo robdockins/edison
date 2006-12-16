@@ -72,7 +72,7 @@ structuralInvariant t@(L i x l r) =
 
        checkLeftist E = True
        checkLeftist t@(L i _ l r) =
-	  rank l >= rank r && checkLeftist l && checkLeftist r
+          rank l >= rank r && checkLeftist l && checkLeftist r
 
 
 node x a E = L 1 x a E
@@ -178,8 +178,8 @@ lookupM x (L _ y a b) =
     LT -> fail "LeftistHeap.lookupM: XXX"
     EQ -> return y
     GT -> case lookupM x b `mplus` lookupM x a of
-    		Nothing -> fail "LeftistHeap.lookupM: XXX"
-		Just x  -> return x
+                Nothing -> fail "LeftistHeap.lookupM: XXX"
+                Just x  -> return x
 
 lookupAll :: (Ord a,S.Sequence seq) => a -> Heap a -> seq a
 lookupAll x h = look h S.empty

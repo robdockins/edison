@@ -147,8 +147,8 @@ lookupM x (T y a b) =
     LT -> fail "SkewHeap.lookupM: XXX"
     EQ -> return y
     GT -> case lookupM x b `mplus` lookupM x a of
-    		Nothing -> fail "SkewHeap.lookupM: XXX"
-		Just x  -> return x
+                Nothing -> fail "SkewHeap.lookupM: XXX"
+                Just x  -> return x
 
 lookupAll :: (Ord a,S.Sequence seq) => a -> Heap a -> seq a
 lookupAll x h = look h S.empty

@@ -97,8 +97,11 @@ hugs :
 	cp -r edison-core/src/* hugs/
 
 docs :
+	-rm -r dist/doc
 	mkdir -p dist/doc/html
-	find edison-api/src edison-core/src -name '*.hs' -or -name '*.lhs' | xargs haddock -o dist/doc/html -h -t Edison-$(VERSION)
+	mkdir -p dist/doc/tmp
+	find edison-api/src edison-core/src -name '*.hs' -or -name '*.lhs' | sed 's/[^\/]*\/\(.*\)\/\(.*\)$$/mkdir -p dist\/doc\/tmp\/\1; cpphs -D__HADDOCK__ --noline -Odist\/doc\/tmp\/\1\/\2 &/ ' | sh
+	find dist/doc/tmp -type f | xargs haddock -o dist/doc/html -h -t Edison-$(VERSION)
 
 tarball : docs
 	darcs dist -d edison-$(VERSION)-source
