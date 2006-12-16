@@ -1,10 +1,10 @@
 -----------------------------------------------------------------------------
 -- |
--- Module      :  Data.FingerTree
+-- Module      :  Data.Edison.Concrete.FingerTree
 -- Copyright   :  (c) Ross Paterson, Ralf Hinze 2006
 -- License     :  BSD-style
--- Maintainer  :  ross@soi.city.ac.uk
--- Stability   :  experimental
+-- Maintainer  :  robdockins AT fastmail DOT fm
+-- Stability   :  internal (non-stable)
 -- Portability :  non-portable (MPTCs and functional dependencies)
 --
 -- A general sequence representation with arbitrary annotations, for
@@ -16,18 +16,49 @@
 --      /Journal of Functional Programming/ 16:2 (2006) pp 197-217.
 --      <http://www.soi.city.ac.uk/~ross/papers/FingerTree.html>
 --
--- For a directly usable sequence type, see "Data.Sequence", which is
--- a specialization of this structure.
+-- This data structure forms the basis of the "Data.Edison.Seq.FingerSeq"
+-- sequence data structure.
 --
 -- An amortized running time is given for each operation, with /n/
 -- referring to the length of the sequence.  These bounds hold even in
 -- a persistent (shared) setting.
 --
--- /Note/: Many of these operations have the same names as similar
--- operations on lists in the "Prelude".  The ambiguity may be resolved
--- using either qualification or the @hiding@ clause.
---
 -----------------------------------------------------------------------------
+
+{------------------------------------------------------------------
+
+Copyright 2004, The University Court of the University of Glasgow. 
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+
+- Redistributions of source code must retain the above copyright notice,
+this list of conditions and the following disclaimer.
+ 
+- Redistributions in binary form must reproduce the above copyright notice,
+this list of conditions and the following disclaimer in the documentation
+and/or other materials provided with the distribution.
+ 
+- Neither name of the University nor the names of its contributors may be
+used to endorse or promote products derived from this software without
+specific prior written permission. 
+
+THIS SOFTWARE IS PROVIDED BY THE UNIVERSITY COURT OF THE UNIVERSITY OF
+GLASGOW AND THE CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES,
+INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND
+FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+UNIVERSITY COURT OF THE UNIVERSITY OF GLASGOW OR THE CONTRIBUTORS BE LIABLE
+FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
+DAMAGE.
+
+-----------------------------------------------------------------------------}
+
 
 module Data.Edison.Concrete.FingerTree (
         FingerTree,
