@@ -1,12 +1,12 @@
 -- |
 --   Module      :  Data.Edison.Seq.FingerSeq
 --   Copyright   :  Copyright (c) 2006 Robert Dockins
---   License     :  BSD3; see COPYRIGHT file for terms and conditions
+--   License     :  MIT; see COPYRIGHT file for terms and conditions
 --
 --   Maintainer  :  robdockins AT fastmail DOT fm
 --   Stability   :  stable
 --   Portability :  GHC, Hugs (MPTC and FD)
---
+
 
 module Data.Edison.Seq.FingerSeq (
     -- * Sequence Type

@@ -1,7 +1,7 @@
 -- |
 --   Module      :  Data.Edison.Assoc.TernaryTrie
 --   Copyright   :  Copyright (c) 2002 Andrew Bromage
---   License     :  BSD3; see COPYRIGHT file for terms and conditions
+--   License     :  MIT; see COPYRIGHT file for terms and conditions
 --
 --   Maintainer  :  robdockins AT fastmail DOT fm
 --   Stability   :  stable

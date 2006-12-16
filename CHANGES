@@ -4,6 +4,10 @@ Changes in 1.2.1
   * Addition of methods to EnumSet to project to a bit-encoded word and to
     create an EnumSet from a bit-encoded word
   * Additional minor changes to EnumSet
+  * Fix a boneheaded mistake I made where I claimed most of Edison was
+    licensed under BSD3, when it is in fact licensed under the MIT license.
+    The practical differences are minor, and I hope this will not cause too
+    many problems.
 
 Changes in 1.2.0.1
   * Change use more efficent operations for StandardSet.{filterGT,filterLT}

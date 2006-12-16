@@ -1,7 +1,7 @@
 -- |
 --   Module      :  Data.Edison.Coll
 --   Copyright   :  Copyright (c) 2006 Robert Dockins
---   License     :  BSD3; see COPYRIGHT file for terms and conditions
+--   License     :  MIT; see COPYRIGHT file for terms and conditions
 --
 --   Maintainer  :  robdockins AT fastmail DOT fm
 --   Stability   :  stable

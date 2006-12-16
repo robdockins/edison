@@ -1,7 +1,7 @@
 -- |
 --   Module      :  Data.Edison.Assoc
 --   Copyright   :  Copyright (c) 1998 Chris Okasaki
---   License     :  BSD3; see COPYRIGHT file for terms and conditions
+--   License     :  MIT; see COPYRIGHT file for terms and conditions
 --
 --   Maintainer  :  robdockins AT fastmail DOT fm
 --   Stability   :  stable
