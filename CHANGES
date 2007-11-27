@@ -1,3 +1,6 @@
+Changes in 1.2.1.1
+  * Build system changes to make GHC 6.8 and cabal >= 1.2.2 happy
+
 Changes in 1.2.1
   * New sequence implementation based on Finger Trees
   * Add the 'Measured' class to the Data.Edison.Prelude
