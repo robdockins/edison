@@ -1,0 +1,261 @@
+<html>
+<head>
+   <title>Edison</title>
+</head>
+<body>
+
+<h1>Edison</h1>
+<h2>A Haskell library of efficient data structures</h2>
+
+<table>
+<tr><td>Maintainer:</td>
+    <td>robdockins AT fastmail DOT fm</td></tr>
+<tr><td>Current Version:</td>
+    <td>1.2.1 (<a href="../CHANGES">changelog</a>)</td></tr>
+<tr><td>Current Release Date:</td>
+    <td>Dec 15, 2006</td>
+<tr><td>Homepage:</td>
+    <td><a href="http://www.cs.princeton.edu/~rdockins/edison/home/index.html">http://www.cs.princeton.edu/~rdockins/edison/home/index.html</a></td></tr>
+<tr><td>Darcs repo:</td>
+    <td><a href="http://www.cs.princeton.edu/~rdockins/edison/">http://www.cs.princeton.edu/~rdockins/edison/</a></td></tr>
+<tr><td>Hackage</td>
+    <td><a href="http://hackage.haskell.org/cgi-bin/hackage-scripts/package/EdisonAPI-1.2.1">EdisonAPI</a>
+        <a href="http://hackage.haskell.org/cgi-bin/hackage-scripts/package/EdisonCore-1.2.1">EdisonCore</a>
+    </td>
+<tr><td>API Documentation</td>
+    <td><a href="http://hackage.haskell.org/packages/archive/EdisonAPI/1.2.1/doc/html/">EdisonAPI</a>
+        <a href="http://hackage.haskell.org/packages/archive/EdisonCore/1.2.1/doc/html/">EdisonCore</a>
+<tr><td>
+</table>
+<hr/>
+
+<h3>About Edison</h3>
+<p>
+Edison is a library of purely function data structures for Haskell
+originally written by Chris Okasaki.  Conceptually, it consists of two
+things:
+<ol>
+ <li>A set of type classes defining data the following data structure
+     abstractions: "sequences", "collections" and "associative collections"</li>
+ <li>Multiple concrete implementations of each of the abstractions.</li>
+</ol>
+</p>
+
+<p>
+In theory, either component may be used independently of the other.
+</p>
+
+<p>
+This release is an update to (hopefully) make Edison easier to use,
+mostly by updating Edison to use the most current Haskell tools.
+The following major changes have been made since version 1.1, which
+was released in 1999.
+</p>
+
+<ul>
+ <li>Typeclasses updated to use fundeps (by Andrew Bromage)</li>
+ <li>Implementation of ternary search tries (by Andrew Bromage)</li>
+ <li>Modules renamed to use the hierarchical module extension</li>
+ <li>Documentation haddockized</li>
+ <li>Source moved to a darcs repository</li>
+ <li>Build system cabalized</li>
+ <li>Unit tests integrated into a single driver program which exercises
+    all the concrete implementations shipped with Edison</li>
+ <li>Multiple additions to the APIs (mostly the associated collection API)</li>
+</ul>
+
+<p>
+Hopefully, these changes will make Edison more accessible than it has
+been previously.
+</p>
+
+<h3>License</h3>
+<p>
+Edison is released under an MIT style license.  See the
+<a href="../COPYRIGHT">COPYRIGHT</a> file for details.
+</p>
+
+
+<h3>Building Edison</h3>
+
+<p>
+Edison is distributed as a set of related Cabal packages.
+The EdisonAPI package contains the main API typeclass definitions.
+The EdisonCore package provides the main concrete implementations;
+this package depends on the EdisonAPI package.  The Edison-test
+package contains the test suite and depends on both packages.
+</p>
+
+<p>
+You may either manually invoke cabal for each of the sub-packages
+as appropriate, or you may use the included Makefile, which will
+build and install the EdisonAPI and EdisonCore packages
+automaticly.
+</p>
+
+<p>
+If you do not have an executable named 'runhaskell' on your search
+path, you will need to edit the Makefile and set the RUNHS variable
+appropriately (or run the cabal commands manually).
+</p>
+
+<p>
+If you wish to build the API docs, you will first need to
+build the relevant package and type the following command in
+the package subdirectory:
+</p>
+
+<pre>runhaskell Setup.hs haddock</pre>
+
+
+<h3>Notes on portability</h3>
+
+<h4>Short version:</h4>
+
+<p>
+Edison is expected to work correctly on recent GHC and Hugs (with
+extensions enabled).  Other Haskell implementations may also work, but
+have not been tested.
+</p>
+
+
+<h4>Longer version:</h4>
+
+<p>
+Edison uses a number of extensions beyond Haskell 98, the current
+official Haskell standard.  These include:
+<ul>
+  <li>Multi-parameter typeclasses</li>
+  <li>Functional dependencies</li>
+  <li>Undecidable instances</li>
+</ul>
+
+<p>
+In all cases, these extensions are used to allow the typeclass
+abstractions to be expressed.  These extensions are fairly popular
+and seem likely to make it in some form into a Haskell standard
+(hopefully in the not too distant future).
+</p>
+
+<p>
+Currently, Edison builds and runs correctly under GHC and Hugs.
+More specificly, most development and testing has been done with
+GHC 6.4.1, and the test suite builds and runs to completion with no errors.
+Most recently, the test suite was built and tested on GHC 6.8.1.
+With Hugs (March 2005 release) and the '-98' option, all of the core Edison
+data structures should work correctly.  Unfortunately, the test suite will
+not load, due to differences in Hugs' and GHC's implementations of 
+multi-parameter typeclasses.
+</p>
+
+<p>
+As the extensions used are not recent developments, I also expect that less
+recent versions of GHC and Hugs will also work.  Other implementations
+may also work correctly with Edison, but this has not been tested.
+</p>
+
+
+<h3>The Story on Edison Packages</h3>
+
+<p>
+Cabal is a nice tool for building and distributing Haskell projects.  However,
+it has the slightly undesirable property that the "Package" unit is the atomic
+unit of compilation, documentation and of dependency resolution.  In order to
+support implementations which have varying external dependencies, Edison has been
+split into multiple cabal sub-packages, which cooperate.  The root package is
+named 'EdisonAPI' and it contains the typeclass specifications, together with
+extensive documentation and a few utility classes.  'EdisonAPI' essentially
+represents a design contract.  The 'EdisonCore' package contains core Edison
+implementations.  These implementations have no dependencies beyond the standard
+libraries.  Other implementation modules are planned: these other modules
+may have dependencies on eg, Adiran Hay's AVL tree implementation or Don
+Stewart's Fast Packed String, etc.  Additionally there is a unit test package.
+Currently it is tied to the 'EdisonCore' package, but in the future it will
+provide basic unit testing capabilities for extended implementations as well.
+</p>
+
+
+
+<h3>Edison Versioning</h3>
+
+<p>
+As the maintainer of Edison, I take API stability very seriously.  My goal is
+that programs written against Edison will not suffer from version drift.
+However, I also wish to allow Edison to incorporate new ideas and evolve into a
+better way to use data structures in Haskell.  In order to help accommodate these
+somewhat opposing goals, I have adopted the following versioning scheme.  Respect
+the versioning scheme, and you should have no compatibility problems.
+</p>
+
+<p>
+Each Edison release number is composed of four components:
+</p>
+<pre>
+
+  xxx.yyy.zzz.www
+   ^   ^   ^   ^
+   |   |   |   |
+   |   |   |   +------ patch level
+   |   |   +---------- API version number
+   |   +-------------- minor version number
+   +------------------ major version number
+
+</pre>
+
+<p>
+The API version number and/or patch level may be omitted for brevity.  When
+omitted, they are assumed to be 0.
+</p>
+
+<p>
+I have adopted the (pre-2.6) Linux kernel versioning scheme for major and
+minor numbers: the major number is incremented at major updates (ie, something
+on the order of total API re-engineering or complete rewrites).  Minor numbers
+represent "branches" of development.
+</p>
+
+<p>
+Releases with even minor numbers are "stable" releases (0 is considered even).
+For example, the Edison 1.2 release is a stable release. Even numbered releases
+will have stable user-visible APIs; my goal is that any program compiled against
+an Edison stable release will work correctly for all later Edison releases with
+the same major and minor version numbers.  This means that API changes will be
+limited to additions.  However, I intend that even additions be rare, and they will
+only be considered with compelling evidence that the lack of the feature in question
+inhibits desirable use cases.  The user-visible behavior of an implementation will
+only be changed if it was originally in violation of the contract (ie, a bug).
+</p>
+
+<p><em>*NOTE*</em><br/>
+THE EXACT BEHAVIOR OF AMBIGUOUS OPERATIONS IS NOT CONSIDERED USER-VISIBLE BEHAVIOR,
+nor is the behavior of unsafe operations when used in violation of their preconditions.
+Ambiguous operations may change their behavior in stable releases as long as such
+changes still obey the design contract.
+</p>
+
+<p>
+Releases with odd minor numbers are "development" branches.  Such releases
+are branched from the immediately preceding stable release minor number.
+For example, the Edison 1.3 development branch will be forked from the Edison 1.2
+release family.  No guarantees are made about the user-visible APIs for development
+branches.  API operations may be added, deleted, or have the terms of their design
+contracts altered in development branches, and implementations may freely change their
+behavior.  Eventually development branches are stabilized and transform into the next
+even-numbered stable release.
+</p>
+
+<p>
+For both even and odd minor numbers, the third component represents the "API version".
+Any change to the API will cause a bump in the API version number.  For stable branches,
+this should be fairly rare; for odd branches, it may occur rather frequently.
+</p>
+
+<p>
+The fourth component is incremented for each official release whenever the first three
+components are not altered.  Two Edison versions which differ only in their patch level
+should have identical APIs.
+</p>
+
+
+</body>
+</html>
