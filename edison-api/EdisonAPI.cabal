@@ -5,7 +5,7 @@ License-File:   COPYRIGHT
 Author:         Chris Okasaki
 Maintainer:     robdockins AT fastmail DOT fm
 Synopsis:       A library of efficent, purely-functional data structures (API)
-Category:       Data structures
+Category:       Data Structures
 Stability:      stable
 Hs-Source-Dirs: src
 Exposed-modules:

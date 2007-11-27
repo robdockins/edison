@@ -5,7 +5,7 @@ License-File:   COPYRIGHT
 Author:         Chris Okasaki
 Maintainer:     robdockins AT fastmail DOT fm
 Synopsis:       A library of efficent, purely-functional data structures (Core Implementations)
-Category:       Data structures
+Category:       Data Structures
 Stability:      stable
 Description:
      This package provides the core Edison data structure implementations,
