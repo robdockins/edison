@@ -1,5 +1,5 @@
 Name:           EdisonCore
-Version:        1.2.1
+Version:        1.2.1.1
 License:        OtherLicense
 License-File:   COPYRIGHT
 Author:         Chris Okasaki
@@ -40,10 +40,12 @@ Build-Depends:
      haskell98 >= 1.0,
      mtl >= 1.0,
      QuickCheck >= 1.0,
-     EdisonAPI == 1.2.1
+     EdisonAPI == 1.2.1,
+     containers >= 0.1,
+     array >= 0.1
 Extensions:
      MultiParamTypeClasses
      FunctionalDependencies
      UndecidableInstances
      CPP
-Ghc-Options: -funbox-strict-fields -fwarn-incomplete-patterns -O2
+Ghc-Options: -funbox-strict-fields -fwarn-incomplete-patterns -O2 -fglasgow-exts

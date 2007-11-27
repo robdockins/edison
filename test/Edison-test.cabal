@@ -1,5 +1,5 @@
 Name:           Edison-test
-Version:        1.2.1
+Version:        1.2.1.1
 License:        OtherLicense
 License-File:   COPYRIGHT
 Author:         Chris Okasaki
@@ -23,3 +23,7 @@ Extensions:
      MultiParamTypeClasses
      FunctionalDependencies
      UndecidableInstances
+     GeneralizedNewtypeDeriving
+     TypeSynonymInstances
+     FlexibleInstances
+     FlexibleContexts
