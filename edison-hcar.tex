@@ -1,0 +1,60 @@
+\documentclass{article}
+
+\usepackage{hcar}
+
+\begin{document}
+
+\begin{hcarentry}{Edison}
+\report{Rob Dockins}
+\status{stable, maintained}
+\makeheader
+
+Edison is a library of purely function data structures for Haskell
+originally written by Chris Okasaki.  Conceptually, it consists of two
+things:
+\begin{enumerate}
+\item A set of type classes defining data the following data structure
+      abstractions: "sequences", "collections" and "associative collections"
+\item Multiple concrete implementations of each of the abstractions.
+
+In theory, either component may be used independently of the other.
+
+I took over maintenance of Edison about 18 months ago
+in order to update Edison to use the most current Haskell tools.
+The following major changes have been made since version 1.1, which
+was released in 1999.
+
+\begin{itemize}
+\item Typeclasses updated to use fundeps (by Andrew Bromage)
+\item Implementation of ternary search tries (by Andrew Bromage)
+\item Modules renamed to use the hierarchical module extension
+\item Documentation haddockized
+\item Source moved to a darcs repository
+\item Build system cabalized
+\item Unit tests integrated into a single driver program which exercises
+      all the concrete implementations shipped with Edison
+\item Multiple additions to the APIs (mostly the associated collection API)
+\end{itemize}
+
+Edison is currently in maintain-only mode. I don't have the time required
+to enhance Edison in the ways I would like.  If you are interested in
+working on Edison, don't hesitate to contact me.
+
+The biggest thing that Edison needs is a benchmarking suite.  Although
+Edison currently has an extensive unit test suite for testing correctness,
+and many of the data structures have proven time bounds,
+I have no way to evaluate or compare the quantitative
+performance of particular data structure implementations in a
+principled way.  Unfortunately, benchmarking data structures
+(especially in a non-strict language) is difficult to do well.
+If you have an interest or experience in this area, your help
+would be very much appreciated.
+
+\FurtherReading
+\begin{itemize}
+\item \url{http://hackage.haskell.org/cgi-bin/hackage-scripts/package/EdisonAPI}
+\item \url{http://hackage.haskell.org/cgi-bin/hackage-scripts/package/EdisonCore}
+\end{itemize}
+\end{hcarentry}
+
+\end{document}
