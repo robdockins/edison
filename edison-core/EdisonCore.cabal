@@ -7,6 +7,12 @@ Maintainer:     robdockins AT fastmail DOT fm
 Synopsis:       A library of efficent, purely-functional data structures (Core Implementations)
 Category:       Data structures
 Stability:      stable
+Description:
+     This package provides the core Edison data structure implementations,
+     including multiple sequence, set, bag, and finite map concrete
+     implementations with various performance characteristics. The
+     implementations in this package have no dependencies other than those
+     commonly bundled with Haskell compilers.
 Hs-Source-Dirs: src
 Exposed-modules:
      Data.Edison.Assoc.Defaults
