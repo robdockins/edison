@@ -7,7 +7,7 @@ Maintainer:     robdockins AT fastmail DOT fm
 Synopsis:       A library of efficent, purely-functional data structures (API)
 Category:       Data Structures
 Homepage:	http://www.cs.princeton.edu/~rdockins/edison/home/
-Stability:      stable
+Stability:      Stable
 Hs-Source-Dirs: src
 Exposed-modules:
      Data.Edison

@@ -1,4 +1,6 @@
 Name:           EdisonCore
+Cabal-Version:  >= 1.2
+Build-Type:     Simple
 Version:        1.2.1.1
 License:        OtherLicense
 License-File:   COPYRIGHT
@@ -7,15 +9,17 @@ Maintainer:     robdockins AT fastmail DOT fm
 Synopsis:       A library of efficent, purely-functional data structures (Core Implementations)
 Category:       Data Structures
 Homepage:	http://www.cs.princeton.edu/~rdockins/edison/home/
-Stability:      stable
+Stability:      Stable
 Description:
      This package provides the core Edison data structure implementations,
      including multiple sequence, set, bag, and finite map concrete
      implementations with various performance characteristics. The
      implementations in this package have no dependencies other than those
      commonly bundled with Haskell compilers.
-Hs-Source-Dirs: src
-Exposed-modules:
+
+Library
+  Hs-Source-Dirs: src
+  Exposed-modules:
      Data.Edison.Assoc.Defaults
      Data.Edison.Assoc.AssocList
      Data.Edison.Assoc.PatriciaLoMap
@@ -42,17 +46,15 @@ Exposed-modules:
      Data.Edison.Seq.RevSeq
      Data.Edison.Seq.SimpleQueue
      Data.Edison.Seq.SizedSeq
-Build-Depends:
-     base >= 1.0,
-     haskell98 >= 1.0,
-     mtl >= 1.0,
-     QuickCheck >= 1.0,
-     EdisonAPI == 1.2.1,
-     containers >= 0.1,
-     array >= 0.1
-Extensions:
+  Build-Depends:
+     base, haskell98, mtl, QuickCheck,
+     EdisonAPI == 1.2.1
+  if impl( ghc >= 6.8 )
+     Build-Depends:
+        containers, array
+  Extensions:
      MultiParamTypeClasses
      FunctionalDependencies
      UndecidableInstances
      CPP
-Ghc-Options: -funbox-strict-fields -fwarn-incomplete-patterns -O2 -fglasgow-exts
+  Ghc-Options: -funbox-strict-fields -fwarn-incomplete-patterns -O2 -fglasgow-exts
