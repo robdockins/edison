@@ -1,6 +1,6 @@
 -- |
 --   Module      :  Data.Edison.Assoc.Defaults
---   Copyright   :  Copyright (c) 1998 Chris Okasaki
+--   Copyright   :  Copyright (c) 1998, 2008 Chris Okasaki
 --   License     :  MIT; see COPYRIGHT file for terms and conditions
 --
 --   Maintainer  :  robdockins AT fastmail DOT fm
@@ -14,7 +14,6 @@
 module Data.Edison.Assoc.Defaults where
 
 import Prelude hiding (null,map,lookup,foldr,foldl,foldr1,foldl1,filter)
-import Data.Maybe (fromJust)
 
 import Data.Edison.Assoc
 import qualified Data.Edison.Seq as S
@@ -27,7 +26,7 @@ singletonUsingInsert k v = insert k v empty
 fromSeqUsingInsertSeq :: (AssocX m k,S.Sequence seq) => seq (k,a) -> m a
 fromSeqUsingInsertSeq kvs = insertSeq kvs empty
 
-insertSeqUsingFoldr :: 
+insertSeqUsingFoldr ::
     (AssocX m k,S.Sequence seq) => seq (k,a) -> m a -> m a
 insertSeqUsingFoldr kvs m = S.foldr (uncurry insert) m kvs
 
@@ -40,8 +39,8 @@ deleteSeqUsingFoldr ks m = S.foldr delete m ks
 memberUsingLookupM :: (AssocX m k) => k -> m a -> Bool
 memberUsingLookupM k m
   = case lookupM k m of
-  	Just _  -> True
-	Nothing -> False
+        Just _  -> True
+        Nothing -> False
 
 sizeUsingElements :: (AssocX m k) => m a -> Int
 sizeUsingElements m = length (elements m)
@@ -71,10 +70,10 @@ elementsUsingFold = fold S.lcons S.empty
 nullUsingElements :: (AssocX m k) => m a -> Bool
 nullUsingElements m
   = case elements m of
-  	[] -> True
-  	_  -> False
+        [] -> True
+        _  -> False
 
-insertWithUsingLookupM :: 
+insertWithUsingLookupM ::
     FiniteMapX m k => (a -> a -> a) -> k -> a -> m a -> m a
 insertWithUsingLookupM f k x m =
     case lookupM k m of
@@ -85,31 +84,31 @@ fromSeqWithUsingInsertSeqWith ::
     (FiniteMapX m k,S.Sequence seq) => (a -> a -> a) -> seq (k,a) -> m a
 fromSeqWithUsingInsertSeqWith f kvs = insertSeqWith f kvs empty
 
-fromSeqWithKeyUsingInsertSeqWithKey :: 
+fromSeqWithKeyUsingInsertSeqWithKey ::
     (FiniteMapX m k,S.Sequence seq) => (k -> a -> a -> a) -> seq (k,a) -> m a
 fromSeqWithKeyUsingInsertSeqWithKey f kvs = insertSeqWithKey f kvs empty
 
-insertWithKeyUsingInsertWith :: 
+insertWithKeyUsingInsertWith ::
     FiniteMapX m k => (k -> a -> a -> a) -> k -> a -> m a -> m a
 insertWithKeyUsingInsertWith f k = insertWith (f k) k
 
-insertSeqWithUsingInsertWith :: 
-    (FiniteMapX m k,S.Sequence seq) => 
+insertSeqWithUsingInsertWith ::
+    (FiniteMapX m k,S.Sequence seq) =>
       (a -> a -> a) -> seq (k,a) -> m a -> m a
 insertSeqWithUsingInsertWith f kvs m =
     S.foldr (uncurry (insertWith f)) m kvs
 
 insertSeqWithKeyUsingInsertWithKey ::
-    (FiniteMapX m k,S.Sequence seq) => 
+    (FiniteMapX m k,S.Sequence seq) =>
       (k -> a -> a -> a) -> seq (k,a) -> m a -> m a
 insertSeqWithKeyUsingInsertWithKey f kvs m =
     S.foldr (uncurry (insertWithKey f)) m kvs
 
-unionSeqWithUsingReduce :: 
+unionSeqWithUsingReduce ::
     (FiniteMapX m k,S.Sequence seq) => (a -> a -> a) -> seq (m a) -> m a
 unionSeqWithUsingReduce f ms = S.reducel (unionWith f) empty ms
 
-unionSeqWithUsingFoldr :: 
+unionSeqWithUsingFoldr ::
     (FiniteMapX m k,S.Sequence seq) => (a -> a -> a) -> seq (m a) -> m a
 unionSeqWithUsingFoldr f ms = S.foldr (unionWith f) empty ms
 
@@ -119,34 +118,34 @@ toSeqUsingFoldWithKey = foldWithKey conspair S.empty
 
 keysUsingFoldWithKey :: (Assoc m k,S.Sequence seq) => m a -> seq k
 keysUsingFoldWithKey = foldWithKey conskey S.empty
-  where conskey k v ks = S.lcons k ks
+  where conskey k _ ks = S.lcons k ks
 
-unionWithUsingInsertWith :: 
+unionWithUsingInsertWith ::
     FiniteMap m k => (a -> a -> a) -> m a -> m a -> m a
 unionWithUsingInsertWith f m1 m2 = foldWithKey (insertWith f) m2 m1
 
-unionWithKeyUsingInsertWithKey :: 
+unionWithKeyUsingInsertWithKey ::
     FiniteMap m k => (k -> a -> a -> a) -> m a -> m a -> m a
 unionWithKeyUsingInsertWithKey f m1 m2 = foldWithKey (insertWithKey f) m2 m1
 
-unionSeqWithKeyUsingReduce :: 
-    (FiniteMap m k,S.Sequence seq) => 
+unionSeqWithKeyUsingReduce ::
+    (FiniteMap m k,S.Sequence seq) =>
       (k -> a -> a -> a) -> seq (m a) -> m a
 unionSeqWithKeyUsingReduce f ms = S.reducel (unionWithKey f) empty ms
 
-unionSeqWithKeyUsingFoldr :: 
-    (FiniteMap m k,S.Sequence seq) => 
+unionSeqWithKeyUsingFoldr ::
+    (FiniteMap m k,S.Sequence seq) =>
       (k -> a -> a -> a) -> seq (m a) -> m a
 unionSeqWithKeyUsingFoldr f ms = S.foldr (unionWithKey f) empty ms
 
-intersectionWithUsingLookupM :: 
+intersectionWithUsingLookupM ::
     FiniteMap m k => (a -> b -> c) -> m a -> m b -> m c
 intersectionWithUsingLookupM f m1 m2 = foldWithKey ins empty m1
   where ins k x m = case lookupM k m2 of
                       Nothing -> m
                       Just y  -> insert k (f x y) m
 
-intersectionWithKeyUsingLookupM :: 
+intersectionWithKeyUsingLookupM ::
     FiniteMap m k => (k -> a -> b -> c) -> m a -> m b -> m c
 intersectionWithKeyUsingLookupM f m1 m2 = foldWithKey ins empty m1
   where ins k x m = case lookupM k m2 of
@@ -164,7 +163,7 @@ subsetUsingMember :: FiniteMap m k => m a -> m b -> Bool
 subsetUsingMember m1 m2 = foldWithKey mem True m1
   where mem k _ b = member k m2 && b
 
-submapByUsingLookupM :: FiniteMap m k 
+submapByUsingLookupM :: FiniteMap m k
                      => (a -> a -> Bool) -> m a -> m a -> Bool
 submapByUsingLookupM  f m1 m2 = foldWithKey aux True m1
   where aux k x b =
@@ -172,7 +171,7 @@ submapByUsingLookupM  f m1 m2 = foldWithKey aux True m1
              Nothing -> False
              Just y  -> f x y && b
 
-properSubmapByUsingSubmapBy :: FiniteMapX m k 
+properSubmapByUsingSubmapBy :: FiniteMapX m k
                             => (a -> a -> Bool) -> m a -> m a -> Bool
 properSubmapByUsingSubmapBy f m1 m2 = size m1 < size m2 && submapBy f m1 m2
 
@@ -213,8 +212,8 @@ adjustOrDeleteDefault :: AssocX m k => (a -> Maybe a) -> k -> m a -> m a
 adjustOrDeleteDefault f k m =
   case lookupAndDeleteM k m of
     Nothing -> m
-    Just (elem,m') ->
-      case f elem of
+    Just (element,m') ->
+      case f element of
          Nothing -> m'
          Just x  -> insert k x m'
 
@@ -222,8 +221,8 @@ adjustOrDeleteAllDefault :: AssocX m k => (a -> Maybe a) -> k -> m a -> m a
 adjustOrDeleteAllDefault f k m =
   let (elems,m') = lookupAndDeleteAll k m
       adjSeq = S.map f elems
-      ins Nothing  m = m
-      ins (Just x) m = insert k x m
+      ins Nothing  n = n
+      ins (Just x) n = insert k x n
   in L.foldr ins m' adjSeq
 
 minElemUsingMinView :: OrdAssocX m k => m a -> a
@@ -271,9 +270,9 @@ showsPrecUsingToList i xs rest
    | otherwise = concat ["(",instanceName xs,".fromSeq ",showsPrec 10 (toList xs) (')':rest)]
 
 readsPrecUsingFromList :: (Read k, Read a, AssocX m k) => Int -> ReadS (m a)
-readsPrecUsingFromList i xs =
+readsPrecUsingFromList _ xs =
    let result = maybeParens p xs
-       p xs = tokenMatch ((instanceName x)++".fromSeq") xs
+       p ys = tokenMatch ((instanceName x)++".fromSeq") ys
                 >>= readsPrec 10
                 >>= \(l,rest) -> return (fromList l,rest)
 
@@ -291,7 +290,7 @@ showsPrecUsingToOrdList i xs rest
 readsPrecUsingUnsafeFromOrdSeq :: (Read k,Read a,OrdAssoc m k) => Int -> ReadS (m a)
 readsPrecUsingUnsafeFromOrdSeq i xs =
    let result = maybeParens p xs
-       p xs = tokenMatch ((instanceName x)++".unsafeFromOrdSeq") xs
+       p ys = tokenMatch ((instanceName x)++".unsafeFromOrdSeq") ys
                 >>= readsPrec i
                 >>= \(l,rest) -> return (unsafeFromOrdList l,rest)
 
@@ -307,7 +306,7 @@ compareUsingToOrdList xs ys = cmp (toOrdList xs) (toOrdList ys)
   cmp [] [] = EQ
   cmp [] _  = LT
   cmp _  [] = GT
-  cmp (x:xs) (y:ys) =
-      case compare x y of
-         EQ -> cmp xs ys
+  cmp (v:vs) (z:zs) =
+      case compare v z of
+         EQ -> cmp vs zs
          c -> c
