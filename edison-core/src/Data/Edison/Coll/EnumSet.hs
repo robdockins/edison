@@ -22,10 +22,10 @@
 -- Also, the number of distinct elements of @A@ must be less than or equal
 -- to the number of bits in @Word@.
 --
--- The @Enum A@ instance must be consistent with the @Eq A@ instance. 
+-- The @Enum A@ instance must be consistent with the @Eq A@ instance.
 -- That is, we must have:
 --
--- > forall x y::A, x == y <==> toEnum x == toEnum y 
+-- > forall x y::A, x == y <==> toEnum x == toEnum y
 --
 -- Additionally, for operations that require an @Ord A@ context, we require that
 -- toEnum be monotonic with respect to comparison.  That is, we must have:
@@ -36,14 +36,14 @@
 -- the enumerated type has sufficently few constructors.
 
 {-
-Copyright (c) 2006, David F. Place
+Copyright (c) 2006, 2008, David F. Place
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are
 met:
 
-    
+
 * Redistributions of source code must retain the above copyright
     notice, this list of conditions and the following disclaimer.
 
@@ -67,13 +67,13 @@ DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
 THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
--} 
+-}
 
 module Data.Edison.Coll.EnumSet (
             -- * Set type
-            Set          
+            Set
 
-	    -- * CollX operations
+            -- * CollX operations
             , empty
             , singleton
             , fromSeq
@@ -135,6 +135,7 @@ module Data.Edison.Coll.EnumSet (
 
             -- * Set operations
             , fromSeqWith
+            , fromOrdSeq
             , insertWith
             , insertSeqWith
             , unionl
@@ -160,30 +161,28 @@ import qualified Data.Bits as Bits
 import Data.Bits hiding (complement)
 import Data.Word
 import Data.Monoid (Monoid(..))
-import Data.Array
 
-import Data.Edison.Prelude
 import qualified Data.Edison.Seq as S
 import qualified Data.Edison.Coll as C
-import qualified Data.Edison.Seq.ListSeq as L
 import Data.Edison.Coll.Defaults
 import Test.QuickCheck hiding (check)
 
+moduleName :: String
 moduleName = "Data.Edison.Coll.EnumSet"
 
 {--------------------------------------------------------------------
   Sets are bit strings of width wordLength.
 --------------------------------------------------------------------}
 -- | A set of values @a@ implemented as bitwise operations.  Useful
--- for members of class Enum with no more elements than there are bits 
+-- for members of class Enum with no more elements than there are bits
 -- in @Word@.
 newtype Set a = Set Word deriving (Eq)
 
 wordLength :: Int
 wordLength = bitSize (0::Word)
 
-check :: String -> Int -> Int 
-check msg x  
+check :: String -> Int -> Int
+check msg x
     | x < wordLength = x
     | otherwise = error $ "EnumSet."++msg++": element beyond word size."
 
@@ -280,12 +279,12 @@ insert x (Set w) =
 
 -- given the preconditions, we can just ignore the combining function
 insertWith :: (Eq a, Enum a) => (a -> a -> a) -> a -> Set a -> Set a
-insertWith f x (Set w) =
+insertWith _ x (Set w) =
     Set $ setBit w $ check "insertWith" $ fromEnum x
 
 -- | /O(1)/. Delete an element from a set.
 delete :: (Eq a, Enum a) => a -> Set a -> Set a
-delete x (Set w) = 
+delete x (Set w) =
     Set $ clearBit w $ fromEnum x
 
 deleteAll :: (Eq a, Enum a) => a -> Set a -> Set a
@@ -312,7 +311,7 @@ subset x y = (x `union` y) == y
 
 -- | /O(1)/. The minimal element of a set.
 minElem :: (Enum a) => Set a -> a
-minElem (Set w) 
+minElem (Set w)
    | w == 0    = error $ moduleName++".minElem: empty set"
    | otherwise = toEnum $ lsb w
 
@@ -324,7 +323,7 @@ maxElem (Set w)
 
 -- | /O(1)/. Delete the minimal element.
 deleteMin :: (Enum a) => Set a -> Set a
-deleteMin (Set w) 
+deleteMin (Set w)
    | w == 0    = empty
    | otherwise = Set $ clearBit w $ lsb w
 
@@ -379,7 +378,7 @@ partitionLT_GT x s = (filterLT x s,filterGT x s)
 
 
 {--------------------------------------------------------------------
-  Union. 
+  Union.
 --------------------------------------------------------------------}
 -- | The union of a list of sets: (@'unions' == 'foldl' 'union' 'empty'@).
 unionSeq :: (Eq a, Enum a, S.Sequence s) => s (Set a) -> Set a
@@ -397,15 +396,15 @@ unionr = union
 
 -- given the preconditions, we can just ignore the combining function
 unionWith :: (a -> a -> a) -> Set a -> Set a -> Set a
-unionWith f = union
+unionWith _ = union
 
 unionSeqWith :: (Eq a, Enum a, S.Sequence s) => (a -> a -> a) -> s (Set a) -> Set a
-unionSeqWith f = unionSeq
+unionSeqWith _ = unionSeq
 
 {--------------------------------------------------------------------
   Difference
 --------------------------------------------------------------------}
--- | /O(1)/. Difference of two sets. 
+-- | /O(1)/. Difference of two sets.
 difference :: Set a -> Set a -> Set a
 difference (Set x) (Set y) = Set $ (x .|. y) `xor` y
 
@@ -420,7 +419,7 @@ intersection :: Set a -> Set a -> Set a
 intersection (Set x) (Set y) = Set $ x .&. y
 
 intersectionWith :: (a -> a -> a) -> Set a -> Set a -> Set a
-intersectionWith f = intersection
+intersectionWith _ = intersection
 
 {--------------------------------------------------------------------
   Complement
@@ -438,8 +437,8 @@ complement x = symmetricDifference u x
 -- | /O(n)/. Filter all elements that satisfy the predicate.
 filter :: (Eq a, Enum a) => (a -> Bool) -> Set a -> Set a
 filter p (Set w) = Set $ foldlBits' f 0 w
-    where 
-      f z i 
+    where
+      f z i
         | p $ toEnum i = setBit z i
         | otherwise = z
 
@@ -448,7 +447,7 @@ filter p (Set w) = Set $ foldlBits' f 0 w
 -- See also 'split'.
 partition :: (Eq a, Enum a) => (a -> Bool) -> Set a -> (Set a,Set a)
 partition p (Set w) = (Set yay,Set nay)
-    where 
+    where
       (yay,nay) = foldlBits' f (0,0) w
       f (x,y) i
           | p $ toEnum i = (setBit x i,y)
@@ -458,9 +457,9 @@ partition p (Set w) = (Set yay,Set nay)
 {----------------------------------------------------------------------
   Map
 ----------------------------------------------------------------------}
--- | /O(n)/. 
+-- | /O(n)/.
 -- @'map' f s@ is the set obtained by applying @f@ to each element of @s@.
--- 
+--
 -- It's worth noting that the size of the result may be smaller if,
 -- for some @(x,y)@, @x \/= y && f x == f y@
 map :: (Enum a,Enum b) => (a -> b) -> Set a -> Set b
@@ -494,72 +493,72 @@ fromBits w = Set w
 
 fold :: (Eq a, Enum a) => (a -> c -> c) -> c -> Set a -> c
 fold f z (Set w) = foldrBits folder z w
-  where folder i z = f (toEnum i) z
+  where folder i = f (toEnum i)
 
 fold' :: (Eq a, Enum a) => (a -> c -> c) -> c -> Set a -> c
 fold' f z (Set w) = foldrBits' folder z w
-  where folder i z = f (toEnum i) z
+  where folder i = f (toEnum i)
 
 fold1 :: (Eq a, Enum a) => (a -> a -> a) -> Set a -> a
-fold1 f (Set 0) = error (moduleName++".fold1: empty set")
-fold1 f (Set w) = foldrBits folder (toEnum max) (clearBit w max)
+fold1 _ (Set 0) = error (moduleName++".fold1: empty set")
+fold1 f (Set w) = foldrBits folder (toEnum maxi) (clearBit w maxi)
     where
-      max = msb w
+      maxi = msb w
       folder i z = f (toEnum i) z
 
 fold1' :: (Eq a, Enum a) => (a -> a -> a) -> Set a -> a
-fold1' f (Set 0) = error (moduleName++".fold1': empty set")
-fold1' f (Set w) = foldrBits folder (toEnum max) (clearBit w max)
+fold1' _ (Set 0) = error (moduleName++".fold1': empty set")
+fold1' f (Set w) = foldrBits folder (toEnum maxi) (clearBit w maxi)
     where
-      max = msb w
+      maxi = msb w
       folder i z = f (toEnum i) z
 
 foldr :: (Ord a, Enum a) => (a -> b -> b) -> b -> Set a -> b
 foldr f z (Set w) = foldrBits folder z w
-  where folder i z = f (toEnum i) z
+  where folder i = f (toEnum i)
 
 foldr' :: (Ord a, Enum a) => (a -> b -> b) -> b -> Set a -> b
 foldr' f z (Set w) = foldrBits' folder z w
-  where folder i z = f (toEnum i) z
+  where folder i j = f (toEnum i) j
 
 foldr1 :: (Ord a, Enum a) => (a -> a -> a) -> Set a -> a
-foldr1 f (Set 0) = error (moduleName++".foldr1: empty set")
-foldr1 f (Set w) = foldrBits folder (toEnum max) (clearBit w max)
+foldr1 _ (Set 0) = error (moduleName ++ ".foldr1: empty set")
+foldr1 f (Set w) = foldrBits folder (toEnum maxi) (clearBit w maxi)
     where
-      max = msb w
+      maxi = msb w
       folder i z = f (toEnum i) z
 
 foldr1' :: (Ord a, Enum a) => (a -> a -> a) -> Set a -> a
-foldr1' f (Set 0) = error (moduleName++".foldr1': empty set")
-foldr1' f (Set w) = foldrBits folder (toEnum max) (clearBit w max)
+foldr1' _ (Set 0) = error (moduleName++".foldr1': empty set")
+foldr1' f (Set w) = foldrBits folder (toEnum maxi) (clearBit w maxi)
     where
-      max = msb w
+      maxi = msb w
       folder i z = f (toEnum i) z
 
 foldl :: (Ord a, Enum a) => (c -> a -> c) -> c -> Set a -> c
 foldl f z (Set w) = foldlBits folder z w
-  where folder z i = f z (toEnum i)
+  where folder h i = f h (toEnum i)
 
 foldl' :: (Ord a, Enum a) => (c -> a -> c) -> c -> Set a -> c
 foldl' f z (Set w) = foldlBits' folder z w
-  where folder z i = f z (toEnum i)
+  where folder h i = f h (toEnum i)
 
 foldl1 :: (Ord a, Enum a) => (a -> a -> a) -> Set a -> a
-foldl1 f (Set 0) = error (moduleName++".foldl1: empty set")
-foldl1 f (Set w) = foldlBits folder (toEnum min) (clearBit w min)
+foldl1 _ (Set 0) = error (moduleName++".foldl1: empty set")
+foldl1 f (Set w) = foldlBits folder (toEnum mininum) (clearBit w mininum)
   where
-    min = lsb w
+    mininum = lsb w
     folder z i = f z (toEnum i)
 
 foldl1' :: (Ord a, Enum a) => (a -> a -> a) -> Set a -> a
-foldl1' f (Set 0) = error (moduleName++".foldl1': empty set")
-foldl1' f (Set w) = foldlBits' folder (toEnum min) (clearBit w min)
+foldl1' _ (Set 0) = error (moduleName++".foldl1': empty set")
+foldl1' f (Set w) = foldlBits' folder (toEnum mininum) (clearBit w mininum)
   where
-    min = lsb w
+    mininum = lsb w
     folder z i = f z (toEnum i)
 
 {--------------------------------------------------------------------
-  Lists 
+  Lists
 --------------------------------------------------------------------}
 fromSeq :: (Eq a, Enum a, S.Sequence s) => s a -> Set a
 fromSeq xs = Set $ S.fold' f 0 xs
@@ -573,7 +572,7 @@ insertSeq = insertSeqUsingUnion
 
 -- given the preconditions, we can just ignore the combining function
 insertSeqWith :: (Eq a, Enum a, S.Sequence s) => (a -> a -> a) -> s a -> Set a -> Set a
-insertSeqWith f = insertSeq
+insertSeqWith _ = insertSeq
 
 toSeq :: (Eq a, Enum a, S.Sequence s) => Set a -> s a
 toSeq (Set w) = foldrBits f S.empty w
@@ -583,7 +582,7 @@ toOrdSeq :: (Ord a, Enum a, S.Sequence s) => Set a -> s a
 toOrdSeq = toSeq
 
 fromSeqWith :: (Eq a, Enum a, S.Sequence s) => (a -> a -> a) -> s a -> Set a
-fromSeqWith = fromSeqWithUsingInsertWith 
+fromSeqWith = fromSeqWithUsingInsertWith
 
 
 {--------------------------------------------------------------------
@@ -610,17 +609,17 @@ strict :: Set a -> Set a
 strict s@(Set w) = w `seq` s
 
 strictWith :: (a -> b) -> Set a -> Set a
-strictWith f s@(Set w) = w `seq` s
+strictWith _ s@(Set w) = w `seq` s
 
 {--------------------------------------------------------------------
-  Utility functions. 
+  Utility functions.
 --------------------------------------------------------------------}
 
 foldrBits :: (Int -> a -> a) -> a -> Word -> a
 foldrBits f z w = foldrBits_aux f z 0 w
 
 foldrBits_aux :: (Int -> a -> a) -> a -> Int -> Word -> a
-foldrBits_aux f z i 0 = z
+foldrBits_aux _ z _ 0 = z
 foldrBits_aux f z i w
    | i `seq` w `seq` False = undefined
    | otherwise =
@@ -650,7 +649,7 @@ foldrBits' :: (Int -> a -> a) -> a -> Word -> a
 foldrBits' f z w = foldrBits_aux' f z 0 w
 
 foldrBits_aux' :: (Int -> a -> a) -> a -> Int -> Word -> a
-foldrBits_aux' f z i 0 = z
+foldrBits_aux' _ z _ 0 = z
 foldrBits_aux' f z i w
    | i `seq` w `seq` False = undefined
    | otherwise =
@@ -680,7 +679,7 @@ foldlBits :: (a -> Int -> a) -> a -> Word -> a
 foldlBits f z w = foldlBits_aux f z 0 w
 
 foldlBits_aux :: (a -> Int -> a) -> a -> Int -> Word -> a
-foldlBits_aux f z i 0 = z
+foldlBits_aux _ z _ 0 = z
 foldlBits_aux f z i w
    | i `seq` w `seq` False = undefined
    | otherwise =
@@ -703,13 +702,13 @@ foldlBits_aux f z i w
      0x0F -> a $ f (f (f (f z i) (i+1)) (i+2)) (i+3)
      _ -> error "bug in foldlBits_aux"
 
- where a z = foldlBits_aux f z (i+4) (Bits.shiftR w 4)
+ where a b = foldlBits_aux f b (i + 4) (Bits.shiftR w 4)
 
 foldlBits' :: (a -> Int -> a) -> a -> Word -> a
 foldlBits' f z w = foldlBits_aux' (\x i -> x `seq` f x i) z 0 w
 
 foldlBits_aux' :: (a -> Int -> a) -> a -> Int -> Word -> a
-foldlBits_aux' f z i 0 = z
+foldlBits_aux' _ z _ 0 = z
 foldlBits_aux' f z i w
    | i `seq` w `seq` False = undefined
    | otherwise =
@@ -732,22 +731,22 @@ foldlBits_aux' f z i w
      0x0F -> a $! f (f (f (f z i) (i+1)) (i+2)) (i+3)
      _ -> error "bug in foldlBits_aux"
 
- where a z = foldlBits_aux' f z (i+4) (Bits.shiftR w 4)
+ where a b = foldlBits_aux' f b (i + 4) (Bits.shiftR w 4)
 
 instance (Eq a, Enum a) => C.CollX (Set a) a where
   {singleton = singleton; fromSeq = fromSeq; insert = insert;
-   insertSeq = insertSeq; unionSeq = unionSeq; 
+   insertSeq = insertSeq; unionSeq = unionSeq;
    delete = delete; deleteAll = deleteAll; deleteSeq = deleteSeq;
    null = null; size = size; member = member; count = count;
    strict = strict;
-   structuralInvariant = structuralInvariant; instanceName c = moduleName}
+   structuralInvariant = structuralInvariant; instanceName _ = moduleName}
 
 instance (Ord a, Enum a) => C.OrdCollX (Set a) a where
-  {deleteMin = deleteMin; deleteMax = deleteMax; 
-   unsafeInsertMin = unsafeInsertMin; unsafeInsertMax = unsafeInsertMax; 
-   unsafeFromOrdSeq = unsafeFromOrdSeq; unsafeAppend = unsafeAppend; 
-   filterLT = filterLT; filterLE = filterLE; filterGT = filterGT; 
-   filterGE = filterGE; partitionLT_GE = partitionLT_GE; 
+  {deleteMin = deleteMin; deleteMax = deleteMax;
+   unsafeInsertMin = unsafeInsertMin; unsafeInsertMax = unsafeInsertMax;
+   unsafeFromOrdSeq = unsafeFromOrdSeq; unsafeAppend = unsafeAppend;
+   filterLT = filterLT; filterLE = filterLE; filterGT = filterGT;
+   filterGE = filterGE; partitionLT_GE = partitionLT_GE;
    partitionLE_GT = partitionLE_GT; partitionLT_GT = partitionLT_GT}
 
 instance (Eq a, Enum a) => C.SetX (Set a) a where
@@ -756,20 +755,20 @@ instance (Eq a, Enum a) => C.SetX (Set a) a where
    properSubset = properSubset; subset = subset}
 
 instance (Eq a, Enum a) => C.Coll (Set a) a where
-  {toSeq = toSeq; lookup = lookup; lookupM = lookupM; 
-   lookupAll = lookupAll; lookupWithDefault = lookupWithDefault; 
+  {toSeq = toSeq; lookup = lookup; lookupM = lookupM;
+   lookupAll = lookupAll; lookupWithDefault = lookupWithDefault;
    fold = fold; fold' = fold'; fold1 = fold1; fold1' = fold1';
    filter = filter; partition = partition; strictWith = strictWith}
 
 instance (Ord a, Enum a) => C.OrdColl (Set a) a where
-  {minView = minView; minElem = minElem; maxView = maxView; 
-   maxElem = maxElem; foldr = foldr; foldr' = foldr'; 
+  {minView = minView; minElem = minElem; maxView = maxView;
+   maxElem = maxElem; foldr = foldr; foldr' = foldr';
    foldl = foldl; foldl' = foldl'; foldr1 = foldr1; foldr1' = foldr1';
    foldl1 = foldl1; foldl1' = foldl1'; toOrdSeq = toOrdSeq;
    unsafeMapMonotonic = unsafeMapMonotonic}
 
 instance (Eq a, Enum a) => C.Set (Set a) a where
-  {fromSeqWith = fromSeqWith; insertWith = insertWith; 
+  {fromSeqWith = fromSeqWith; insertWith = insertWith;
    insertSeqWith = insertSeqWith; unionl = unionl; unionr = unionr;
    unionWith = unionWith; unionSeqWith = unionSeqWith;
    intersectionWith = intersectionWith}
