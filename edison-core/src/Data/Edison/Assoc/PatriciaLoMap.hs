@@ -1,6 +1,6 @@
 -- |
 --   Module      :  Data.Edison.Assoc.PatriciaLoMap
---   Copyright   :  Copyright (c) 1998 Chris Okasaki
+--   Copyright   :  Copyright (c) 1998, 2008 Chris Okasaki
 --   License     :  MIT; see COPYRIGHT file for terms and conditions
 --
 --   Maintainer  :  robdockins AT fastmail DOT fm
@@ -57,7 +57,6 @@ import Prelude hiding (null,map,lookup,foldr,foldl,foldr1,foldl1,filter)
 import qualified Prelude
 import Control.Monad.Identity (runIdentity)
 import Data.Monoid
-import Data.Edison.Prelude
 import qualified Data.Edison.Assoc as A
 import qualified Data.Edison.Seq as S
 import qualified Data.Edison.Seq.ListSeq as L
@@ -66,6 +65,7 @@ import Data.Int
 import Data.Bits
 import Test.QuickCheck (Arbitrary(..), variant)
 
+moduleName :: String
 moduleName = "Data.Edison.Assoc.PatriciaLoMap"
 
 data FM a
@@ -83,12 +83,12 @@ data FM a
 
 structuralInvariant :: FM a -> Bool
 structuralInvariant E = True
-structuralInvariant (L k x) = True
+structuralInvariant (L _ _) = True
 structuralInvariant x = inv 0 0 x
 
 inv :: Int -> Int -> FM a -> Bool
-inv pre msk E = False
-inv pre msk (L k x) = k .&. msk == pre
+inv _ _ E = False
+inv pre msk (L k _) = k .&. msk == pre
 inv pre msk (B p m t0 t1) =
     (p .&. msk == pre) &&
     (bitcount 0 m == 1) &&
@@ -106,21 +106,24 @@ bitcount a x = a `seq` bitcount (a+1) (x .&. (x-1))
 
 -- auxiliary functions
 
-makeB p m E t = t
-makeB p m t E = t
+makeB :: Int -> Int -> FM t -> FM t -> FM t
+makeB _ _ E t = t
+makeB _ _ t E = t
 makeB p m t0 t1 = B p m t0 t1
 
-lmakeB p m E t = t
+lmakeB :: Int -> Int -> FM t -> FM t -> FM t
+lmakeB _ _ E t = t
 lmakeB p m t0 t1 = B p m t0 t1
 
-rmakeB p m t E = t
+rmakeB :: Int -> Int -> FM a -> FM a -> FM a
+rmakeB _ _ t E = t
 rmakeB p m t0 t1 = B p m t0 t1
 
 lowestBit :: Int32 -> Int32
 lowestBit x = x .&. (-x)
 
 branchingBit :: Int -> Int -> Int
-branchingBit p0 p1 = 
+branchingBit p0 p1 =
   fromIntegral (lowestBit (fromIntegral p0 `xor` fromIntegral p1))
 
 mask :: Int -> Int -> Int
@@ -132,12 +135,14 @@ zeroBit p m = (fromIntegral p) .&. (fromIntegral m) == (0 :: Int32)
 matchPrefix :: Int -> Int -> Int -> Bool
 matchPrefix k p m = mask k m == p
 
+join :: Int -> FM a -> Int -> FM a -> FM a
 join p0 t0 p1 t1 =
   let m = branchingBit p0 p1
   in if zeroBit p0 m then B (mask p0 m) m t0 t1
                      else B (mask p0 m) m t1 t0
 
-keepR x y = y
+keepR :: forall t t1. t -> t1 -> t1
+keepR _ y = y
 
 -- end auxiliary functions
 
@@ -152,7 +157,7 @@ fromSeq = S.foldl (\t (k, x) -> insert k x t) E
 
 insert :: Int -> a -> FM a -> FM a
 insert k x E = L k x
-insert k x t@(L j y) = if j == k then L k x else join k (L k x) j t
+insert k x t@(L j _) = if j == k then L k x else join k (L k x) j t
 insert k x t@(B p m t0 t1) =
     if matchPrefix k p m then
       if zeroBit k m then B p m (insert k x t0) t1
@@ -181,8 +186,8 @@ union (L k x) t = insert k x t
 union E t = t
 
 delete :: Int -> FM a -> FM a
-delete k E = E
-delete k t@(L j x) = if k == j then E else t
+delete _ E = E
+delete k t@(L j _) = if k == j then E else t
 delete k t@(B p m t0 t1) =
     if matchPrefix k p m then
       if zeroBit k m then lmakeB p m (delete k t0) t1
@@ -199,22 +204,22 @@ size (L _ _) = 1
 size (B _ _ t0 t1) = size t0 + size t1
 
 member :: Int -> FM a -> Bool
-member k E = False
-member k (L j x) = (j == k)
-member k (B p m t0 t1) = if zeroBit k m then member k t0 else member k t1
+member _ E = False
+member k (L j _) = (j == k)
+member k (B _ m t0 t1) = if zeroBit k m then member k t0 else member k t1
 
 lookup :: Int -> FM a -> a
 lookup k m = runIdentity (lookupM k m)
 
 lookupM :: (Monad rm) => Int -> FM a -> rm a
-lookupM k E = fail "PatriciaLoMap.lookup: lookup failed"
+lookupM _ E = fail "PatriciaLoMap.lookup: lookup failed"
 lookupM k (L j x)
   | j == k    = return x
   | otherwise = fail "PatriciaLoMap.lookup: lookup failed"
-lookupM k (B p m t0 t1) = if zeroBit k m then lookupM k t0 else lookupM k t1
+lookupM k (B _ m t0 t1) = if zeroBit k m then lookupM k t0 else lookupM k t1
 
 doLookupAndDelete :: z -> (a -> FM a -> z) -> Int -> FM a -> z
-doLookupAndDelete onFail cont k E = onFail
+doLookupAndDelete onFail _ _ E = onFail
 doLookupAndDelete onFail cont k (L j x)
      | j == k    = cont x E
      | otherwise = onFail
@@ -223,12 +228,12 @@ doLookupAndDelete onFail cont k (B p m t0 t1)
      | otherwise   = doLookupAndDelete onFail (\x t1' -> cont x (makeB p m t0 t1')) k t1
 
 lookupAndDelete :: Int -> FM a -> (a, FM a)
-lookupAndDelete        = doLookupAndDelete 
-                           (error "PatriciaLoMap.lookupAndDelete: lookup failed") 
+lookupAndDelete        = doLookupAndDelete
+                           (error "PatriciaLoMap.lookupAndDelete: lookup failed")
                            (,)
 
 lookupAndDeleteM :: Monad m => Int -> FM a -> m (a, FM a)
-lookupAndDeleteM       = doLookupAndDelete 
+lookupAndDeleteM       = doLookupAndDelete
                            (fail "PatriciaLoMap.lookupAndDelete: lookup failed")
                            (\x m -> return (x,m))
 
@@ -240,7 +245,7 @@ lookupAndDeleteAll k m = doLookupAndDelete
 
 
 adjust :: (a -> a) -> Int -> FM a -> FM a
-adjust f k E = E
+adjust _ _ E = E
 adjust f k t@(L j x) = if k == j then L k (f x) else t
 adjust f k t@(B p m t0 t1) =
     if matchPrefix k p m then
@@ -262,48 +267,48 @@ adjustOrDeleteAll :: (a -> Maybe a) -> Int -> FM a -> FM a
 adjustOrDeleteAll = adjustOrDeleteDefault
 
 map :: (a -> b) -> FM a -> FM b
-map f E = E
+map _ E = E
 map f (L k x) = L k (f x)
 map f (B p m t0 t1) = B p m (map f t0) (map f t1)
 
 fold :: (a -> b -> b) -> b -> FM a -> b
-fold f c E = c
-fold f c (L k x) = f x c
-fold f c (B p m t0 t1) = fold f (fold f c t1) t0
+fold _ c E = c
+fold f c (L _ x) = f x c
+fold f c (B _ _ t0 t1) = fold f (fold f c t1) t0
 
 fold' :: (a -> b -> b) -> b -> FM a -> b
-fold' f c E = c
-fold' f c (L k x) = c `seq` f x c
-fold' f c (B p m t0 t1) = c `seq` (fold f $! (fold f c t1)) t0
+fold' _ c E = c
+fold' f c (L _ x) = c `seq` f x c
+fold' f c (B _ _ t0 t1) = c `seq` (fold f $! (fold f c t1)) t0
 
 fold1 :: (a -> a -> a) -> FM a -> a
-fold1 f E = error "PatriciaLoMap.fold1: empty map"
-fold1 f (L k x) = x
-fold1 f (B p m t0 t1) = f (fold1 f t0) (fold1 f t1)
+fold1 _ E = error "PatriciaLoMap.fold1: empty map"
+fold1 _ (L _ x) = x
+fold1 f (B _ _ t0 t1) = f (fold1 f t0) (fold1 f t1)
 
 fold1' :: (a -> a -> a) -> FM a -> a
-fold1' f E = error "PatriciaLoMap.fold1: empty map"
-fold1' f (L k x) = x
-fold1' f (B p m t0 t1) = f (fold1' f t0) $! (fold1' f t1)
+fold1' _ E = error "PatriciaLoMap.fold1: empty map"
+fold1' _ (L _ x) = x
+fold1' f (B _ _ t0 t1) = f (fold1' f t0) $! (fold1' f t1)
 
 filter :: (a -> Bool) -> FM a -> FM a
-filter g E = E
-filter g t@(L k x) = if g x then t else E
+filter _ E = E
+filter g t@(L _ x) = if g x then t else E
 filter g (B p m t0 t1) = makeB p m (filter g t0) (filter g t1)
 
 partition :: (a -> Bool) -> FM a -> (FM a, FM a)
-partition g E = (E, E)
-partition g t@(L k x) = if g x then (t, E) else (E, t)
+partition _ E = (E, E)
+partition g t@(L _ x) = if g x then (t, E) else (E, t)
 partition g (B p m t0 t1) =
   let (t0',t0'') = partition g t0
       (t1',t1'') = partition g t1
   in (makeB p m t0' t1', makeB p m t0'' t1'')
-  
+
 fromSeqWith :: S.Sequence seq => (a -> a -> a) -> seq (Int,a) -> FM a
 fromSeqWith f = S.foldl (\t (k, x) -> insertWith f k x t) E
 
 insertWith :: (a -> a -> a) -> Int -> a -> FM a -> FM a
-insertWith f k x E = L k x
+insertWith _ k x E = L k x
 insertWith f k x t@(L j y) = if j == k then L k (f x y) else join k (L k x) j t
 insertWith f k x t@(B p m t0 t1) =
     if matchPrefix k p m then
@@ -370,9 +375,9 @@ unionWith f s@(B p m s0 s1) (L k x) =
       if zeroBit k m then B p m (insertWith (flip f) k x s0) s1
                      else B p m s0 (insertWith (flip f) k x s1)
     else join k (L k x) p s
-unionWith f s@(B _ _ _ _) E = s
+unionWith _ s@(B _ _ _ _) E = s
 unionWith f (L k x) t = insertWith f k x t
-unionWith f E t = t
+unionWith _ E t = t
 
 intersectionWith :: (a -> b -> c) -> FM a -> FM b -> FM c
 intersectionWith f s@(B p m s0 s1) t@(B q n t0 t1)
@@ -386,16 +391,16 @@ intersectionWith f s@(B p m s0 s1) t@(B q n t0 t1)
                 else E
   | otherwise = if p /= q then E
                 else makeB p m (intersectionWith f s0 t0) (intersectionWith f s1 t1)
-intersectionWith f (B p m s0 s1) (L k y) =
+intersectionWith f (B _ m s0 s1) (L k y) =
     case lookupM k (if zeroBit k m then s0 else s1) of
       Just x  -> L k (f x y)
       Nothing -> E
-intersectionWith f s@(B _ _ _ _) E = E
+intersectionWith _ (B _ _ _ _) E = E
 intersectionWith f (L k x) t =
     case lookupM k t of
       Just y  -> L k (f x y)
       Nothing -> E
-intersectionWith f E t = E
+intersectionWith _ E _ = E
 
 difference :: FM a -> FM b -> FM a
 difference s@(B p m s0 s1) t@(B q n t0 t1)
@@ -409,19 +414,20 @@ difference s@(B p m s0 s1) t@(B q n t0 t1)
                 else s
   | otherwise = if p /= q then s
                 else makeB p m (difference s0 t0) (difference s1 t1)
-difference s@(B p m s0 s1) (L k y) =
+difference s@(B p m s0 s1) (L k _) =
     if matchPrefix k p m then
       if zeroBit k m then lmakeB p m (delete k s0) s1
                      else rmakeB p m s0 (delete k s1)
     else s
 difference s@(B _ _ _ _) E = s
-difference s@(L k x) t = if member k t then E else s
-difference E t = E
+difference s@(L k _) t = if member k t then E else s
+difference E _ = E
 
 properSubset :: FM a -> FM b -> Bool
 properSubset s t = case subset' s t of {LT -> True; _ -> False}
 
-subset' s@(B p m s0 s1) t@(B q n t0 t1)
+subset' :: FM t -> FM t1 -> Ordering
+subset' s@(B p m s0 s1) (B q n t0 t1)
   | m < n    = GT
   | m > n    = if matchPrefix p q n then
                   if zeroBit p n then subset' s t0
@@ -433,21 +439,21 @@ subset' s@(B p m s0 s1) t@(B q n t0 t1)
                                   (EQ,EQ) -> EQ
                                   (_,_)   -> LT
                 else GT
-subset' (B p m s0 s1) _ = GT
-subset' (L k x) (L j y) = if k == j then EQ else GT
-subset' (L k x) t = if member k t then LT else GT
+subset' (B _ _ _ _) _ = GT
+subset' (L k _) (L j _) = if k == j then EQ else GT
+subset' (L k _) t = if member k t then LT else GT
 subset' E E = EQ
 subset' E _ = LT
 
 subset :: FM a -> FM b -> Bool
-subset s@(B p m s0 s1) t@(B q n t0 t1)
+subset s@(B p m s0 s1) (B q n t0 t1)
   | m < n    = False
   | m > n    = matchPrefix p q n && (if zeroBit p n then subset s t0
                                                      else subset s t1)
   | otherwise = (p == q) && subset s0 t0 && subset s1 t1
-subset (B p m s0 s1) _ = False
-subset (L k x) t = member k t
-subset E t = True
+subset (B _ _ _ _) _ = False
+subset (L k _) t = member k t
+subset E _ = True
 
 properSubmapBy :: (a -> a -> Bool) -> FM a -> FM a -> Bool
 properSubmapBy = properSubmapByUsingSubmapBy
@@ -468,29 +474,29 @@ sameMap :: (Eq a) => FM a -> FM a -> Bool
 sameMap = A.sameMap
 
 mapWithKey :: (Int -> a -> b) -> FM a -> FM b
-mapWithKey f E = E
+mapWithKey _ E = E
 mapWithKey f (L k x) = L k (f k x)
 mapWithKey f (B p m t0 t1) = B p m (mapWithKey f t0) (mapWithKey f t1)
 
 foldWithKey :: (Int -> a -> b -> b) -> b -> FM a -> b
-foldWithKey f c E = c
+foldWithKey _ c E = c
 foldWithKey f c (L k x) = f k x c
-foldWithKey f c (B p m t0 t1) = foldWithKey f (foldWithKey f c t1) t0
+foldWithKey f c (B _ _ t0 t1) = foldWithKey f (foldWithKey f c t1) t0
 
 foldWithKey' :: (Int -> a -> b -> b) -> b -> FM a -> b
-foldWithKey' f c E = c
+foldWithKey' _ c E = c
 foldWithKey' f c (L k x) = c `seq` f k x c
-foldWithKey' f c (B p m t0 t1) = c `seq` (foldWithKey f $! (foldWithKey f c t1)) t0
+foldWithKey' f c (B _ _ t0 t1) = c `seq` (foldWithKey f $! (foldWithKey f c t1)) t0
 
 
 filterWithKey :: (Int -> a -> Bool) -> FM a -> FM a
-filterWithKey g E = E
+filterWithKey _ E = E
 filterWithKey g t@(L k x) = if g k x then t else E
-filterWithKey g (B p m t0 t1) = 
+filterWithKey g (B p m t0 t1) =
   makeB p m (filterWithKey g t0) (filterWithKey g t1)
 
 partitionWithKey :: (Int -> a -> Bool) -> FM a -> (FM a, FM a)
-partitionWithKey g E = (E, E)
+partitionWithKey _ E = (E, E)
 partitionWithKey g t@(L k x) = if g k x then (t, E) else (E, t)
 partitionWithKey g (B p m t0 t1) =
   let (t0',t0'') = partitionWithKey g t0
@@ -514,9 +520,9 @@ unionWithKey f s@(B p m s0 s1) (L k x) =
       if zeroBit k m then B p m (insertWith (flip (f k)) k x s0) s1
                      else B p m s0 (insertWith (flip (f k)) k x s1)
     else join k (L k x) p s
-unionWithKey f s@(B _ _ _ _) E = s
+unionWithKey _ s@(B _ _ _ _) E = s
 unionWithKey f (L k x) t = insertWith (f k) k x t
-unionWithKey f E t = t
+unionWithKey _ E t = t
 
 intersectionWithKey :: (Int -> a -> b -> c) -> FM a -> FM b -> FM c
 intersectionWithKey f s@(B p m s0 s1) t@(B q n t0 t1)
@@ -530,30 +536,32 @@ intersectionWithKey f s@(B p m s0 s1) t@(B q n t0 t1)
                 else E
   | otherwise = if p /= q then E
                 else makeB p m (intersectionWithKey f s0 t0) (intersectionWithKey f s1 t1)
-intersectionWithKey f (B p m s0 s1) (L k y) =
+intersectionWithKey f (B _ m s0 s1) (L k y) =
     case lookupM k (if zeroBit k m then s0 else s1) of
       Just x  -> L k (f k x y)
       Nothing -> E
-intersectionWithKey f s@(B _ _ _ _) E = E
+intersectionWithKey _ (B _ _ _ _) E = E
 intersectionWithKey f (L k x) t =
     case lookupM k t of
       Just y  -> L k (f k x y)
       Nothing -> E
-intersectionWithKey f E t = E
+intersectionWithKey _ E _ = E
 
 -- Datastructure definition is strict in all submaps,
 -- no forcing required
+strict :: t -> t
 strict n = n
 
-strictWith f n@E = n
-strictWith f n@(L i x) = f x `seq` n
-strictWith f n@(B i j m1 m2) = strictWith f m1 `seq` strictWith f m2 `seq` n
+strictWith :: (t -> a) -> FM t -> FM t
+strictWith _ n@E = n
+strictWith f n@(L _ x) = f x `seq` n
+strictWith f n@(B _ _ m1 m2) = strictWith f m1 `seq` strictWith f m2 `seq` n
 
 
 ordListFM :: FM a -> [(Int,a)]
 ordListFM E = []
 ordListFM (L k x) = [(k,x)]
-ordListFM (B p m t0 t1) = merge (ordListFM t0) (ordListFM t1)
+ordListFM (B _ _ t0 t1) = merge (ordListFM t0) (ordListFM t1)
   where merge [] ys = ys
         merge xs [] = xs
         merge (x@(k1,_):xs) (y@(k2,_):ys) =
@@ -565,7 +573,7 @@ ordListFM (B p m t0 t1) = merge (ordListFM t0) (ordListFM t1)
 ordListFM_rev :: FM a -> [(Int,a)]
 ordListFM_rev E = []
 ordListFM_rev (L k x) = [(k,x)]
-ordListFM_rev (B p m t0 t1) = merge (ordListFM_rev t0) (ordListFM_rev t1)
+ordListFM_rev (B _ _ t0 t1) = merge (ordListFM_rev t0) (ordListFM_rev t1)
   where merge [] ys = ys
         merge xs [] = xs
         merge (x@(k1,_):xs) (y@(k2,_):ys) =
@@ -575,7 +583,7 @@ ordListFM_rev (B p m t0 t1) = merge (ordListFM_rev t0) (ordListFM_rev t1)
             EQ -> error "PatriciaLoMap: bug in ordListFM_rev"
 
 minView :: Monad m => FM a -> m (a, FM a)
-minView fm = 
+minView fm =
    case ordListFM fm of
      [] -> fail $ moduleName++".minView: empty map"
      ((k,x):_) -> return (x,delete k fm)
@@ -653,10 +661,10 @@ foldrWithKey' :: (Int -> a -> b -> b) -> b -> FM a -> b
 foldrWithKey' f z fm = L.foldl' (flip (uncurry f)) z . ordListFM_rev $ fm
 
 foldlWithKey :: (b -> Int -> a -> b) -> b -> FM a -> b
-foldlWithKey f z fm = L.foldr (\ (k,x) z -> f z k x) z . ordListFM_rev $ fm
+foldlWithKey f z fm = L.foldr (\(k,x) a -> f a k x) z . ordListFM_rev $ fm
 
 foldlWithKey' :: (b -> Int -> a -> b) -> b -> FM a -> b
-foldlWithKey' f z fm = L.foldl' (\ z (k,x) -> f z k x) z . ordListFM $ fm
+foldlWithKey' f z fm = L.foldl' (\a (k,x) -> f a k x) z . ordListFM $ fm
 
 
 unsafeFromOrdSeq :: S.Sequence seq => seq (Int,a) -> FM a
@@ -715,19 +723,19 @@ lookupWithDefault = lookupWithDefaultUsingLookupM
 elements :: S.Sequence seq => FM a -> seq a
 elements = elementsUsingFold
 
-fromSeqWithKey :: 
+fromSeqWithKey ::
     S.Sequence seq => (Int -> a -> a -> a) -> seq (Int,a) -> FM a
 fromSeqWithKey = fromSeqWithKeyUsingInsertSeqWithKey
 
 insertWithKey :: (Int -> a -> a -> a) -> Int -> a -> FM a -> FM a
 insertWithKey = insertWithKeyUsingInsertWith
 
-insertSeqWith :: 
+insertSeqWith ::
     S.Sequence seq => (a -> a -> a) -> seq (Int,a) -> FM a -> FM a
 insertSeqWith = insertSeqWithUsingInsertWith
 
-insertSeqWithKey :: 
-    S.Sequence seq => 
+insertSeqWithKey ::
+    S.Sequence seq =>
       (Int -> a -> a -> a) -> seq (Int,a) -> FM a -> FM a
 insertSeqWithKey = insertSeqWithKeyUsingInsertWithKey
 
@@ -742,18 +750,18 @@ toSeq = toSeqUsingFoldWithKey
 
 keys :: S.Sequence seq => FM a -> seq Int
 keys = keysUsingFoldWithKey
-  
-unionSeqWithKey :: 
+
+unionSeqWithKey ::
     S.Sequence seq => (Int -> a -> a -> a) -> seq (FM a) -> FM a
 unionSeqWithKey = unionSeqWithKeyUsingReduce
 
 -- instance declarations
 
 instance A.AssocX FM Int where
-  {empty = empty; singleton = singleton; fromSeq = fromSeq; insert = insert; 
-   insertSeq = insertSeq; union = union; unionSeq = unionSeq; 
-   delete = delete; deleteAll = deleteAll; deleteSeq = deleteSeq; 
-   null = null; size = size; member = member; count = count; 
+  {empty = empty; singleton = singleton; fromSeq = fromSeq; insert = insert;
+   insertSeq = insertSeq; union = union; unionSeq = unionSeq;
+   delete = delete; deleteAll = deleteAll; deleteSeq = deleteSeq;
+   null = null; size = size; member = member; count = count;
    lookup = lookup; lookupM = lookupM; lookupAll = lookupAll;
    lookupAndDelete = lookupAndDelete; lookupAndDeleteM = lookupAndDeleteM;
    lookupAndDeleteAll = lookupAndDeleteAll;
@@ -764,26 +772,26 @@ instance A.AssocX FM Int where
    fold = fold; fold' = fold'; fold1 = fold1; fold1' = fold1';
    filter = filter; partition = partition; elements = elements;
    strict = strict; strictWith = strictWith;
-   structuralInvariant = structuralInvariant; instanceName m = moduleName}
+   structuralInvariant = structuralInvariant; instanceName _ = moduleName}
 
 instance A.Assoc FM Int where
-  {toSeq = toSeq; keys = keys; mapWithKey = mapWithKey; 
+  {toSeq = toSeq; keys = keys; mapWithKey = mapWithKey;
    foldWithKey = foldWithKey; foldWithKey' = foldWithKey';
-   filterWithKey = filterWithKey; 
+   filterWithKey = filterWithKey;
    partitionWithKey = partitionWithKey}
 
 instance A.FiniteMapX FM Int where
-  {fromSeqWith = fromSeqWith; fromSeqWithKey = fromSeqWithKey; 
-   insertWith = insertWith; insertWithKey = insertWithKey; 
-   insertSeqWith = insertSeqWith; insertSeqWithKey = insertSeqWithKey; 
-   unionl = unionl; unionr = unionr; unionWith = unionWith; 
-   unionSeqWith = unionSeqWith; intersectionWith = intersectionWith; 
+  {fromSeqWith = fromSeqWith; fromSeqWithKey = fromSeqWithKey;
+   insertWith = insertWith; insertWithKey = insertWithKey;
+   insertSeqWith = insertSeqWith; insertSeqWithKey = insertSeqWithKey;
+   unionl = unionl; unionr = unionr; unionWith = unionWith;
+   unionSeqWith = unionSeqWith; intersectionWith = intersectionWith;
    difference = difference; properSubset = properSubset; subset = subset;
    properSubmapBy = properSubmapBy; submapBy = submapBy;
    sameMapBy = sameMapBy}
 
 instance A.FiniteMap FM Int where
-  {unionWithKey = unionWithKey; unionSeqWithKey = unionSeqWithKey; 
+  {unionWithKey = unionWithKey; unionSeqWithKey = unionSeqWithKey;
    intersectionWithKey = intersectionWithKey}
 
 instance A.OrdAssocX FM Int where
