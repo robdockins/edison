@@ -1,3 +1,4 @@
+{-# LANGUAGE UndecidableInstances #-}
 -----------------------------------------------------------------------------
 -- |
 -- Module      :  Data.Edison.Concrete.FingerTree
@@ -27,7 +28,7 @@
 
 {------------------------------------------------------------------
 
-Copyright 2004, The University Court of the University of Glasgow. 
+Copyright 2004, 2008, The University Court of the University of Glasgow.
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -35,14 +36,14 @@ modification, are permitted provided that the following conditions are met:
 
 - Redistributions of source code must retain the above copyright notice,
 this list of conditions and the following disclaimer.
- 
+
 - Redistributions in binary form must reproduce the above copyright notice,
 this list of conditions and the following disclaimer in the documentation
 and/or other materials provided with the distribution.
- 
+
 - Neither name of the University nor the names of its contributors may be
 used to endorse or promote products derived from this software without
-specific prior written permission. 
+specific prior written permission.
 
 THIS SOFTWARE IS PROVIDED BY THE UNIVERSITY COURT OF THE UNIVERSITY OF
 GLASGOW AND THE CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES,
@@ -91,13 +92,13 @@ data Digit a
         deriving Show
 
 foldDigit :: (b -> b -> b) -> (a -> b) -> Digit a -> b
-foldDigit mapp f (One a) = f a
+foldDigit _ f (One a) = f a
 foldDigit mapp f (Two a b) = f a `mapp` f b
 foldDigit mapp f (Three a b c) = f a `mapp` f b `mapp` f c
 foldDigit mapp f (Four a b c d) = f a `mapp` f b `mapp` f c `mapp` f d
 
 reduceDigit :: (b -> b -> b) -> (a -> b) -> Digit a -> b
-reduceDigit mapp f (One a) = f a
+reduceDigit _ f (One a) = f a
 reduceDigit mapp f (Two a b) = f a `mapp` f b
 reduceDigit mapp f (Three a b c) = f a `mapp` f b `mapp` f c
 reduceDigit mapp f (Four a b c d) = (f a `mapp` f b) `mapp` (f c `mapp` f d)
@@ -172,7 +173,7 @@ instance (Measured v a) => Measured v (FingerTree v a) where
         measure (Deep v _ _ _)  =  v
 
 sizeFT :: (a -> Int) -> FingerTree v a -> Int
-sizeFT f Empty            = 0
+sizeFT _ Empty            = 0
 sizeFT f (Single x)       = f x
 sizeFT f (Deep _ d1 m d2) = sizeDigit f d1 + sizeFT (sizeNode f) m + sizeDigit f d2
 
@@ -180,8 +181,8 @@ size :: FingerTree v a -> Int
 size = sizeFT (const 1)
 
 foldFT :: b -> (b -> b -> b) -> (a -> b) -> FingerTree v a -> b
-foldFT mz mapp _ Empty      = mz
-foldFT mz mapp f (Single x) = f x
+foldFT mz _ _ Empty      = mz
+foldFT _ _ f (Single x) = f x
 foldFT mz mapp f (Deep _ pr m sf) =
              foldDigit  mapp f pr `mapp` foldFT mz mapp (foldNode mapp f) m `mapp` foldDigit mapp f sf
 
@@ -194,7 +195,7 @@ toList :: FingerTree v a -> [a]
 toList ft = ftToList ft []
 
 reduce1_aux :: (b -> b -> b) -> (a -> b) -> Digit a -> FingerTree v (Node v a) -> Digit a -> b
-reduce1_aux mapp f pr Empty sf = 
+reduce1_aux mapp f pr Empty sf =
      (reduceDigit mapp f pr) `mapp`
      (reduceDigit mapp f sf)
 
@@ -204,20 +205,20 @@ reduce1_aux mapp f pr (Single x) sf =
      (reduceDigit mapp f sf)
 
 reduce1_aux mapp f pr (Deep _ pr' m sf') sf =
-     (reduceDigit mapp f pr) `mapp` 
+     (reduceDigit mapp f pr) `mapp`
      (reduce1_aux mapp
         (foldNode mapp f)
             pr' m sf')       `mapp`
      (reduceDigit mapp f sf)
 
 reduce1 :: (a -> a -> a) -> FingerTree v a -> a
-reduce1 mapp Empty             = error "FingerTree.reduce1: empty tree"
-reduce1 mapp (Single x)        = x
+reduce1 _ Empty             = error "FingerTree.reduce1: empty tree"
+reduce1 _ (Single x)        = x
 reduce1 mapp (Deep _ pr m sf)  = reduce1_aux mapp id pr m sf
 
-reduce1' :: (a -> a -> a) -> FingerTree v a -> a 
-reduce1' mapp Empty            = error "FingerTree.reduce1': empty tree"
-reduce1' mapp (Single x)       = x
+reduce1' :: (a -> a -> a) -> FingerTree v a -> a
+reduce1' _ Empty            = error "FingerTree.reduce1': empty tree"
+reduce1' _ (Single x)       = x
 reduce1' mapp (Deep _ pr m sf) = reduce1_aux mapp' id pr m sf
   where mapp' x y = x `seq` y `seq` mapp x y
 
@@ -685,7 +686,7 @@ splitNode p i (Node3 _ a b c)
 
 splitDigit :: (Measured v a) => (v -> Bool) -> v -> Digit a ->
                 Split (Maybe (Digit a)) a
-splitDigit p i (One a) = i `seq` Split Nothing a Nothing
+splitDigit _ i (One a) = i `seq` Split Nothing a Nothing
 splitDigit p i (Two a b)
   | p va        = Split Nothing a (Just (One b))
   | otherwise   = Split (Just (One a)) b Nothing
@@ -729,7 +730,7 @@ reverseDigit f (Four a b c d) = Four (f d) (f c) (f b) (f a)
 
 
 instance (Arbitrary a) => Arbitrary (Digit a) where
-  arbitrary = oneof 
+  arbitrary = oneof
               [ arbitrary       >>= \x         -> return (One x)
               , two arbitrary   >>= \(x,y)     -> return (Two x y)
               , three arbitrary >>= \(x,y,z)   -> return (Three x y z)
@@ -760,7 +761,7 @@ instance (Measured v a, Arbitrary a) => Arbitrary (FingerTree v a) where
   arbitrary = oneof
                [ return Empty
                , arbitrary >>= return . Single
-               , do 
+               , do
                    pf <- arbitrary
                    m  <- arbitrary
                    sf <- arbitrary
