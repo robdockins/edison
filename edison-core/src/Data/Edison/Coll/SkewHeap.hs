@@ -1,6 +1,6 @@
 -- |
 --   Module      :  Data.Edison.Coll.SkewHeap
---   Copyright   :  Copyright (c) 1998-1999 Chris Okasaki
+--   Copyright   :  Copyright (c) 1998-1999, 2008 Chris Okasaki
 --   License     :  MIT; see COPYRIGHT file for terms and conditions
 --
 --   Maintainer  :  robdockins AT fastmail DOT fm
@@ -41,7 +41,6 @@ module Data.Edison.Coll.SkewHeap (
 ) where
 
 import Prelude hiding (null,foldr,foldl,foldr1,foldl1,lookup,filter)
-import Data.Edison.Prelude
 import qualified Data.Edison.Coll as C
 import qualified Data.Edison.Seq as S
 import Data.Edison.Coll.Defaults
@@ -49,6 +48,7 @@ import Data.Monoid
 import Control.Monad
 import Test.QuickCheck
 
+moduleName :: String
 moduleName = "Data.Edison.Coll.SkewHeap"
 
 data Heap a = E | T a (Heap a) (Heap a)
@@ -57,8 +57,8 @@ data Heap a = E | T a (Heap a) (Heap a)
 --  * Heap order
 structuralInvariant :: Ord a => Heap a -> Bool
 structuralInvariant E = True
-structuralInvariant t@(T x l r) = isMin x t
-  where isMin x E = True
+structuralInvariant t@(T x _ _) = isMin x t
+  where isMin _ E = True
         isMin x (T y l r) = x <= y && isMin y l && isMin y r
 
 
@@ -82,7 +82,7 @@ insert x h@(T y a b)
 union :: Ord a => Heap a -> Heap a -> Heap a
 union E h = h
 union h@(T x a b) h' = union' h x a b h'
-  where union' h x a b E = h
+  where union' h _ _ _ E = h
         union' hx x a b hy@(T y c d)
           | x <= y    = T x (union' hy y c d b) a
           | otherwise = T y (union' hx x a b d) c
@@ -108,7 +108,7 @@ deleteAll x h@(T y a b) =
     LT -> h
     EQ -> union (deleteAll x a) (deleteAll x b)
     GT -> T y (deleteAll x a) (deleteAll x b)
-deleteAll x E = E
+deleteAll _ E = E
 
 null :: Ord a => Heap a -> Bool
 null E = True
@@ -120,7 +120,7 @@ size h = sz h 0
         sz (T _ a b) i = sz a (sz b (i + 1))
 
 member :: Ord a => a -> Heap a -> Bool
-member x E = False
+member _ E = False
 member x (T y a b) =
   case compare x y of
     LT -> False
@@ -128,7 +128,7 @@ member x (T y a b) =
     GT -> member x b || member x a
 
 count :: Ord a => a -> Heap a -> Int
-count x E = 0
+count _ E = 0
 count x (T y a b) =
   case compare x y of
     LT -> 0
@@ -141,7 +141,7 @@ toSeq h = tol h S.empty
         tol (T x a b) rest = S.lcons x (tol b (tol a rest))
 
 lookupM :: (Ord a, Monad m) => a -> Heap a -> m a
-lookupM x E = fail "SkewHeap.lookupM: XXX"
+lookupM _ E = fail "SkewHeap.lookupM: XXX"
 lookupM x (T y a b) =
   case compare x y of
     LT -> fail "SkewHeap.lookupM: XXX"
@@ -160,29 +160,29 @@ lookupAll x h = look h S.empty
             GT -> look b (look a ys)
 
 fold :: Ord a => (a -> b -> b) -> b -> Heap a -> b
-fold f e E = e
+fold _ e E = e
 fold f e (T x a b) = f x (fold f (fold f e a) b)
 
 fold' :: Ord a => (a -> b -> b) -> b -> Heap a -> b
-fold' f e E = e
+fold' _ e E = e
 fold' f e (T x a b) = e `seq` f x $! (fold' f (fold' f e a) b)
 
 fold1 :: Ord a => (a -> a -> a) -> Heap a -> a
-fold1 f E = error "SkewHeap.fold1: empty collection"
+fold1 _ E = error "SkewHeap.fold1: empty collection"
 fold1 f (T x a b) = fold f (fold f x a) b
 
 fold1' :: Ord a => (a -> a -> a) -> Heap a -> a
-fold1' f E = error "SkewHeap.fold1': empty collection"
+fold1' _ E = error "SkewHeap.fold1': empty collection"
 fold1' f (T x a b) = fold' f (fold' f x a) b
 
 filter :: Ord a => (a -> Bool) -> Heap a -> Heap a
-filter p E = E
+filter _ E = E
 filter p (T x a b)
     | p x = T x (filter p a) (filter p b)
     | otherwise = union (filter p a) (filter p b)
 
 partition :: Ord a => (a -> Bool) -> Heap a -> (Heap a, Heap a)
-partition p E = (E, E)
+partition _ E = (E, E)
 partition p (T x a b)
     | p x = (T x a' b', union a'' b'')
     | otherwise = (union a' b', T x a'' b'')
@@ -192,12 +192,12 @@ partition p (T x a b)
 
 deleteMin :: Ord a => Heap a -> Heap a
 deleteMin E = E
-deleteMin (T x a b) = union a b
+deleteMin (T _ a b) = union a b
 
 deleteMax :: Ord a => Heap a -> Heap a
 deleteMax h = case maxView h of
                 Nothing     -> E
-                Just (x,h') -> h'
+                Just (_,h') -> h'
 
 unsafeInsertMin :: Ord a => a -> Heap a -> Heap a
 unsafeInsertMin x h = T x h E
@@ -208,11 +208,11 @@ unsafeAppend (T x a b) h = T x (unsafeAppend b h) a
 
 filterLT :: Ord a => a -> Heap a -> Heap a
 filterLT y (T x a b) | x < y = T x (filterLT y a) (filterLT y b)
-filterLT y _ = E
+filterLT _ _ = E
 
 filterLE :: Ord a => a -> Heap a -> Heap a
 filterLE y (T x a b) | x <= y = T x (filterLE y a) (filterLE y b)
-filterLE y _ = E
+filterLE _ _ = E
 
 filterGT :: Ord a => a -> Heap a -> Heap a
 filterGT y h = C.unionList (collect h [])
@@ -255,7 +255,7 @@ partitionLT_GT y h = (h', C.unionList hs)
   where (h', hs) = collect h []
 
         collect E hs = (E, hs)
-        collect h@(T x a b) hs = 
+        collect h@(T x a b) hs =
           case compare x y of
             GT -> (E, h:hs)
             EQ -> let (a', hs') = collect a hs
@@ -271,7 +271,7 @@ minView (T x a b) = return (x, union a b)
 
 minElem :: Ord a => Heap a -> a
 minElem E = error "SkewHeap.minElem: empty collection"
-minElem (T x a b) = x
+minElem (T x _ _) = x
 
 maxView :: (Ord a, Monad m) => Heap a -> m (a, Heap a)
 maxView E = fail "SkewHeap.maxView: empty heap"
@@ -291,70 +291,70 @@ maxView (T x a b)
 maxElem :: Ord a => Heap a -> a
 maxElem E = error "SkewHeap.maxElem: empty collection"
 maxElem (T x E E) = x
-maxElem (T x a E) = maxElem a
-maxElem (T x E a) = maxElem a
-maxElem (T x a b) = findMax b (findLeaf a)
+maxElem (T _ a E) = maxElem a
+maxElem (T _ E a) = maxElem a
+maxElem (T _ a b) = findMax b (findLeaf a)
   where findMax E m = m
         findMax (T x E E) m
           | m >= x = m
           | otherwise = x
-        findMax (T x a E) m = findMax a m
-        findMax (T x E a) m = findMax a m
-        findMax (T x a b) m = findMax a (findMax b m)
+        findMax (T _ a E) m = findMax a m
+        findMax (T _ E a) m = findMax a m
+        findMax (T _ a b) m = findMax a (findMax b m)
 
         findLeaf E = error "SkewHeap.maxElem: bug"
         findLeaf (T x E E) = x
-        findLeaf (T x a E) = findLeaf a
-        findLeaf (T x E a) = findLeaf a
-        findLeaf (T x a b) = findMax b (findLeaf a)
+        findLeaf (T _ a E) = findLeaf a
+        findLeaf (T _ E a) = findLeaf a
+        findLeaf (T _ a b) = findMax b (findLeaf a)
 
 foldr :: Ord a => (a -> b -> b) -> b -> Heap a -> b
-foldr f e E = e
+foldr _ e E = e
 foldr f e (T x a b) = f x (foldr f e (union a b))
 
 foldr' :: Ord a => (a -> b -> b) -> b -> Heap a -> b
-foldr' f e E = e
+foldr' _ e E = e
 foldr' f e (T x a b) = e `seq` f x $! (foldr' f e (union a b))
 
 foldl :: Ord a => (b -> a -> b) -> b -> Heap a -> b
-foldl f e E = e
+foldl _ e E = e
 foldl f e (T x a b) = foldl f (f e x) (union a b)
 
 foldl' :: Ord a => (b -> a -> b) -> b -> Heap a -> b
-foldl' f e E = e
+foldl' _ e E = e
 foldl' f e (T x a b) = e `seq` foldl' f (f e x) (union a b)
 
 foldr1 :: Ord a => (a -> a -> a) -> Heap a -> a
-foldr1 f E = error "SkewHeap.foldr1: empty collection"
-foldr1 f (T x E E) = x
+foldr1 _ E = error "SkewHeap.foldr1: empty collection"
+foldr1 _ (T x E E) = x
 foldr1 f (T x a b) = f x (foldr1 f (union a b))
 
 foldr1' :: Ord a => (a -> a -> a) -> Heap a -> a
-foldr1' f E = error "SkewHeap.foldr1': empty collection"
-foldr1' f (T x E E) = x
+foldr1' _ E = error "SkewHeap.foldr1': empty collection"
+foldr1' _ (T x E E) = x
 foldr1' f (T x a b) = f x $! (foldr1' f (union a b))
 
 foldl1 :: Ord a => (a -> a -> a) -> Heap a -> a
-foldl1 f E = error "SkewHeap.foldl1: empty collection"
+foldl1 _ E = error "SkewHeap.foldl1: empty collection"
 foldl1 f (T x a b) = foldl f x (union a b)
 
 foldl1' :: Ord a => (a -> a -> a) -> Heap a -> a
-foldl1' f E = error "SkewHeap.foldl1': empty collection"
+foldl1' _ E = error "SkewHeap.foldl1': empty collection"
 foldl1' f (T x a b) = foldl' f x (union a b)
 
 {- ???? -}
 unsafeMapMonotonic :: Ord a => (a -> a) -> Heap a -> Heap a
-unsafeMapMonotonic f E = E
+unsafeMapMonotonic _ E = E
 unsafeMapMonotonic f (T x a b) =
   T (f x) (unsafeMapMonotonic f a) (unsafeMapMonotonic f b)
 
 
 strict :: Heap a -> Heap a
 strict h@E = h
-strict h@(T x l r) = strict l `seq` strict r `seq` h
+strict h@(T _ l r) = strict l `seq` strict r `seq` h
 
 strictWith :: (a -> b) -> Heap a -> Heap a
-strictWith f h@E = h
+strictWith _ h@E = h
 strictWith f h@(T x l r) = f x `seq` strictWith f l `seq` strictWith f r `seq` h
 
 -- the remaining functions all use default definitions
@@ -390,28 +390,28 @@ toOrdSeq = toOrdSeqUsingFoldr
 
 instance Ord a => C.CollX (Heap a) a where
   {singleton = singleton; fromSeq = fromSeq; insert = insert;
-   insertSeq = insertSeq; unionSeq = unionSeq; 
+   insertSeq = insertSeq; unionSeq = unionSeq;
    delete = delete; deleteAll = deleteAll; deleteSeq = deleteSeq;
    null = null; size = size; member = member; count = count;
    strict = strict;
-   structuralInvariant = structuralInvariant; instanceName c = moduleName}
+   structuralInvariant = structuralInvariant; instanceName _ = moduleName}
 
 instance Ord a => C.OrdCollX (Heap a) a where
-  {deleteMin = deleteMin; deleteMax = deleteMax; 
-   unsafeInsertMin = unsafeInsertMin; unsafeInsertMax = unsafeInsertMax; 
-   unsafeFromOrdSeq = unsafeFromOrdSeq; unsafeAppend = unsafeAppend; 
-   filterLT = filterLT; filterLE = filterLE; filterGT = filterGT; 
-   filterGE = filterGE; partitionLT_GE = partitionLT_GE; 
+  {deleteMin = deleteMin; deleteMax = deleteMax;
+   unsafeInsertMin = unsafeInsertMin; unsafeInsertMax = unsafeInsertMax;
+   unsafeFromOrdSeq = unsafeFromOrdSeq; unsafeAppend = unsafeAppend;
+   filterLT = filterLT; filterLE = filterLE; filterGT = filterGT;
+   filterGE = filterGE; partitionLT_GE = partitionLT_GE;
    partitionLE_GT = partitionLE_GT; partitionLT_GT = partitionLT_GT}
 
 instance Ord a => C.Coll (Heap a) a where
-  {toSeq = toSeq; lookup = lookup; lookupM = lookupM; 
-   lookupAll = lookupAll; lookupWithDefault = lookupWithDefault; 
+  {toSeq = toSeq; lookup = lookup; lookupM = lookupM;
+   lookupAll = lookupAll; lookupWithDefault = lookupWithDefault;
    fold = fold; fold' = fold'; fold1 = fold1; fold1' = fold1';
    filter = filter; partition = partition; strictWith = strictWith}
 
 instance Ord a => C.OrdColl (Heap a) a where
-  {minView = minView; minElem = minElem; maxView = maxView; 
+  {minView = minView; minElem = minElem; maxView = maxView;
    maxElem = maxElem; foldr = foldr; foldr' = foldr';
    foldl = foldl; foldl' = foldl'; foldr1 = foldr1; foldr1' = foldr1';
    foldl1  = foldl1; foldl1' = fold1'; toOrdSeq = toOrdSeq;
@@ -435,9 +435,9 @@ instance (Ord a, Arbitrary a) => Arbitrary (Heap a) where
                        (4, liftM3 sift arbitrary (arbTree (n `div` 2))
                                                  (arbTree (n `div` 4)))]
 
-          sift x s@(T y a b) E
+          sift x (T y a b) E
             | y < x = T y (sift x a b) E
-          sift x E s@(T y a b)
+          sift x E (T y a b)
             | y < x = T y E (sift x a b)
           sift x s@(T y a b) t@(T z c d)
             | y < x && y <= z = T y (sift x a b) t
@@ -445,7 +445,7 @@ instance (Ord a, Arbitrary a) => Arbitrary (Heap a) where
           sift x a b = T x a b
 
   coarbitrary E = variant 0
-  coarbitrary (T x a b) = 
+  coarbitrary (T x a b) =
       variant 1 . coarbitrary x . coarbitrary a . coarbitrary b
 
 instance (Ord a) => Monoid (Heap a) where
