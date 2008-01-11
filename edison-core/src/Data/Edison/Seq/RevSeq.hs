@@ -1,6 +1,6 @@
 -- |
 --   Module      :  Data.Edison.Seq.RevSeq
---   Copyright   :  Copyright (c) 1998-1999 Chris Okasaki
+--   Copyright   :  Copyright (c) 1998-1999, 2008 Chris Okasaki
 --   License     :  MIT; see COPYRIGHT file for terms and conditions
 --
 --   Maintainer  :  robdockins AT fastmail DOT fm
@@ -56,7 +56,6 @@ import Prelude hiding (concat,reverse,map,concatMap,foldr,foldl,foldr1,foldl1,
                        filter,takeWhile,dropWhile,lookup,take,drop,splitAt,
                        zip,zip3,zipWith,zipWith3,unzip,unzip3,null)
 
-import Data.Edison.Prelude
 import qualified Data.Edison.Seq as S
 import qualified Data.Edison.Seq.ListSeq as L
 import Data.Edison.Seq.Defaults -- only used by concatMap
@@ -149,14 +148,14 @@ toSeq          :: S.Sequence s => Rev s a -> s a
 
 
 moduleName = "Data.Edison.Seq.RevSeq"
-instanceName (N m s) = "RevSeq(" ++ S.instanceName s ++ ")"
+instanceName (N _ s) = "RevSeq(" ++ S.instanceName s ++ ")"
 
 data Rev s a = N !Int (s a)
   -- The Int is the size minus one.  The "minus one" makes indexing
   -- calculations easier.
 
 fromSeq xs = N (S.size xs - 1) xs
-toSeq (N m xs) = xs
+toSeq (N _ xs) = xs
 
 empty = N (-1) S.empty
 singleton x = N 0 (S.singleton x)
@@ -168,65 +167,65 @@ lview (N m xs) = case S.rview xs of
                    Nothing     -> fail "RevSeq.lview: empty sequence"
                    Just (x,xs) -> return (x, N (m-1) xs)
 
-lhead (N m xs) = S.rhead xs
+lhead (N _ xs) = S.rhead xs
 
-lheadM (N m xs) = S.rheadM xs
+lheadM (N _ xs) = S.rheadM xs
 
-ltail (N (-1) xs) = error "RevSeq.ltail: empty sequence"
+ltail (N (-1) _) = error "RevSeq.ltail: empty sequence"
 ltail (N m xs) = N (m-1) (S.rtail xs)
 
-ltailM (N (-1) xs) = fail "RevSeq.ltailM: empty sequence"
+ltailM (N (-1) _) = fail "RevSeq.ltailM: empty sequence"
 ltailM (N m xs) = return (N (m-1) (S.rtail xs))
 
 rview (N m xs) = case S.lview xs of
                    Nothing     -> fail "RevSeq.rview: empty sequence"
                    Just (x,xs) -> return (x, N (m-1) xs)
- 
-rhead (N m xs) = S.lhead xs
 
-rheadM (N m xs) = S.lheadM xs
+rhead (N _ xs) = S.lhead xs
 
-rtail (N (-1) xs) = error "RevSeq.rtail: empty sequence"
+rheadM (N _ xs) = S.lheadM xs
+
+rtail (N (-1) _) = error "RevSeq.rtail: empty sequence"
 rtail (N m xs) = N (m-1) (S.ltail xs)
 
-rtailM (N (-1) xs) = fail "RevSeq.rtailM: empty sequence"
+rtailM (N (-1) _) = fail "RevSeq.rtailM: empty sequence"
 rtailM (N m xs) = return (N (m-1) (S.ltail xs))
 
-null (N m xs) = m == -1
-size (N m xs) = m+1
-concat (N m xss) = fromSeq (S.concat (S.map toSeq xss))
+null (N m _) = m == -1
+size (N m _) = m+1
+concat (N _ xss) = fromSeq (S.concat (S.map toSeq xss))
 reverse (N m xs) = N m (S.reverse xs)
 reverseOnto (N m xs) (N n ys) = N (m+n+1) (S.append ys (S.reverse xs))
 fromList = fromSeq . S.fromList . L.reverse
-toList (N m xs) = S.foldl (flip (:)) [] xs
+toList (N _ xs) = S.foldl (flip (:)) [] xs
 map f (N m xs) = N m (S.map f xs)
 
 concatMap = concatMapUsingFoldr -- only function that uses a default
 
-fold f e (N m xs) = S.fold f e xs
-fold' f e (N m xs) = S.fold' f e xs
-fold1 f (N m xs) = S.fold1 f xs
-fold1' f (N m xs) = S.fold1' f xs
-foldr f e (N m xs) = S.foldl (flip f) e xs
-foldr' f e (N m xs) = S.foldl' (flip f) e xs
-foldl f e (N m xs) = S.foldr (flip f) e xs
-foldl' f e (N m xs) = S.foldr' (flip f) e xs
-foldr1 f (N m xs) = S.foldl1 (flip f) xs
-foldr1' f (N m xs) = S.foldl1' (flip f) xs
-foldl1 f (N m xs) = S.foldr1 (flip f) xs
-foldl1' f (N m xs) = S.foldr1' (flip f) xs
-reducer f e (N m xs) = S.reducel (flip f) e xs
-reducer' f e (N m xs) = S.reducel' (flip f) e xs
-reducel f e (N m xs) = S.reducer (flip f) e xs
-reducel' f e (N m xs) = S.reducer' (flip f) e xs
-reduce1 f (N m xs) = S.reduce1 (flip f) xs
-reduce1' f (N m xs) = S.reduce1' (flip f) xs
+fold f e (N _ xs) = S.fold f e xs
+fold' f e (N _ xs) = S.fold' f e xs
+fold1 f (N _ xs) = S.fold1 f xs
+fold1' f (N _ xs) = S.fold1' f xs
+foldr f e (N _ xs) = S.foldl (flip f) e xs
+foldr' f e (N _ xs) = S.foldl' (flip f) e xs
+foldl f e (N _ xs) = S.foldr (flip f) e xs
+foldl' f e (N _ xs) = S.foldr' (flip f) e xs
+foldr1 f (N _ xs) = S.foldl1 (flip f) xs
+foldr1' f (N _ xs) = S.foldl1' (flip f) xs
+foldl1 f (N _ xs) = S.foldr1 (flip f) xs
+foldl1' f (N _ xs) = S.foldr1' (flip f) xs
+reducer f e (N _ xs) = S.reducel (flip f) e xs
+reducer' f e (N _ xs) = S.reducel' (flip f) e xs
+reducel f e (N _ xs) = S.reducer (flip f) e xs
+reducel' f e (N _ xs) = S.reducer' (flip f) e xs
+reduce1 f (N _ xs) = S.reduce1 (flip f) xs
+reduce1' f (N _ xs) = S.reduce1' (flip f) xs
 
-copy n x 
+copy n x
     | n <= 0 = empty
     | otherwise = N (n-1) (S.copy n x)
 
-inBounds i (N m xs) = (i >= 0) && (i <= m)
+inBounds i (N m _) = (i >= 0) && (i <= m)
 lookup i (N m xs) = S.lookup (m-i) xs
 lookupM i (N m xs) = S.lookupM (m-i) xs
 lookupWithDefault d i (N m xs) = S.lookupWithDefault d (m-i) xs
@@ -311,8 +310,8 @@ unzipWith f g (N m xys) = (N m xs, N m ys)
 unzipWith3 f g h (N m xyzs) = (N m xs, N m ys, N m zs)
   where (xs,ys,zs) = S.unzipWith3 f g h xyzs
 
-strict s@(N i s') = S.strict s' `seq` s
-strictWith f s@(N i s') = S.strictWith f s' `seq` s
+strict s@(N _ s') = S.strict s' `seq` s
+strictWith f s@(N _ s') = S.strictWith f s' `seq` s
 
 structuralInvariant (N i s) = i == ((S.size s) - 1)
 
@@ -323,7 +322,7 @@ instance S.Sequence s => S.Sequence (Rev s) where
    lview = lview; lhead = lhead; ltail = ltail;
    lheadM = lheadM; ltailM = ltailM; rheadM = rheadM; rtailM = rtailM;
    rview = rview; rhead = rhead; rtail = rtail; null = null;
-   size = size; concat = concat; reverse = reverse; 
+   size = size; concat = concat; reverse = reverse;
    reverseOnto = reverseOnto; fromList = fromList; toList = toList;
    fold = fold; fold' = fold'; fold1 = fold1; fold1' = fold1';
    foldr = foldr; foldr' = foldr'; foldl = foldl; foldl' = foldl';
@@ -366,7 +365,7 @@ instance (S.Sequence s, Show (s a)) => Show (Rev s a) where
      | otherwise = L.concat ["(",moduleName,".fromSeq ",showsPrec 10 (toSeq xs) (')':rest)]
 
 instance (S.Sequence s, Read (s a)) => Read (Rev s a) where
-  readsPrec i xs = maybeParens p xs
+  readsPrec _ xs = maybeParens p xs
       where p xs = tokenMatch (moduleName++".fromSeq") xs
                      >>= readsPrec 10
                      >>= \(l,rest) -> return (fromSeq l,rest)
