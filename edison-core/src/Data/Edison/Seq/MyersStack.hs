@@ -1,6 +1,6 @@
 -- |
 --   Module      :  Data.Edison.Seq.MyersStack
---   Copyright   :  Copyright (c) 1998-1999 Chris Okasaki
+--   Copyright   :  Copyright (c) 1998-1999, 2008 Chris Okasaki
 --   License     :  MIT; see COPYRIGHT file for terms and conditions
 --
 --   Maintainer  :  robdockins AT fastmail DOT fm
@@ -48,10 +48,8 @@ import Prelude hiding (concat,reverse,map,concatMap,foldr,foldl,foldr1,foldl1,
                        filter,takeWhile,dropWhile,lookup,take,drop,splitAt,
                        zip,zip3,zipWith,zipWith3,unzip,unzip3,null)
 
-import Data.Edison.Prelude
 import qualified Data.Edison.Seq as S ( Sequence(..) )
 import Data.Edison.Seq.Defaults
-import Control.Monad
 import Control.Monad.Identity
 import Data.Monoid
 import Test.QuickCheck
@@ -140,6 +138,7 @@ data Seq a = E | C !Int a (Seq a) (Seq a)
   -- what about strictness flags on tail and jump-tail?
 
 -- auxiliary function
+jump :: Seq t -> Seq t
 jump (C _ _ _ (C _ _ _ xs')) = xs'
 jump _ = error "MyersStack.jump: bug!"
 
@@ -154,40 +153,40 @@ lview E = fail "MyersStack.lview: empty sequence"
 lview (C _ x xs _) = return (x, xs)
 
 lhead E = error "MyersStack.lhead: empty sequence"
-lhead (C _ x xs _) = x
+lhead (C _ x _ _) = x
 
 lheadM E = fail "MyersStack.lheadM: empty sequence"
-lheadM (C _ x xs _) = return x
+lheadM (C _ x _ _) = return x
 
 ltail E = error "MyersStack.ltail: empty sequence"
-ltail (C _ x xs _) = xs
+ltail (C _ _ xs _) = xs
 
 ltailM E = fail "MyersStack.ltailM: empty sequence"
-ltailM (C _ x xs _) = return xs
+ltailM (C _ _ xs _) = return xs
 
 rview E = fail "MyersStack.rview: empty sequence"
 rview xs = return (rhead xs, rtail xs)
 
 rhead E = error "MyersStack.rhead: empty sequence"
 rhead (C _ x xs xs') = rh x xs xs'
-  where rh x xs (C _ y ys ys') = rh y ys ys'
-        rh x (C _ y ys ys') E = rh y ys ys'
+  where rh _ _ (C _ y ys ys') = rh y ys ys'
+        rh _ (C _ y ys ys') E = rh y ys ys'
         rh x E E = x
 
 rheadM E = fail "MyersStack.rheadM: empty sequence"
 rheadM (C _ x xs xs') = return (rh x xs xs')
-  where rh x xs (C _ y ys ys') = rh y ys ys'
-        rh x (C _ y ys ys') E = rh y ys ys'
+  where rh _ _ (C _ y ys ys') = rh y ys ys'
+        rh _ (C _ y ys ys') E = rh y ys ys'
         rh x E E = x
 
 rtail E = error "MyersStack.rtail: empty sequence"
 rtail (C _ x xs _) = rt x xs
-  where rt y E = E
+  where rt _ E = E
         rt y (C _ x xs _) = lcons y (rt x xs)
 
 rtailM E = fail "MyersStack.rtailM: empty sequence"
 rtailM (C _ x xs _) = return (rt x xs)
-  where rt y E = E
+  where rt _ E = E
         rt y (C _ x xs _) = lcons y (rt x xs)
 
 null E = True
@@ -195,13 +194,13 @@ null _ = False
 
 size xs = go xs
   where go E = (0::Int)
-        go (C j x xs xs') = j + size xs'
+        go (C j _ _ xs') = j + size xs'
 
 reverseOnto E ys = ys
 reverseOnto (C _ x xs _) ys = reverseOnto xs (lcons x ys)
 
-map f E = E
-map f (C j x xs xs')
+map _ E = E
+map f (C j x xs _')
     | j == 1    = C j (f x) ys ys
     | otherwise = C j (f x) ys (jump ys)
   where ys = map f xs
@@ -211,53 +210,53 @@ fold' f = foldl' (flip f)
 fold1  = fold1UsingFold
 fold1' = fold1'UsingFold'
 
-foldr f e E = e
+foldr _ e E = e
 foldr f e (C _ x xs _) = f x (foldr f e xs)
 
-foldr' f e E = e
+foldr' _ e E = e
 foldr' f e (C _ x xs _) = f x $! (foldr' f e xs)
 
-foldl f e E = e
+foldl _ e E = e
 foldl f e (C _ x xs _) = foldl f (f e x) xs
 
-foldl' f e E = e
+foldl' _ e E = e
 foldl' f e (C _ x xs _) = e `seq` foldl' f (f e x) xs
 
-foldr1 f E = error "MyersStack.foldr1: empty sequence"
+foldr1 _ E = error "MyersStack.foldr1: empty sequence"
 foldr1 f (C _ x xs _) = fr x xs
   where fr y E = y
         fr y (C _ x xs _) = f y (fr x xs)
 
-foldr1' f E = error "MyersStack.foldr1': empty sequence"
+foldr1' _ E = error "MyersStack.foldr1': empty sequence"
 foldr1' f (C _ x xs _) = fr x xs
   where fr y E = y
         fr y (C _ x xs _) = f y $! (fr x xs)
 
-foldl1 f E = error "MyersStack.foldl1: empty sequence"
+foldl1 _ E = error "MyersStack.foldl1: empty sequence"
 foldl1 f (C _ x xs _) = foldl f x xs
 
-foldl1' f E = error "MyersStack.foldl1': empty sequence"
+foldl1' _ E = error "MyersStack.foldl1': empty sequence"
 foldl1' f (C _ x xs _ ) = foldl' f x xs
 
 inBounds i xs = inb xs i
-  where inb E i = False
-        inb (C j x xs xs') i
+  where inb E _ = False
+        inb (C j _ _ xs') i
           | i < j     = (i >= 0)
           | otherwise = inb xs' (i - j)
 
 lookup i xs = runIdentity (lookupM i xs)
 
 lookupM i xs = look xs i
-  where look E i = fail "MyersStack.lookup: bad subscript"
+  where look E _ = fail "MyersStack.lookup: bad subscript"
         look (C j x xs xs') i
           | i >= j   = look xs' (i - j)
           | i > 0    = look xs  (i - 1)
           | i == 0   = return x
           | otherwise = nothing
-	nothing = fail "MyersStack.lookup: not found"
+        nothing = fail "MyersStack.lookup: not found"
 
 lookupWithDefault d i xs = look xs i
-  where look E i = d
+  where look E _ = d
         look (C j x xs xs') i
           | i >= j   = look xs' (i - j)
           | i > 0    = look xs  (i - 1)
@@ -265,15 +264,15 @@ lookupWithDefault d i xs = look xs i
           | otherwise = d
 
 update i y xs = upd i xs
-  where upd i E = E
-        upd 0 (C j x xs xs') = C j y xs xs'
+  where upd _ E = E
+        upd 0 (C j _ xs xs') = C j y xs xs'
         upd i (C j x xs _)
             | j == 1    = C j x ys ys
             | otherwise = C j x ys (jump ys)
           where ys = upd (i - 1) xs
 
 adjust f i xs = adj i xs
-  where adj i E = E
+  where adj _ E = E
         adj 0 (C j x xs xs') = C j (f x) xs xs'
         adj i (C j x xs _)
             | j == 1    = C j x ys ys
@@ -282,30 +281,30 @@ adjust f i xs = adj i xs
 
 drop n xs = drp n xs
   where drp n xs | n <= 0 = xs
-        drp n E = E
-        drp n (C j x xs xs')
+        drp _ E = E
+        drp n (C j _ xs xs')
           | n < j     = drp (n - 1) xs
           | otherwise = drp (n - j) xs'
 
 unzip E = (E, E)
-unzip (C j (x,y) ps ps')
+unzip (C j (x,y) ps _')
     | j == 1    = (C j x xs xs, C j y ys ys)
     | otherwise = (C j x xs (jump xs), C j y ys (jump ys))
   where (xs,ys) = unzip ps
 
 unzip3 E = (E, E, E)
-unzip3 (C j (x,y,z) ts ts')
+unzip3 (C j (x,y,z) ts _')
     | j == 1    = (C j x xs xs, C j y ys ys, C j z zs zs)
     | otherwise = (C j x xs (jump xs), C j y ys (jump ys), C j z zs (jump zs))
   where (xs,ys,zs) = unzip3 ts
 
-unzipWith f g E = (E, E)
+unzipWith _ _ E = (E, E)
 unzipWith f g (C j x xs _)
     | j == 1    = (C j (f x) as as, C j (g x) bs bs)
     | otherwise = (C j (f x) as (jump as), C j (g x) bs (jump bs))
   where (as,bs) = unzipWith f g xs
 
-unzipWith3 f g h E = (E, E, E)
+unzipWith3 _ _ _ E = (E, E, E)
 unzipWith3 f g h (C j x xs _)
     | j == 1    = (C j (f x) as as, C j (g x) bs bs, C j (h x) cs cs)
     | otherwise = (C j (f x) as (jump as), C j (g x) bs (jump bs),
@@ -313,10 +312,10 @@ unzipWith3 f g h (C j x xs _)
   where (as,bs,cs) = unzipWith3 f g h xs
 
 strict s@E = s
-strict s@(C i x xs _) = strict xs `seq` s
+strict s@(C _ _ xs _) = strict xs `seq` s
 
-strictWith f s@E = s
-strictWith f s@(C i x xs _) = f x `seq` strictWith f xs `seq` s
+strictWith _ s@E = s
+strictWith f s@(C _ x xs _) = f x `seq` strictWith f xs `seq` s
 
 -- the remaining functions all use defaults
 
@@ -366,7 +365,7 @@ instance S.Sequence Seq where
    lview = lview; lhead = lhead; ltail = ltail;
    lheadM = lheadM; ltailM = ltailM; rheadM = rheadM; rtailM = rtailM;
    rview = rview; rhead = rhead; rtail = rtail; null = null;
-   size = size; concat = concat; reverse = reverse; 
+   size = size; concat = concat; reverse = reverse;
    reverseOnto = reverseOnto; fromList = fromList; toList = toList;
    fold = fold; fold' = fold'; fold1 = fold1; fold1' = fold1';
    foldr = foldr; foldr' = foldr'; foldl = foldl; foldl' = foldl';
@@ -384,7 +383,7 @@ instance S.Sequence Seq where
    zip3 = zip3; zipWith = zipWith; zipWith3 = zipWith3; unzip = unzip;
    unzip3 = unzip3; unzipWith = unzipWith; unzipWith3 = unzipWith3;
    strict = strict; strictWith = strictWith;
-   structuralInvariant = structuralInvariant; instanceName s = moduleName}
+   structuralInvariant = structuralInvariant; instanceName _ = moduleName}
 
 instance Functor Seq where
   fmap = map
