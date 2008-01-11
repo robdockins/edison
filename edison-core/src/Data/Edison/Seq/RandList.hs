@@ -1,6 +1,6 @@
 -- |
 --   Module      :  Data.Edison.Seq.RandList
---   Copyright   :  Copyright (c) 1998-1999 Chris Okasaki
+--   Copyright   :  Copyright (c) 1998-1999, 2008 Chris Okasaki
 --   License     :  MIT; see COPYRIGHT file for terms and conditions
 --
 --   Maintainer  :  robdockins AT fastmail DOT fm
@@ -53,10 +53,8 @@ import Prelude hiding (concat,reverse,map,concatMap,foldr,foldl,foldr1,foldl1,
                        filter,takeWhile,dropWhile,lookup,take,drop,splitAt,
                        zip,zip3,zipWith,zipWith3,unzip,unzip3,null)
 
-import Data.Edison.Prelude
 import qualified Data.Edison.Seq as S( Sequence(..) )
 import Data.Edison.Seq.Defaults
-import Control.Monad
 import Control.Monad.Identity
 import Data.Monoid
 import Test.QuickCheck
@@ -148,7 +146,7 @@ half n = n `quot` 2  -- use a shift?
 empty = E
 singleton x = C 1 (L x) E
 
-lcons x xs@(C i s (C j t xs'))
+lcons x (C i s (C j t xs'))
     | i == j = C (1 + i + j) (T x s t) xs'
 lcons x xs = C 1 (L x) xs
 
@@ -162,7 +160,7 @@ copy n x = if n <= 0 then E else buildTrees (1::Int) (L x)
           | i > 0  = takeTrees i (half j) (child t) xs
           | otherwise = xs
 
-        child (T x s t) = t
+        child (T _ _ t) = t
         child _ = error "RandList.copy: bug!"
 
 lview E = fail "RandList.lview: empty sequence"
@@ -171,34 +169,34 @@ lview (C i (T x s t) xs) = return (x, C j s (C j t xs))
   where j = half i
 
 lhead E = error "RandList.lhead: empty sequence"
-lhead (C _ (L x) xs) = x
-lhead (C _ (T x s t) xs) = x
+lhead (C _ (L x) _) = x
+lhead (C _ (T x _ _) _) = x
 
 lheadM E = fail "RandList.lheadM: empty sequence"
-lheadM (C _ (L x) xs) = return x
-lheadM (C _ (T x s t) xs) = return x
+lheadM (C _ (L x) _) = return x
+lheadM (C _ (T x _ _) _) = return x
 
 ltail E = error "RandList.ltail: empty sequence"
-ltail (C _ (L x) xs) = xs
-ltail (C i (T x s t) xs) = C j s (C j t xs)
+ltail (C _ (L _) xs) = xs
+ltail (C i (T _ s t) xs) = C j s (C j t xs)
   where j = half i
 
 ltailM E = fail "RandList.ltailM: empty sequence"
-ltailM (C _ (L x) xs) = return xs
-ltailM (C i (T x s t) xs) = return (C j s (C j t xs))
+ltailM (C _ (L _) xs) = return xs
+ltailM (C i (T _ s t) xs) = return (C j s (C j t xs))
   where j = half i
 
 rhead E = error "RandList.rhead: empty sequence"
 rhead (C _ t E) = treeLast t
   where treeLast (L x) = x
-        treeLast (T x s t) = treeLast t
-rhead (C _ t xs) = rhead xs
+        treeLast (T _ _ t) = treeLast t
+rhead (C _ _ xs) = rhead xs
 
 rheadM E = fail "RandList.rhead: empty sequence"
 rheadM (C _ t E) = return(treeLast t)
   where treeLast (L x) = x
-        treeLast (T x s t) = treeLast t
-rheadM (C _ t xs) = rheadM xs
+        treeLast (T _ _ t) = treeLast t
+rheadM (C _ _ xs) = rheadM xs
 
 
 null E = True
@@ -206,14 +204,14 @@ null _ = False
 
 size xs = sz xs
   where sz E = (0::Int)
-        sz (C j t xs) = j + sz xs
+        sz (C j _ xs) = j + sz xs
 
 reverseOnto E ys = ys
 reverseOnto (C _ t xs) ys = reverseOnto xs (revTree t ys)
   where revTree (L x) ys = lcons x ys
         revTree (T x s t) ys = revTree t (revTree s (lcons x ys))
 
-map f E = E
+map _ E = E
 map f (C j t xs) = C j (mapTree f t) (map f xs)
   where mapTree f (L x) = L (f x)
         mapTree f (T x s t) = T (f x) (mapTree f s) (mapTree f t)
@@ -223,22 +221,22 @@ fold' f = foldl' (flip f)
 fold1  = fold1UsingFold
 fold1' = fold1'UsingFold'
 
-foldr f e E = e
+foldr _ e E = e
 foldr f e (C _ t xs) = foldTree t (foldr f e xs)
   where foldTree (L x) e = f x e
         foldTree (T x s t) e = f x (foldTree s (foldTree t e))
 
-foldr' f e E = e
+foldr' _ e E = e
 foldr' f e (C _ t xs) = foldTree t $! (foldr' f e xs)
   where foldTree (L x) e = f x $! e
         foldTree (T x s t) e = f x $! (foldTree s $! (foldTree t $! e))
 
-foldl f e E = e
+foldl _ e E = e
 foldl f e (C _ t xs) = foldl f (foldTree e t) xs
   where foldTree e (L x) = f e x
         foldTree e (T x s t) = foldTree (foldTree (f e x) s) t
 
-foldl' f e E = e
+foldl' _ e E = e
 foldl' f e (C _ t xs) = (foldl f $! (foldTree e t)) xs
   where foldTree e (L x) = e `seq` f e x
         foldTree e (T x s t) = e `seq` (foldTree $! (foldTree (f e x) s)) t
@@ -247,7 +245,7 @@ reduce1 f xs = case lview xs of
                  Nothing      -> error "RandList.reduce1: empty seq"
                  Just (x, xs) -> red1 x xs
   where red1 x E = x
-        red1 x (C j t xs) = red1 (redTree x t) xs
+        red1 x (C _ t xs) = red1 (redTree x t) xs
 
         redTree x (L y) = f x y
         redTree x (T y s t) = redTree (redTree (f x y) s) t
@@ -256,22 +254,22 @@ reduce1' f xs = case lview xs of
                   Nothing      -> error "RandList.reduce1': empty seq"
                   Just (x, xs) -> red1 x xs
   where red1 x E = x
-        red1 x (C j t xs) = (red1 $! (redTree x t)) xs
+        red1 x (C _ t xs) = (red1 $! (redTree x t)) xs
 
         redTree x (L y) = x `seq` y `seq` f x y
         redTree x (T y s t) = x `seq` y `seq` (redTree $! (redTree (f x y) s)) t
 
 
 inBounds i xs = inb xs i
-  where inb E i = False
-        inb (C j t xs) i
+  where inb E _ = False
+        inb (C j _ xs) i
           | i < j     = (i >= 0)
           | otherwise = inb xs (i - j)
 
 lookup i xs = runIdentity (lookupM i xs)
 
 lookupM i xs = look xs i
-  where look E i = fail "RandList.lookup bad subscript"
+  where look E _ = fail "RandList.lookup bad subscript"
         look (C j t xs) i
             | i < j     = lookTree j t i
             | otherwise = look xs (i - j)
@@ -284,10 +282,10 @@ lookupM i xs = look xs i
             | i /= 0 = lookTree k s (i - 1)
             | otherwise = return x
           where k = half j
-	nothing = fail "RandList.lookup: not found"
+        nothing = fail "RandList.lookup: not found"
 
 lookupWithDefault d i xs = look xs i
-  where look E i = d
+  where look E _ = d
         look (C j t xs) i
             | i < j     = lookTree j t i
             | otherwise = look xs (i - j)
@@ -302,12 +300,12 @@ lookupWithDefault d i xs = look xs i
           where k = half j
 
 update i y xs = upd i xs
-  where upd i E = E
+  where upd _ E = E
         upd i (C j t xs)
             | i < j     = C j (updTree i j t) xs
             | otherwise = C j t (upd (i - j) xs)
 
-        updTree i j t@(L x)
+        updTree i _ t@(L _)
             | i == 0    = L y
             | otherwise = t
         updTree i j (T x s t)
@@ -317,12 +315,12 @@ update i y xs = upd i xs
           where k = half j
 
 adjust f i xs = adj i xs
-  where adj i E = E
+  where adj _ E = E
         adj i (C j t xs)
             | i < j     = C j (adjTree i j t) xs
             | otherwise = C j t (adj (i - j) xs)
 
-        adjTree i j t@(L x)
+        adjTree i _ t@(L x)
             | i == 0    = L (f x)
             | otherwise = t
         adjTree i j (T x s t)
@@ -332,27 +330,29 @@ adjust f i xs = adj i xs
           where k = half j
 
 drop n xs = if n < 0 then xs else drp n xs
-  where drp i E = E
+  where drp _ E = E
         drp i (C j t xs)
             | i < j     = drpTree i j t xs
             | otherwise = drp (i - j) xs
 
         drpTree 0 j t xs = C j t xs
-        drpTree i j (L x) xs = error "RandList.drop: bug.  Impossible case!"
-        drpTree i j (T x s t) xs
+        drpTree _ _ (L _) _ = error "RandList.drop: bug.  Impossible case!"
+        drpTree i j (T _ s t) xs
             | i > k     = drpTree (i - 1 - k) k t xs
             | otherwise = drpTree (i - 1) k s (C k t xs)
           where k = half j
 
 strict s@E = s
-strict s@(C j t xs) = strictTree t `seq` strict xs `seq` s
+strict s@(C _ t xs) = strictTree t `seq` strict xs `seq` s
 
-strictTree t@(L x) = t
-strictTree t@(T x l r) = strictTree l `seq` strictTree r `seq` t
+strictTree :: Tree t -> Tree t
+strictTree t@(L _) = t
+strictTree t@(T _ l r) = strictTree l `seq` strictTree r `seq` t
 
-strictWith f s@E = s
-strictWith f s@(C j t xs) = strictWithTree f t `seq` strictWith f xs `seq` s
+strictWith _ s@E = s
+strictWith f s@(C _ t xs) = strictWithTree f t `seq` strictWith f xs `seq` s
 
+strictWithTree :: (t -> a) -> Tree t -> Tree t
 strictWithTree f t@(L x) = f x `seq` t
 strictWithTree f t@(T x l r) = f x `seq` strictWithTree f l `seq` strictWithTree f r `seq` t
 
@@ -403,24 +403,24 @@ unzip3 = unzip3UsingLists
 unzipWith = unzipWithUsingLists
 unzipWith3 = unzipWith3UsingLists
 
--- invariants: 
+-- invariants:
 --   * list of complete binary trees in non-decreasing
 --     order by size
 --   * first argument to 'C' is the number
 --     of nodes in the tree
-
+structuralInvariant :: Seq t -> Bool
 structuralInvariant E = True
 structuralInvariant (C x t s) = x > 0 && checkTree x t && checkSeq x s
 
    where checkTree 1 (L _) = True
-         checkTree w (T _ l r) = 
-             let w' = (w - 1) `div` 2 
+         checkTree w (T _ l r) =
+             let w' = (w - 1) `div` 2
              in w' > 0 && checkTree w' l && checkTree w' r
          checkTree _ _ = False
 
-         checkSeq x E = True
-         checkSeq x (C y t s) = 
-	     x <= y && checkTree y t && checkSeq y s
+         checkSeq _ E = True
+         checkSeq x (C y t s) =
+             x <= y && checkTree y t && checkSeq y s
 
 
 -- instances
@@ -430,7 +430,7 @@ instance S.Sequence Seq where
    lview = lview; lhead = lhead; ltail = ltail;
    lheadM = lheadM; ltailM = ltailM; rheadM = rheadM; rtailM = rtailM;
    rview = rview; rhead = rhead; rtail = rtail; null = null;
-   size = size; concat = concat; reverse = reverse; 
+   size = size; concat = concat; reverse = reverse;
    reverseOnto = reverseOnto; fromList = fromList; toList = toList;
    fold = fold; fold' = fold'; fold1 = fold1; fold1' = fold1';
    foldr = foldr; foldr' = foldr'; foldl = foldl; foldl' = foldl';
@@ -448,7 +448,7 @@ instance S.Sequence Seq where
    zip3 = zip3; zipWith = zipWith; zipWith3 = zipWith3; unzip = unzip;
    unzip3 = unzip3; unzipWith = unzipWith; unzipWith3 = unzipWith3;
    strict = strict; strictWith = strictWith;
-   structuralInvariant = structuralInvariant; instanceName s = moduleName}
+   structuralInvariant = structuralInvariant; instanceName _ = moduleName}
 
 instance Functor Seq where
   fmap = map
