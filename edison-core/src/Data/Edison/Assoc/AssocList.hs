@@ -1,6 +1,6 @@
 -- |
 --   Module      :  Data.Edison.Assoc.AssocList
---   Copyright   :  Copyright (c) 1998 Chris Okasaki
+--   Copyright   :  Copyright (c) 1998, 2008 Chris Okasaki
 --   License     :  MIT; see COPYRIGHT file for terms and conditions
 --
 --   Maintainer  :  robdockins AT fastmail DOT fm
@@ -8,7 +8,7 @@
 --   Portability :  GHC, Hugs (MPTC and FD)
 --
 --   This module implements finite maps as simple association lists.
---  
+--
 --   Duplicates are removed conceptually, but not physically.  The first
 --   occurrence of a given key is the one that is considered to be in the map.
 --
@@ -29,7 +29,7 @@ module Data.Edison.Assoc.AssocList (
 
     -- * OrdAssocX operations
     minView, minElem, deleteMin, unsafeInsertMin, maxView, maxElem, deleteMax,
-    unsafeInsertMax, foldr, foldr', foldl, foldl', foldr1, foldr1', 
+    unsafeInsertMax, foldr, foldr', foldl, foldl', foldr1, foldr1',
     foldl1, foldl1', unsafeFromOrdSeq, unsafeAppend,
     filterLT, filterLE, filterGT, filterGE,
     partitionLT_GE, partitionLE_GT, partitionLT_GT,
@@ -58,7 +58,6 @@ import Prelude hiding (null,map,lookup,foldr,foldl,foldr1,foldl1,filter)
 import qualified Prelude
 import Data.Monoid
 import Control.Monad.Identity
-import Data.Edison.Prelude
 import qualified Data.Edison.Assoc as A
 import qualified Data.Edison.Seq as S
 import qualified Data.Edison.Seq.BinaryRandList as RL
@@ -105,24 +104,24 @@ filter        :: Eq k => (a -> Bool) -> FM k a -> FM k a
 partition     :: Eq k => (a -> Bool) -> FM k a -> (FM k a, FM k a)
 elements      :: (Eq k,S.Sequence seq) => FM k a -> seq a
 
-fromSeqWith      :: (Eq k,S.Sequence seq) => 
+fromSeqWith      :: (Eq k,S.Sequence seq) =>
                         (a -> a -> a) -> seq (k,a) -> FM k a
 fromSeqWithKey   :: (Eq k,S.Sequence seq) => (k -> a -> a -> a) -> seq (k,a) -> FM k a
 insertWith       :: Eq k => (a -> a -> a) -> k -> a -> FM k a -> FM k a
 insertWithKey    :: Eq k => (k -> a -> a -> a) -> k -> a -> FM k a -> FM k a
-insertSeqWith    :: (Eq k,S.Sequence seq) => 
+insertSeqWith    :: (Eq k,S.Sequence seq) =>
                         (a -> a -> a) -> seq (k,a) -> FM k a -> FM k a
-insertSeqWithKey :: (Eq k,S.Sequence seq) => 
+insertSeqWithKey :: (Eq k,S.Sequence seq) =>
                         (k -> a -> a -> a) -> seq (k,a) -> FM k a -> FM k a
 unionl           :: Eq k => FM k a -> FM k a -> FM k a
 unionr           :: Eq k => FM k a -> FM k a -> FM k a
 unionWith        :: Eq k => (a -> a -> a) -> FM k a -> FM k a -> FM k a
-unionSeqWith     :: (Eq k,S.Sequence seq) => 
+unionSeqWith     :: (Eq k,S.Sequence seq) =>
                         (a -> a -> a) -> seq (FM k a) -> FM k a
 intersectionWith :: Eq k => (a -> b -> c) -> FM k a -> FM k b -> FM k c
 difference       :: Eq k => FM k a -> FM k b -> FM k a
-properSubset     :: Eq k => FM k a -> FM k b -> Bool    
-subset           :: Eq k => FM k a -> FM k b -> Bool    
+properSubset     :: Eq k => FM k a -> FM k b -> Bool
+subset           :: Eq k => FM k a -> FM k b -> Bool
 properSubmapBy   :: Eq k => (a -> a -> Bool) -> FM k a -> FM k a -> Bool
 submapBy         :: Eq k => (a -> a -> Bool) -> FM k a -> FM k a -> Bool
 sameMapBy        :: Eq k => (a -> a -> Bool) -> FM k a -> FM k a -> Bool
@@ -139,7 +138,7 @@ filterWithKey    :: Eq k => (k -> a -> Bool) -> FM k a -> FM k a
 partitionWithKey :: Eq k => (k -> a -> Bool) -> FM k a -> (FM k a, FM k a)
 
 unionWithKey     :: Eq k => (k -> a -> a -> a) -> FM k a -> FM k a -> FM k a
-unionSeqWithKey  :: (Eq k,S.Sequence seq) => 
+unionSeqWithKey  :: (Eq k,S.Sequence seq) =>
                         (k -> a -> a -> a) -> seq (FM k a) -> FM k a
 intersectionWithKey :: Eq k => (k -> a -> b -> c) -> FM k a -> FM k b -> FM k c
 
@@ -193,10 +192,12 @@ structuralInvariant = const True
 -- some unexported utility functions
 
 -- uncurried insert.
+uinsert :: (t, t1) -> FM t t1 -> FM t t1
 uinsert (k,x) = I k x
 
 
 -- left biased merge.
+mergeFM :: (Ord t) => FM t t1 -> FM t t1 -> FM t t1
 mergeFM E m = m
 mergeFM m E = m
 mergeFM o1@(I k1 a1 m1) o2@(I k2 a2 m2) =
@@ -205,67 +206,69 @@ mergeFM o1@(I k1 a1 m1) o2@(I k2 a2 m2) =
       GT -> I k2 a2 (mergeFM o1 m2)
       EQ -> I k1 a1 (mergeFM m1 m2)
 
+toRandList :: FM t t1 -> RL.Seq (FM t t1)
 toRandList E = RL.empty
 toRandList (I k a m) = RL.lcons (I k a E) (toRandList m)
 
+mergeSortFM :: (Ord t) => FM t t1 -> FM t t1
 mergeSortFM m = RL.reducer mergeFM E (toRandList m)
 
 foldrFM :: Eq k => (a -> b -> b) -> b -> FM k a -> b
-foldrFM f z E = z
+foldrFM _ z E = z
 foldrFM f z (I k a m) = f a (foldrFM f z (delete k m))
 
 foldr1FM :: Eq k => (a -> a -> a) -> FM k a -> a
-foldr1FM f (I k a E) = a
+foldr1FM _ (I _ a E) = a
 foldr1FM f (I k a m) = f a (foldr1FM f (delete k m))
-foldr1FM f _ = error "invalid call to foldr1FM on empty map"
+foldr1FM _ _ = error "invalid call to foldr1FM on empty map"
 
 foldrFM' :: Eq k => (a -> b -> b) -> b -> FM k a -> b
-foldrFM' f z E = z
+foldrFM' _ z E = z
 foldrFM' f z (I k a m) = f a $! (foldrFM' f z (delete k m))
 
 foldr1FM' :: Eq k => (a -> a -> a) -> FM k a -> a
-foldr1FM' f (I k a E) = a
+foldr1FM' _ (I _ a E) = a
 foldr1FM' f (I k a m) = f a $! (foldr1FM' f (delete k m))
-foldr1FM' f _ = error "invalid call to foldr1FM' on empty map"
+foldr1FM' _ _ = error "invalid call to foldr1FM' on empty map"
 
 foldlFM :: Eq k => (b -> a -> b) -> b -> FM k a -> b
-foldlFM f x E = x
+foldlFM _ x E = x
 foldlFM f x (I k a m) = foldlFM f (f x a) (delete k m)
 
 foldlFM' :: Eq k => (b -> a -> b) -> b -> FM k a -> b
-foldlFM' f x E = x
+foldlFM' _ x E = x
 foldlFM' f x (I k a m) = x `seq` foldlFM' f (f x a) (delete k m)
 
 foldrWithKeyFM :: Eq k => (k -> a -> b -> b) -> b -> FM k a -> b
-foldrWithKeyFM f z E = z
+foldrWithKeyFM _ z E = z
 foldrWithKeyFM f z (I k a m) = f k a (foldrWithKeyFM f z (delete k m))
 
 foldrWithKeyFM' :: Eq k => (k -> a -> b -> b) -> b -> FM k a -> b
-foldrWithKeyFM' f z E = z
+foldrWithKeyFM' _ z E = z
 foldrWithKeyFM' f z (I k a m) = f k a $! (foldrWithKeyFM' f z (delete k m))
 
 foldlWithKeyFM :: Eq k => (b -> k -> a -> b) -> b -> FM k a -> b
-foldlWithKeyFM f x E = x
+foldlWithKeyFM _ x E = x
 foldlWithKeyFM f x (I k a m) = foldlWithKeyFM f (f x k a) (delete k m)
 
 foldlWithKeyFM' :: Eq k => (b -> k -> a -> b) -> b -> FM k a -> b
-foldlWithKeyFM' f x E = x
+foldlWithKeyFM' _ x E = x
 foldlWithKeyFM' f x (I k a m) = x `seq` foldlWithKeyFM' f (f x k a) (delete k m)
 
 takeWhileFM :: (k -> Bool) -> FM k a -> FM k a
-takeWhileFM p E = E
+takeWhileFM _ E = E
 takeWhileFM p (I k a m)
    | p k       = I k a (takeWhileFM p m)
    | otherwise = E
 
 dropWhileFM :: (k -> Bool) -> FM k a -> FM k a
-dropWhileFM p E = E
-dropWhileFM p o@(I k a m)
+dropWhileFM _ E = E
+dropWhileFM p o@(I k _ m)
    | p k       = dropWhileFM p m
    | otherwise = o
 
 spanFM :: (k -> Bool) -> FM k a -> (FM k a,FM k a)
-spanFM p E = (E,E)
+spanFM _ E = (E,E)
 spanFM p o@(I k a m)
    | p k       = let (x,y) = spanFM p m in (I k a x,y)
    | otherwise = (E,o)
@@ -286,63 +289,63 @@ union (I k x m1) m2 = I k x (union m1 m2)
 
 unionSeq = S.foldr union E
 
-deleteAll key E = E
-deleteAll key (I k x m) | key == k  = deleteAll key m 
+deleteAll _ E = E
+deleteAll key (I k x m) | key == k  = deleteAll key m
                         | otherwise = I k x (deleteAll key m)
 
 delete = deleteAll
 
 null E = True
-null (I k x m) = False
+null (I _ _ _) = False
 
 size E = 0
-size (I k x m) = 1 + size (delete k m)
+size (I k _ m) = 1 + size (delete k m)
 
-member key E = False
-member key (I k x m) = key == k || member key m
+member _ E = False
+member key (I k _ m) = key == k || member key m
 
-count key E = 0
-count key (I k x m) | key == k  = 1
+count _ E = 0
+count key (I k _ m) | key == k  = 1
                     | otherwise = count key m
 
 lookup key m = runIdentity (lookupM key m)
 
-lookupM key E = fail "AssocList.lookup: lookup failed"
+lookupM _ E = fail "AssocList.lookup: lookup failed"
 lookupM key (I k x m) | key == k  = return x
                       | otherwise = lookupM key m
 
-lookupAll key E = S.empty
-lookupAll key (I k x m) | key == k  = S.singleton x 
+lookupAll _ E = S.empty
+lookupAll key (I k x m) | key == k  = S.singleton x
                         | otherwise = lookupAll key m
 
 lookupAndDelete key m = runIdentity (lookupAndDeleteM key m)
 
-lookupAndDeleteM key E = fail "AssocList.lookupAndDeleteM: lookup failed"
+lookupAndDeleteM _ E = fail "AssocList.lookupAndDeleteM: lookup failed"
 lookupAndDeleteM key (I k x m)
    | key == k  = return (x,delete k m)
-   | otherwise = lookupAndDeleteM key m >>= 
+   | otherwise = lookupAndDeleteM key m >>=
                     \ (z, m') -> return (z, I k x m')
 
-lookupAndDeleteAll key m = 
+lookupAndDeleteAll key m =
    case lookupAndDeleteM key m of
       Nothing     -> (S.empty,m)
       Just (z,m') -> (S.singleton z,m')
 
 
-lookupWithDefault d key E = d
+lookupWithDefault d _ E = d
 lookupWithDefault d key (I k x m) | key == k = x
                                   | otherwise = lookupWithDefault d key m
 
 elements E = S.empty
 elements (I k x m) = S.lcons x (elements (delete k m))
 
-adjust f key E = E
+adjust _ _ E = E
 adjust f key (I k x m) | key == k  = I key (f x) m
                        | otherwise = I k x (adjust f key m)
 
 adjustAll = adjust
 
-adjustOrInsert f z key E = singleton key z
+adjustOrInsert _ z key E = singleton key z
 adjustOrInsert f z key (I k x m)
     | key == k  = I key (f x) m
     | otherwise = I k x (adjustOrInsert f z key m)
@@ -352,26 +355,26 @@ adjustAllOrInsert = adjustOrInsert
 adjustOrDelete = adjustOrDeleteDefault
 adjustOrDeleteAll = adjustOrDeleteAllDefault
 
-map f E = E
+map _ E = E
 map f (I k x m) = I k (f x) (map f m)
 
-fold f c E = c
+fold _ c E = c
 fold f c (I k x m) = fold f (f x c) (delete k m)
 
-fold' f c E = c
+fold' _ c E = c
 fold' f c (I k x m) = c `seq` fold' f (f x c) (delete k m)
 
-fold1 f E = error "AssocList.fold1: empty map"
+fold1 _ E = error "AssocList.fold1: empty map"
 fold1 f (I k x m) = fold f x (delete k m)
 
-fold1' f E = error "AssocList.fold1': empty map"
+fold1' _ E = error "AssocList.fold1': empty map"
 fold1' f (I k x m) = fold' f x (delete k m)
 
-filter p E = E
+filter _ E = E
 filter p (I k x m) | p x = I k x (filter p (delete k m))
                    | otherwise = filter p (delete k m)
 
-partition p E = (E, E)
+partition _ E = (E, E)
 partition p (I k x m)
     | p x       = (I k x m1,m2)
     | otherwise = (m1,I k x m2)
@@ -382,23 +385,23 @@ toSeq E = S.empty
 toSeq (I k x m) = S.lcons (k,x) (toSeq (delete k m))
 
 keys E = S.empty
-keys (I k x m) = S.lcons k (keys (delete k m))
+keys (I k _ m) = S.lcons k (keys (delete k m))
 
-mapWithKey f E = E
+mapWithKey _ E = E
 mapWithKey f (I k x m) = I k (f k x) (mapWithKey f m)
 
-foldWithKey f c E = c
+foldWithKey _ c E = c
 foldWithKey f c (I k x m) = foldWithKey f (f k x c) (delete k m)
 
-foldWithKey' f c E = c
+foldWithKey' _ c E = c
 foldWithKey' f c (I k x m) = c `seq` foldWithKey' f (f k x c) (delete k m)
 
-filterWithKey p E = E
-filterWithKey p (I k x m) 
+filterWithKey _ E = E
+filterWithKey p (I k x m)
     | p k x = I k x (filterWithKey p (delete k m))
     | otherwise = filterWithKey p (delete k m)
 
-partitionWithKey p E = (E, E)
+partitionWithKey _ E = (E, E)
 partitionWithKey p (I k x m)
     | p k x     = (I k x m1,m2)
     | otherwise = (m1,I k x m2)
@@ -408,11 +411,13 @@ unionl = union
 unionr = flip union
 
 
+findMin :: (Ord t) => t -> t1 -> FM t t1 -> (t, t1)
 findMin k0 x E = (k0,x)
 findMin k0 a0 (I k a m)
         | k < k0    = findMin k  a  (delete k m)
         | otherwise = findMin k0 a0 (delete k m)
 
+findMax ::( Ord t) => t -> t1 -> FM t t1 -> (t, t1)
 findMax k0 x E = (k0,x)
 findMax k0 a0 (I k a m)
         | k > k0    = findMax k  a  (delete k m)
@@ -446,25 +451,25 @@ foldr' f z m = foldrFM' f z (mergeSortFM m)
 foldr1 f m =
   case mergeSortFM m of
     E -> error $ moduleName++".foldlr1: empty map"
-    m -> foldr1FM f m
+    n -> foldr1FM f n
 
 foldr1' f m =
   case mergeSortFM m of
     E -> error $ moduleName++".foldlr1': empty map"
-    m -> foldr1FM' f m
-   
+    n -> foldr1FM' f n
+
 foldl  f x m = foldlFM  f x (mergeSortFM m)
 foldl' f x m = foldlFM' f x (mergeSortFM m)
 
 foldl1 f m =
   case mergeSortFM m of
     E -> error $ moduleName++".foldl1: empty map"
-    I k a m -> foldlFM f a (delete k m)
+    I k a n -> foldlFM f a (delete k n)
 
 foldl1' f m =
   case mergeSortFM m of
     E -> error $ moduleName++".foldl1': empty map"
-    I k a m -> foldlFM' f a (delete k m)
+    I k a n -> foldlFM' f a (delete k n)
 
 unsafeFromOrdSeq   = fromSeq
 unsafeAppend       = union
@@ -496,10 +501,10 @@ toOrdSeq            = toSeq . mergeSortFM
 
 
 strict n@E = n
-strict n@(I k a m) = strict m `seq` n
+strict n@(I _ _ m) = strict m `seq` n
 
-strictWith f n@E = n
-strictWith f n@(I k a m) = f a `seq` strictWith f m `seq` n
+strictWith _ n@E = n
+strictWith f n@(I _ a m) = f a `seq` strictWith f m `seq` n
 
 
 -- defaults
@@ -530,21 +535,21 @@ intersectionWithKey = intersectionWithKeyUsingLookupM
 -- instance declarations
 
 instance Eq k  => A.AssocX (FM k) k where
-  {empty = empty; singleton = singleton; fromSeq = fromSeq; insert = insert; 
-   insertSeq = insertSeq; union = union; unionSeq = unionSeq; 
-   delete = delete; deleteAll = deleteAll; deleteSeq = deleteSeq; 
-   null = null; size = size; member = member; count = count; 
-   lookup = lookup; lookupM = lookupM; lookupAll = lookupAll; 
+  {empty = empty; singleton = singleton; fromSeq = fromSeq; insert = insert;
+   insertSeq = insertSeq; union = union; unionSeq = unionSeq;
+   delete = delete; deleteAll = deleteAll; deleteSeq = deleteSeq;
+   null = null; size = size; member = member; count = count;
+   lookup = lookup; lookupM = lookupM; lookupAll = lookupAll;
    lookupAndDelete = lookupAndDelete; lookupAndDeleteM = lookupAndDeleteM;
    lookupAndDeleteAll = lookupAndDeleteAll;
-   lookupWithDefault = lookupWithDefault; adjust = adjust; 
+   lookupWithDefault = lookupWithDefault; adjust = adjust;
    adjustAll = adjustAll; adjustOrInsert = adjustOrInsert;
    adjustAllOrInsert = adjustAllOrInsert;
    adjustOrDelete = adjustOrDelete; adjustOrDeleteAll = adjustOrDeleteAll;
    fold = fold; fold' = fold'; fold1 = fold1; fold1' = fold1';
    filter = filter; partition = partition; elements = elements;
    strict = strict; strictWith = strictWith;
-   structuralInvariant = structuralInvariant; instanceName m = moduleName}
+   structuralInvariant = structuralInvariant; instanceName _ = moduleName}
 
 instance Ord k => A.OrdAssocX (FM k) k where
   {minView = minView; minElem = minElem; deleteMin = deleteMin;
@@ -558,11 +563,11 @@ instance Ord k => A.OrdAssocX (FM k) k where
    partitionLE_GT = partitionLE_GT; partitionLT_GT = partitionLT_GT}
 
 instance Eq k => A.FiniteMapX (FM k) k where
-  {fromSeqWith = fromSeqWith; fromSeqWithKey = fromSeqWithKey; 
-   insertWith  = insertWith; insertWithKey = insertWithKey; 
-   insertSeqWith = insertSeqWith; insertSeqWithKey = insertSeqWithKey; 
-   unionl = unionl; unionr = unionr; unionWith = unionWith; 
-   unionSeqWith = unionSeqWith; intersectionWith = intersectionWith; 
+  {fromSeqWith = fromSeqWith; fromSeqWithKey = fromSeqWithKey;
+   insertWith  = insertWith; insertWithKey = insertWithKey;
+   insertSeqWith = insertSeqWith; insertSeqWithKey = insertSeqWithKey;
+   unionl = unionl; unionr = unionr; unionWith = unionWith;
+   unionSeqWith = unionSeqWith; intersectionWith = intersectionWith;
    difference = difference; properSubset = properSubset; subset = subset;
    properSubmapBy = properSubmapBy; submapBy = submapBy;
    sameMapBy = sameMapBy}
@@ -570,9 +575,9 @@ instance Eq k => A.FiniteMapX (FM k) k where
 instance Ord k => A.OrdFiniteMapX (FM k) k
 
 instance Eq k  => A.Assoc (FM k) k where
-  {toSeq = toSeq; keys = keys; mapWithKey = mapWithKey; 
+  {toSeq = toSeq; keys = keys; mapWithKey = mapWithKey;
    foldWithKey = foldWithKey; foldWithKey' = foldWithKey';
-   filterWithKey = filterWithKey; 
+   filterWithKey = filterWithKey;
    partitionWithKey = partitionWithKey}
 
 instance Ord k => A.OrdAssoc (FM k) k where
@@ -583,7 +588,7 @@ instance Ord k => A.OrdAssoc (FM k) k where
    toOrdSeq = toOrdSeq}
 
 instance Eq k => A.FiniteMap (FM k) k where
-  {unionWithKey = unionWithKey; unionSeqWithKey = unionSeqWithKey; 
+  {unionWithKey = unionWithKey; unionSeqWithKey = unionSeqWithKey;
    intersectionWithKey = intersectionWithKey}
 
 instance Ord k => A.OrdFiniteMap (FM k) k
