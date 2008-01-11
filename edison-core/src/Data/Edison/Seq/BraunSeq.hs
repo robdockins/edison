@@ -1,13 +1,13 @@
 -- |
 --   Module      :  Data.Edison.Seq.BraunSeq
---   Copyright   :  Copyright (c) 1998-1999 Chris Okasaki
+--   Copyright   :  Copyright (c) 1998-1999, 2008 Chris Okasaki
 --   License     :  MIT; see COPYRIGHT file for terms and conditions
 --
 --   Maintainer  :  robdockins AT fastmail DOT fm
 --   Stability   :  stable
 --   Portability :  GHC, Hugs (MPTC and FD)
 --
---   One-sided Braun sequences.  All running times are as listed in 
+--   One-sided Braun sequences.  All running times are as listed in
 --   "Data.Edison.Seq" except the following:
 --
 --   * lview, lcons, ltail*   @O( log n )@
@@ -41,7 +41,7 @@
 --   * Rob Hoogerwoord. \"A Logarithmic Implementation of Flexible Arrays\".
 --     /Mathematics of Program Construction/ (MPC'92), pages 191-207.
 --
---   * Chris Okasaki. \"Three algorithms on Braun Trees\".  
+--   * Chris Okasaki. \"Three algorithms on Braun Trees\".
 --     /Journal of Function Programming/ 7(6):661-666. Novemebr 1997.
 
 module Data.Edison.Seq.BraunSeq (
@@ -71,13 +71,11 @@ import Prelude hiding (concat,reverse,map,concatMap,foldr,foldl,foldr1,foldl1,
                        filter,takeWhile,dropWhile,lookup,take,drop,splitAt,
                        zip,zip3,zipWith,zipWith3,unzip,unzip3,null)
 
-import Control.Monad
 import Control.Monad.Identity
 import Data.Maybe
 import Data.Monoid
 import Test.QuickCheck
 
-import Data.Edison.Prelude
 import qualified Data.Edison.Seq as S ( Sequence(..) )
 import Data.Edison.Seq.Defaults
 import qualified Data.Edison.Seq.ListSeq as L
@@ -183,8 +181,8 @@ rcons y ys = insAt (size ys) ys
 
 append xs E = xs
 append xs ys = app (size xs) xs ys
-  where app 0 xs ys = ys
-        app n xs E = xs
+  where app 0 _ ys = ys
+        app _ xs E = xs
         app n (B x a b) (B y c d)
             | odd n     = B x (app m a (lcons y d)) (app m b c)
             | otherwise = B x (app m a c) (app (m-1) b (lcons y d))
@@ -196,23 +194,25 @@ lview E = fail "BraunSeq.lview: empty sequence"
 lview (B x a b) = return (x, combine a b)
 
 -- not exported
+combine :: Seq a -> Seq a -> Seq a
 combine E _ = E
 combine (B x a b) c = B x c (combine a b)
 
 lhead E = error "BraunSeq.lhead: empty sequence"
-lhead (B x a b) = x
+lhead (B x _ _) = x
 
 lheadM E = fail "BraunSeq.lheadM: empty sequence"
-lheadM (B x a b) = return x
+lheadM (B x _ _) = return x
 
 ltail E = error "BraunSeq.ltail: empty sequence"
-ltail (B x a b) = combine a b
+ltail (B _ a b) = combine a b
 
 ltailM E = fail "BraunSeq.ltailM: empty sequence"
-ltailM (B x a b) = return (combine a b)
+ltailM (B _ a b) = return (combine a b)
 
 -- not exported
 -- precondition: i >= 0
+delAt :: Int -> Seq a -> Seq a
 delAt 0 _ = E
 delAt i (B x a b)
   | odd i     = B x (delAt (half i) a) b
@@ -239,12 +239,12 @@ null E = True
 null _ = False
 
 size E = 0
-size (B x a b) = 1 + n + n + diff n a
+size (B _ a b) = 1 + n + n + diff n a
   where n = size b
 
         diff 0 E = 0
-        diff 0 (B x a b) = 1
-        diff i (B x a b)
+        diff 0 (B _ _ _) = 1
+        diff i (B _ a b)
           | odd i     = diff (half i) a
           | otherwise = diff (half i - 1) b
         diff _ _ = error "BraunSeq.size: bug. Impossible case in diff!"
@@ -261,7 +261,7 @@ reverse xs = rev00 (size xs) xs
       where m = half n
     rev00 _ _ = error "BraunSeq.reverse: bug!"
 
-    rev11 n x E = (x,E)
+    rev11 _ x E = (x,E)
     rev11 n x (B y a b)
       | odd n     = let (x',a') = rev11 m x a
                         (y',b') = rev11 m y b      in (y', B x' b' a')
@@ -269,7 +269,7 @@ reverse xs = rev00 (size xs) xs
                         (y',b') = rev11 (m-1) y b  in (x', B y' a' b')
       where m = half n
 
-    rev01 n E = error "BraunSeq.reverse: bug!"
+    rev01 _ E = error "BraunSeq.reverse: bug!"
     rev01 n (B x a b)
       | n == 1    = (x, E)
       | odd n     = let (y',a') = rev01 m a
@@ -278,7 +278,7 @@ reverse xs = rev00 (size xs) xs
                         (x',b') = rev11 (m-1) x b  in (y', B x' a' b')
       where m = half n
 
-    rev10 n x E = B x E E
+    rev10 _ x E = B x E E
     rev10 n x (B y a b)
       | odd n     = let a'      = rev10 m x a
                         (y',b') = rev11 m y b      in B y' a' b'
@@ -287,7 +287,7 @@ reverse xs = rev00 (size xs) xs
       where m = half n
 
 fromList = L.lhead . L.foldr build [E] . rows 1
-  where rows k [] = []
+  where rows _ [] = []
         rows k xs = (k, ys) : rows (k+k) zs
           where (ys,zs) = L.splitAt k xs
 
@@ -307,24 +307,24 @@ toList t = tol [t]
                 (ts1,ts2) = children ts
 
                 children [] = ([],[])
-                children (B x E _ : ts) = ([],[])
-                children (B x a E : ts) = (a : leftChildren ts, [])
-                children (B x a b : ts) = (a : ts1, b : ts2)
+                children (B _ E _ : _) = ([],[])
+                children (B _ a E : ts) = (a : leftChildren ts, [])
+                children (B _ a b : ts) = (a : ts1, b : ts2)
                   where (ts1, ts2) = children ts
                 children _ = error "BraunSeq.toList: bug!"
 
                 leftChildren [] = []
-                leftChildren (B x E _ : ts) = []
-                leftChildren (B x a b : ts) = a : leftChildren ts
+                leftChildren (B _ E _ : _) = []
+                leftChildren (B _ a _ : ts) = a : leftChildren ts
                 leftChildren _ = error "BraunSeq.toList: bug!"
 
-                root (B x a b) = x
+                root (B x _ _) = x
                 root _ = error "BraunSeq.toList: bug!"
 
-                left (B x a b) = a
-                left _ = error "BraunSeq.toList: bug!"
+                (B _ a _) = a
+--                (left _) = error "BraunSeq.toList: bug!"
 
-map f E = E
+map _ E = E
 map f (B x a b) = B (f x) (map f a) (map f b)
 
 copy n x = if n <= 0 then empty else fst (copy2 n)
@@ -335,8 +335,8 @@ copy n x = if n <= 0 then empty else fst (copy2 n)
           where (a, b) = copy2 (half (n-1))
 
 inBounds i xs = (i >= 0) && inb xs i
-  where inb E i = False
-        inb (B x a b) i
+  where inb E _ = False
+        inb (B _ a b) i
           | odd i     = inb a (half i)
           | i == 0    = True
           | otherwise = inb b (half i - 1)
@@ -346,7 +346,7 @@ lookup i xs = runIdentity (lookupM i xs)
 lookupM i xs
   | i < 0     = fail "BraunSeq.lookupM: bad subscript"
   | otherwise = look xs i
-  where look E i = nothing
+  where look E _ = nothing
         look (B x a b) i
           | odd i     = look a (half i)
           | i == 0    = return x
@@ -355,33 +355,33 @@ lookupM i xs
 
 lookupWithDefault d i xs = if i < 0 then d
                            else look xs i
-  where look E i = d
+  where look E _ = d
         look (B x a b) i
           | odd i     = look a (half i)
           | i == 0    = x
           | otherwise = look b (half i - 1)
 
 update i y xs = if i < 0 then xs else upd i xs
-  where upd i E = E
+  where upd _ E = E
         upd i (B x a b)
           | odd i     = B x (upd (half i) a) b
           | i == 0    = B y a b
           | otherwise = B x a (upd (half i - 1) b)
 
 adjust f i xs = if i < 0 then xs else adj i xs
-  where adj i E = E
+  where adj _ E = E
         adj i (B x a b)
           | odd i     = B x (adj (half i) a) b
           | i == 0    = B (f x) a b
           | otherwise = B x a (adj (half i - 1) b)
 
 mapWithIndex f xs = mwi 0 1 xs
-  where mwi i d E = E
+  where mwi _ _ E = E
         mwi i d (B x a b) = B (f i x) (mwi (i+d) dd a) (mwi (i+dd) dd b)
           where dd = d+d
 
 take n xs = if n <= 0 then E else ta n xs
-  where ta n E = E
+  where ta _ E = E
         ta n (B x a b)
             | odd n     = B x (ta m a) (ta m b)
             | n == 0    = E
@@ -389,8 +389,8 @@ take n xs = if n <= 0 then E else ta n xs
           where m = half n
 
 drop n xs = if n <= 0 then xs else dr n xs
-  where dr n E = E
-        dr n t@(B x a b)
+  where dr _ E = E
+        dr n t@(B _ a b)
             | odd n     = combine (dr m a) (dr m b)
             | n == 0    = t
             | otherwise = combine (dr (m-1) b) (dr m a)
@@ -403,11 +403,11 @@ zip3 (B x a b) (B y c d) (B z e f) = B (x,y,z) (zip3 a c e) (zip3 b d f)
 zip3 _ _ _ = E
 
 zipWith f (B x a b) (B y c d) = B (f x y) (zipWith f a c) (zipWith f b d)
-zipWith f _ _ = E
+zipWith _ _ _ = E
 
-zipWith3 fn (B x a b) (B y c d) (B z e f) = 
+zipWith3 fn (B x a b) (B y c d) (B z e f) =
     B (fn x y z) (zipWith3 fn a c e) (zipWith3 fn b d f)
-zipWith3 fn _ _ _ = E
+zipWith3 _ _ _ _ = E
 
 unzip E = (E, E)
 unzip (B (x,y) a b) = (B x a1 b1, B y a2 b2)
@@ -419,31 +419,33 @@ unzip3 (B (x,y,z) a b) = (B x a1 b1, B y a2 b2, B z a3 b3)
   where (a1,a2,a3) = unzip3 a
         (b1,b2,b3) = unzip3 b
 
-unzipWith f g E = (E, E)
+unzipWith _ _ E = (E, E)
 unzipWith f g (B x a b) = (B (f x) a1 b1, B (g x) a2 b2)
   where (a1,a2) = unzipWith f g a
         (b1,b2) = unzipWith f g b
 
-unzipWith3 f g h E = (E, E, E)
+unzipWith3 _ _ _ E = (E, E, E)
 unzipWith3 f g h (B x a b) = (B (f x) a1 b1, B (g x) a2 b2, B (h x) a3 b3)
   where (a1,a2,a3) = unzipWith3 f g h a
         (b1,b2,b3) = unzipWith3 f g h b
 
 
 strict s@E = s
-strict s@(B x l r) = strict l `seq` strict r `seq` s
+strict s@(B _ l r) = strict l `seq` strict r `seq` s
 
-strictWith f s@E = s
+strictWith _ s@E = s
 strictWith f s@(B x l r) = f x `seq` strictWith f l `seq` strictWith f r `seq` s
 
 -- invariants:
 --   * Left subtree is exactily the same size as the right
 --     subtree, or one element larger
 
+-- structuralInvariant :: Seq a -> Bool
 structuralInvariant E         = True
 structuralInvariant (B _ l r) = isJust (check l r)
 
-  where check E           E           = Just 1
+  where check :: Seq a -> Seq a -> Maybe Int
+        check E           E           = Just 1
         check (B _ E E)   E           = Just 2
         check (B _ l1 l2) (B _ r1 r2) = do
            x <- check l1 l2
@@ -497,10 +499,10 @@ instance S.Sequence Seq where
    lview = lview; lhead = lhead; ltail = ltail;
    lheadM = lheadM; ltailM = ltailM; rheadM = rheadM; rtailM = rtailM;
    rview = rview; rhead = rhead; rtail = rtail; null = null;
-   size = size; concat = concat; reverse = reverse; 
+   size = size; concat = concat; reverse = reverse;
    reverseOnto = reverseOnto; fromList = fromList; toList = toList;
    fold = fold; fold' = fold'; fold1 = fold1; fold1' = fold1';
-   foldr = foldr; foldr' = foldr'; foldl = foldl; foldl' = foldl'; 
+   foldr = foldr; foldr' = foldr'; foldl = foldl; foldl' = foldl';
    foldr1 = foldr1; foldr1' = foldr1'; foldl1 = foldl1; foldl1' = foldl1';
    reducer = reducer; reducer' = reducer'; reducel = reducel;
    reducel' = reducel'; reduce1 = reduce1; reduce1' = reduce1';
@@ -515,7 +517,7 @@ instance S.Sequence Seq where
    zip3 = zip3; zipWith = zipWith; zipWith3 = zipWith3; unzip = unzip;
    unzip3 = unzip3; unzipWith = unzipWith; unzipWith3 = unzipWith3;
    strict = strict; strictWith = strictWith;
-   structuralInvariant = structuralInvariant; instanceName s = moduleName}
+   structuralInvariant = structuralInvariant; instanceName _ = moduleName}
 
 instance Functor Seq where
   fmap = map
