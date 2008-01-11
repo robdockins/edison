@@ -1,6 +1,6 @@
 -- |
 --   Module      :  Data.Edison.Seq.FingerSeq
---   Copyright   :  Copyright (c) 2006 Robert Dockins
+--   Copyright   :  Copyright (c) 2006, 2008 Robert Dockins
 --   License     :  MIT; see COPYRIGHT file for terms and conditions
 --
 --   Maintainer  :  robdockins AT fastmail DOT fm
@@ -36,10 +36,9 @@ import Prelude hiding (concat,reverse,map,concatMap,foldr,foldl,foldr1,foldl1,
                        filter,takeWhile,dropWhile,lookup,take,drop,splitAt,
                        zip,zip3,zipWith,zipWith3,unzip,unzip3,null)
 
-import Data.Edison.Prelude
+import Data.Edison.Prelude (measure, Measured())
 import qualified Data.Edison.Seq as S
 import Data.Edison.Seq.Defaults
-import Control.Monad
 import Control.Monad.Identity
 import Data.Monoid
 import Test.QuickCheck
@@ -56,6 +55,8 @@ moduleName = "Data.Edison.Seq.FingerSeq"
 
 
 newtype SizeM = SizeM Int deriving (Eq,Ord,Num,Enum,Show)
+
+unSizeM :: SizeM -> Int
 unSizeM (SizeM x) = x
 
 instance Monoid SizeM where
@@ -64,12 +65,16 @@ instance Monoid SizeM where
 
 
 newtype Elem a = Elem a
+
+unElem :: Elem t -> t
 unElem (Elem x) = x
 
 instance Measured SizeM (Elem a) where
    measure _ = 1
 
 newtype Seq a = Seq (FT.FingerTree SizeM (Elem a))
+
+unSeq :: Seq t -> FT.FingerTree SizeM (Elem t)
 unSeq (Seq ft) = ft
 
 
@@ -151,6 +156,7 @@ structuralInvariant :: Seq a -> Bool
 
 #ifdef __GLASGOW_HASKELL__
 
+mapElem, mapUnElem :: t -> b
 mapElem   = unsafeCoerce#
 mapUnElem = unsafeCoerce#
 
@@ -231,28 +237,28 @@ map f (Seq xs) = Seq $ FT.mapTree ( \(Elem x) -> Elem $ f x) xs
 
 lookupM i (Seq xs)
     | inBounds i (Seq xs) =
-	case FT.splitTree (> (SizeM i)) (SizeM 0) xs of
+        case FT.splitTree (> (SizeM i)) (SizeM 0) xs of
            FT.Split _ (Elem x) _ -> return x
 
     | otherwise = fail "FingerSeq.lookupM: index out of bounds"
 
 lookupWithDefault d i (Seq xs)
     | inBounds i (Seq xs) =
-	case FT.splitTree (> (SizeM i)) (SizeM 0) xs of
+        case FT.splitTree (> (SizeM i)) (SizeM 0) xs of
            FT.Split _ (Elem x) _ -> x
 
     | otherwise = d
 
 update i x (Seq xs)
     | inBounds i (Seq xs) =
-	case FT.splitTree (> (SizeM i)) (SizeM 0) xs of
+        case FT.splitTree (> (SizeM i)) (SizeM 0) xs of
            FT.Split l _ r -> Seq $ FT.append l $ FT.lcons (Elem x) $ r
 
     | otherwise = Seq xs
 
 adjust f i (Seq xs)
     | inBounds i (Seq xs) =
-	case FT.splitTree (> (SizeM i)) (SizeM 0) xs of
+        case FT.splitTree (> (SizeM i)) (SizeM 0) xs of
            FT.Split l x r -> Seq $ FT.append l $ FT.lcons (Elem (f (unElem x))) $ r
 
     | otherwise = Seq xs
@@ -319,7 +325,7 @@ instance S.Sequence Seq where
    lview = lview; lhead = lhead; ltail = ltail;
    lheadM = lheadM; ltailM = ltailM; rheadM = rheadM; rtailM = rtailM;
    rview = rview; rhead = rhead; rtail = rtail; null = null;
-   size = size; concat = concat; reverse = reverse; 
+   size = size; concat = concat; reverse = reverse;
    reverseOnto = reverseOnto; fromList = fromList; toList = toList;
    fold = fold; fold' = fold'; fold1 = fold1; fold1' = fold1';
    foldr = foldr; foldr' = foldr'; foldl = foldl; foldl' = foldl';
@@ -337,7 +343,7 @@ instance S.Sequence Seq where
    zip3 = zip3; zipWith = zipWith; zipWith3 = zipWith3; unzip = unzip;
    unzip3 = unzip3; unzipWith = unzipWith; unzipWith3 = unzipWith3;
    strict = strict; strictWith = strictWith;
-   structuralInvariant = structuralInvariant; instanceName s = moduleName}
+   structuralInvariant = structuralInvariant; instanceName _ = moduleName}
 
 instance Functor Seq where
   fmap = map
