@@ -1,6 +1,6 @@
 -- |
 --   Module      :  Data.Edison.Seq.Defaults
---   Copyright   :  Copyright (c) 1998 Chris Okasaki
+--   Copyright   :  Copyright (c) 1998, 2008 Chris Okasaki
 --   License     :  MIT; see COPYRIGHT file for terms and conditions
 --
 --   Maintainer  :  robdockins AT fastmail DOT fm
@@ -20,7 +20,6 @@ import Prelude hiding (concat,reverse,map,concatMap,foldr,foldl,foldr1,foldl1,
 import Control.Monad.Identity
 import Data.Char (isSpace)
 
-import Data.Edison.Prelude
 import Data.Edison.Seq
 import qualified Data.Edison.Seq.ListSeq as L
 
@@ -41,7 +40,7 @@ rviewDefault xs
 
 
 rtailUsingLview :: (Sequence s) => s a -> s a
-rtailUsingLview xs = 
+rtailUsingLview xs =
     case lview xs of
       Nothing      -> error $ instanceName xs ++ ".rtail: empty sequence"
       Just (x, xs) -> rt x xs
@@ -51,7 +50,7 @@ rtailUsingLview xs =
             Just (y, ys) -> lcons x (rt y ys)
 
 rtailMUsingLview :: (Monad m,Sequence s) => s a -> m (s a)
-rtailMUsingLview xs = 
+rtailMUsingLview xs =
     case lview xs of
       Nothing      -> fail $ instanceName xs ++ ".rtailM: empty sequence"
       Just (x, xs) -> return (rt x xs)
@@ -126,7 +125,7 @@ fold1'UsingFold' f xs =
       Just (x, xs) -> fold' f x xs
 
 foldr1UsingLview :: Sequence s => (a -> a -> a) -> s a -> a
-foldr1UsingLview f xs = 
+foldr1UsingLview f xs =
     case lview xs of
       Nothing      -> error $ instanceName xs ++ ".foldr1: empty sequence"
       Just (x, xs) -> fr1 x xs
@@ -140,13 +139,13 @@ foldr1'UsingLview f xs =
      case lview xs of
         Nothing     -> error $ instanceName xs ++ ".foldr1': empty sequence"
         Just (x,xs) -> fr1 x xs
-  where fr1 x xs = 
+  where fr1 x xs =
           case lview xs of
              Nothing     -> x
              Just (y,ys) -> f x $! (fr1 y ys)
 
 foldl1UsingFoldl :: Sequence s => (a -> a -> a) -> s a -> a
-foldl1UsingFoldl f xs = 
+foldl1UsingFoldl f xs =
     case lview xs of
       Nothing     -> error $ instanceName xs ++ ".foldl1: empty sequence"
       Just (x,xs) -> foldl f x xs
@@ -188,13 +187,13 @@ copyUsingLists n x = fromList (L.copy n x)
 
 
 inBoundsUsingDrop :: Sequence s => Int -> s a -> Bool
-inBoundsUsingDrop i s = 
+inBoundsUsingDrop i s =
   i >= 0 && not (null (drop i s))
 
 inBoundsUsingLookupM :: Sequence s => Int -> s a -> Bool
 inBoundsUsingLookupM i s =
   case lookupM i s of
-    Just x  -> True
+    Just _  -> True
     Nothing -> False
 
 inBoundsUsingSize :: Sequence s => Int -> s a -> Bool
@@ -225,7 +224,7 @@ lookupMUsingDrop :: (Monad m, Sequence s) => Int -> s a -> m a
 lookupMUsingDrop i s
   -- XXX better error message!
   | i < 0 || null s' = fail $ instanceName s
-  			++ ".lookupMUsingDrop: empty sequence"
+                        ++ ".lookupMUsingDrop: empty sequence"
   | otherwise        = return (lhead s')
   where s' = drop i s
 
@@ -274,7 +273,7 @@ adjustUsingSplitAt f i xs
 
 {-
 insertAtUsingLists :: Sequence s => Int -> a -> s a -> s a
-insertAtUsingLists i x xs = 
+insertAtUsingLists i x xs =
   fromList (L.insertAt i x (toList xs))
 
 insertAtUsingSplitAt :: Sequence s => Int -> a -> s a -> s a
@@ -294,19 +293,19 @@ deleteAtUsingSplitAt i xs
 mapWithIndexUsingLists :: Sequence s => (Int -> a -> b) -> s a -> s b
 mapWithIndexUsingLists f xs = fromList (L.mapWithIndex f (toList xs))
 
-foldrWithIndexUsingLists :: 
+foldrWithIndexUsingLists ::
   Sequence s => (Int -> a -> b -> b) -> b -> s a -> b
 foldrWithIndexUsingLists f e xs = L.foldrWithIndex f e (toList xs)
 
-foldrWithIndex'UsingLists :: 
+foldrWithIndex'UsingLists ::
   Sequence s => (Int -> a -> b -> b) -> b -> s a -> b
 foldrWithIndex'UsingLists f e xs = L.foldrWithIndex' f e (toList xs)
 
-foldlWithIndexUsingLists :: 
+foldlWithIndexUsingLists ::
   Sequence s => (b -> Int -> a -> b) -> b -> s a -> b
 foldlWithIndexUsingLists f e xs = L.foldlWithIndex f e (toList xs)
 
-foldlWithIndex'UsingLists :: 
+foldlWithIndex'UsingLists ::
   Sequence s => (b -> Int -> a -> b) -> b -> s a -> b
 foldlWithIndex'UsingLists f e xs = L.foldlWithIndex' f e (toList xs)
 
@@ -391,7 +390,7 @@ zipWithUsingLview f xs ys =
         Nothing -> empty
         Just (y,ys') -> lcons (f x y) (zipWithUsingLview f xs' ys')
 
-zipWith3UsingLview :: 
+zipWith3UsingLview ::
   Sequence s => (a -> b -> c -> d) -> s a -> s b -> s c -> s d
 zipWith3UsingLview f xs ys zs =
   case lview xs of
@@ -408,14 +407,14 @@ zipUsingLists :: Sequence s => s a -> s b -> s (a,b)
 zipUsingLists xs ys = fromList (L.zip (toList xs) (toList ys))
 
 zip3UsingLists :: Sequence s => s a -> s b -> s c -> s (a,b,c)
-zip3UsingLists xs ys zs = 
+zip3UsingLists xs ys zs =
   fromList (L.zip3 (toList xs) (toList ys) (toList zs))
 
 zipWithUsingLists :: Sequence s => (a -> b -> c) -> s a -> s b -> s c
 zipWithUsingLists f xs ys =
   fromList (L.zipWith f (toList xs) (toList ys))
 
-zipWith3UsingLists :: 
+zipWith3UsingLists ::
   Sequence s => (a -> b -> c -> d) -> s a -> s b -> s c -> s d
 zipWith3UsingLists f xs ys zs =
   fromList (L.zipWith3 f (toList xs) (toList ys) (toList zs))
@@ -426,7 +425,7 @@ unzipUsingLists xys =
     (xs, ys) -> (fromList xs, fromList ys)
 
 unzipUsingFoldr :: Sequence s => s (a,b) -> (s a, s b)
-unzipUsingFoldr = foldr pcons (empty,empty) 
+unzipUsingFoldr = foldr pcons (empty,empty)
   where pcons (x,y) (xs,ys) = (lcons x xs, lcons y ys)
 
 unzip3UsingLists :: Sequence s => s (a,b,c) -> (s a, s b, s c)
@@ -438,26 +437,26 @@ unzip3UsingFoldr :: Sequence s => s (a,b,c) -> (s a, s b, s c)
 unzip3UsingFoldr = foldr tcons (empty,empty,empty)
   where tcons (x,y,z) (xs,ys,zs) = (lcons x xs, lcons y ys, lcons z zs)
 
-unzipWithUsingLists :: 
+unzipWithUsingLists ::
   Sequence s => (a -> b) -> (a -> c) -> s a -> (s b, s c)
 unzipWithUsingLists f g xys =
   case L.unzipWith f g (toList xys) of
     (xs, ys) -> (fromList xs, fromList ys)
 
-unzipWithUsingFoldr :: 
+unzipWithUsingFoldr ::
   Sequence s => (a -> b) -> (a -> c) -> s a -> (s b, s c)
-unzipWithUsingFoldr f g = foldr pcons (empty,empty) 
+unzipWithUsingFoldr f g = foldr pcons (empty,empty)
   where pcons e (xs,ys) = (lcons (f e) xs, lcons (g e) ys)
 
-unzipWith3UsingLists :: 
+unzipWith3UsingLists ::
   Sequence s => (a -> b) -> (a -> c) -> (a -> d) -> s a -> (s b, s c, s d)
 unzipWith3UsingLists f g h xyzs =
   case L.unzipWith3 f g h (toList xyzs) of
     (xs, ys, zs) -> (fromList xs, fromList ys, fromList zs)
 
-unzipWith3UsingFoldr :: 
+unzipWith3UsingFoldr ::
   Sequence s => (a -> b) -> (a -> c) -> (a -> d) -> s a -> (s b, s c, s d)
-unzipWith3UsingFoldr f g h = foldr tcons (empty,empty,empty) 
+unzipWith3UsingFoldr f g h = foldr tcons (empty,empty,empty)
   where tcons e (xs,ys,zs) = (lcons (f e) xs, lcons (g e) ys, lcons (h e) zs)
 
 showsPrecUsingToList :: (Show a,Sequence s) => Int -> s a -> ShowS
@@ -466,7 +465,7 @@ showsPrecUsingToList i xs rest
    | otherwise = concat ["(",instanceName xs,".fromList "] ++ showsPrec 10 (toList xs) (')':rest)
 
 readsPrecUsingFromList :: (Read a,Sequence s) => Int -> ReadS (s a)
-readsPrecUsingFromList i xs =
+readsPrecUsingFromList _ xs =
    let result = maybeParens p xs
        p xs = tokenMatch ((instanceName x)++".fromList") xs
                 >>= readsPrec 10
@@ -485,7 +484,7 @@ defaultCompare a b =
      (Nothing, _      ) -> LT
      (_      , Nothing) -> GT
      (Just (x,xs), Just (y,ys)) ->
-	case compare x y of
+        case compare x y of
            EQ -> defaultCompare xs ys
            c -> c
 
