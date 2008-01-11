@@ -1,6 +1,6 @@
 -- |
 --   Module      :  Data.Edison.Seq.JoinList
---   Copyright   :  Copyright (c) 1998-1999 Chris Okasaki
+--   Copyright   :  Copyright (c) 1998-1999, 2008 Chris Okasaki
 --   License     :  MIT; see COPYRIGHT file for terms and conditions
 --
 --   Maintainer  :  robdockins AT fastmail DOT fm
@@ -52,7 +52,6 @@ import Prelude hiding (concat,reverse,map,concatMap,foldr,foldl,foldr1,foldl1,
                        filter,takeWhile,dropWhile,lookup,take,drop,splitAt,
                        zip,zip3,zipWith,zipWith3,unzip,unzip3,null)
 
-import Data.Edison.Prelude
 import qualified Data.Edison.Seq as S ( Sequence(..) )
 import Data.Edison.Seq.Defaults
 import Control.Monad
@@ -163,30 +162,30 @@ append xs ys = A xs ys
 lview E = fail "JoinList.lview: empty sequence"
 lview (L x) = return (x, E)
 lview (A xs ys) = lvw xs ys
-  where lvw E zs = error "JoinList.lvw: bug"
+  where lvw E _ = error "JoinList.lvw: bug"
         lvw (L x) zs = return (x, zs)
         lvw (A xs ys) zs = lvw xs (A ys zs)
 
 lhead E = error "JoinList.lhead: empty sequence"
 lhead (L x) = x
-lhead (A xs ys) = lhead xs
+lhead (A xs _) = lhead xs
 
 lheadM E = fail "JoinList.lheadM: empty sequence"
 lheadM (L x) = return x
-lheadM (A xs ys) = lheadM xs
+lheadM (A xs _) = lheadM xs
 
 ltail E = error "JoinList.ltail: empty sequence"
-ltail (L x) = E
+ltail (L _) = E
 ltail (A xs ys) = ltl xs ys
-  where ltl E zs = error "JoinList.ltl: bug"
-        ltl (L x) zs = zs
+  where ltl E _ = error "JoinList.ltl: bug"
+        ltl (L _) zs = zs
         ltl (A xs ys) zs = ltl xs (A ys zs)
 
 ltailM E = fail "JoinList.ltailM: empty sequence"
-ltailM (L x) = return E
+ltailM (L _) = return E
 ltailM (A xs ys) = return (ltl xs ys)
-  where ltl E zs = error "JoinList.ltl: bug"
-        ltl (L x) zs = zs
+  where ltl E _ = error "JoinList.ltl: bug"
+        ltl (L _) zs = zs
         ltl (A xs ys) zs = ltl xs (A ys zs)
 
 
@@ -200,38 +199,38 @@ rview (A xs ys) = rvw xs ys
   where rvw xs (A ys (A zs s)) = rvw (A xs (A ys zs)) s
         rvw xs (A ys (L x)) = return (x, A xs ys)
         rvw xs (L x) = return (x, xs)
-        rvw xs _ = error "JoinList.rvw: bug"
- 
+        rvw _ _ = error "JoinList.rvw: bug"
+
 rhead E = error "JoinList.rhead: empty sequence"
 rhead (L x) = x
-rhead (A xs ys) = rhead ys
+rhead (A _ ys) = rhead ys
 
 rheadM E = fail "JoinList.rheadM: empty sequence"
 rheadM (L x) = return x
-rheadM (A xs ys) = rheadM ys
+rheadM (A _ ys) = rheadM ys
 
 rtail E = error "JoinList.rtail: empty sequence"
-rtail (L x) = E
+rtail (L _) = E
 rtail (A xs ys) = rtl xs ys
   where rtl xs (A ys (A zs s)) = A (A xs ys) (rtl zs s)
         rtl xs (A ys (L _)) = A xs ys
-        rtl xs (L x) = xs
-        rtl xs _ = error "JoinList.rtl: bug"
+        rtl xs (L _) = xs
+        rtl _ _ = error "JoinList.rtl: bug"
 
 rtailM E = fail "JoinList.rtailM: empty sequence"
-rtailM (L x) = return E
+rtailM (L _) = return E
 rtailM (A xs ys) = return (rtl xs ys)
   where rtl xs (A ys (A zs s)) = A (A xs ys) (rtl zs s)
         rtl xs (A ys (L _)) = A xs ys
-        rtl xs (L x) = xs
-        rtl xs _ = error "JoinList.rtl: bug"
+        rtl xs (L _) = xs
+        rtl _ _ = error "JoinList.rtl: bug"
 
 null E = True
 null _ = False
 
 size xs = sz xs (0::Int)
   where sz E n = n
-        sz (L x) n = n + (1::Int)
+        sz (L _) n = n + (1::Int)
         sz (A xs ys) n = sz xs (sz ys n)
 
 reverse (A xs ys) = A (reverse ys) (reverse xs)
@@ -242,7 +241,7 @@ toList xs = tol xs []
         tol (L x) rest = x:rest
         tol (A xs ys) rest = tol xs (tol ys rest)
 
-map f E = E
+map _ E = E
 map f (L x) = L (f x)
 map f (A xs ys) = A (map f xs) (map f ys)
 
@@ -251,39 +250,38 @@ fold'  = foldr'
 fold1  = fold1UsingFold
 fold1' = fold1'UsingFold'
 
-foldr f e E = e
+foldr _ e E = e
 foldr f e (L x) = f x e
 foldr f e (A xs ys) = foldr f (foldr f e ys) xs
-
-foldr' f e E = e
+foldr' _ e E = e
 foldr' f e (L x) = f x $! e
 foldr' f e (A xs ys) = (foldr' f $! (foldr' f e ys)) xs
 
-foldl f e E = e
+foldl _ e E = e
 foldl f e (L x) = f e x
 foldl f e (A xs ys) = foldl f (foldl f e xs) ys
 
-foldl' f e E = e
+foldl' _ e E = e
 foldl' f e (L x) = e `seq` f e x
 foldl' f e (A xs ys) = e `seq` foldl' f (foldl' f e xs) ys
 
-foldr1 f E = error "JoinList.foldr1: empty sequence"
-foldr1 f (L x) = x
+foldr1 _ E = error "JoinList.foldr1: empty sequence"
+foldr1 _ (L x) = x
 foldr1 f (A xs ys) = foldr f (foldr1 f ys) xs
 
-foldr1' f E = error "JoinLis.foldr1': empty sequence"
-foldr1' f (L x) = x
+foldr1' _ E = error "JoinLis.foldr1': empty sequence"
+foldr1' _ (L x) = x
 foldr1' f (A xs ys) = foldr' f (foldr1' f ys) xs
 
-foldl1 f E = error "JoinList.foldl1: empty sequence"
-foldl1 f (L x) = x
+foldl1 _ E = error "JoinList.foldl1: empty sequence"
+foldl1 _ (L x) = x
 foldl1 f (A xs ys) = foldl f (foldl1 f xs) ys
 
-foldl1' f E = error "JoinList.foldl1': empty sequence"
-foldl1' f (L x) = x
+foldl1' _ E = error "JoinList.foldl1': empty sequence"
+foldl1' _ (L x) = x
 foldl1' f (A xs ys) = foldl' f (foldl1' f xs) ys
 
-copy n x 
+copy n x
     | n <= 0 = E
     | otherwise = cpy n x
   where cpy n x  -- n > 0
@@ -295,12 +293,12 @@ copy n x
 
 
 strict s@E = s
-strict s@(L x) = s
+strict s@(L _) = s
 strict s@(A l r) = strict l `seq` strict r `seq` s
 
-strictWith f s@E = s
+strictWith _ s@E = s
 strictWith f s@(L x) = f x `seq` s
-strictWith f s@(A l r) = strictWith f l `seq` strictWith f l `seq` s
+strictWith f s@(A l _) = strictWith f l `seq` strictWith f l `seq` s
 
 -- invariants:
 --   * 'E' is never a child of 'A'
@@ -342,7 +340,7 @@ take = takeUsingLview
 drop = dropUsingLtail
 splitAt = splitAtUsingLview
 subseq = subseqDefault
-        
+
 filter = filterUsingLview
 partition = partitionUsingFoldr
 takeWhile = takeWhileUsingLview
@@ -366,7 +364,7 @@ instance S.Sequence Seq where
    lview = lview; lhead = lhead; ltail = ltail;
    lheadM = lheadM; ltailM = ltailM; rheadM = rheadM; rtailM = rtailM;
    rview = rview; rhead = rhead; rtail = rtail; null = null;
-   size = size; concat = concat; reverse = reverse; 
+   size = size; concat = concat; reverse = reverse;
    reverseOnto = reverseOnto; fromList = fromList; toList = toList;
    fold = fold; fold' = fold'; fold1 = fold1; fold1' = fold1';
    foldr = foldr; foldr' = foldr'; foldl = foldl; foldl' = foldl';
@@ -384,7 +382,7 @@ instance S.Sequence Seq where
    zip3 = zip3; zipWith = zipWith; zipWith3 = zipWith3; unzip = unzip;
    unzip3 = unzip3; unzipWith = unzipWith; unzipWith3 = unzipWith3;
    strict = strict; strictWith = strictWith;
-   structuralInvariant = structuralInvariant; instanceName s = moduleName}
+   structuralInvariant = structuralInvariant; instanceName _ = moduleName}
 
 instance Functor Seq where
   fmap = map
