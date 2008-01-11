@@ -1,6 +1,6 @@
 -- |
 --   Module      :  Data.Edison.Seq.BinaryRandList
---   Copyright   :  Copyright (c) 1998-1999 Chris Okasaki
+--   Copyright   :  Copyright (c) 1998-1999, 2008 Chris Okasaki
 --   License     :  MIT; see COPYRIGHT file for terms and conditions
 --
 --   Maintainer  :  robdockins AT fastmail DOT fm
@@ -57,8 +57,7 @@ import Prelude hiding (concat,reverse,map,concatMap,foldr,foldl,foldr1,foldl1,
 import Control.Monad.Identity
 import Data.Maybe
 
-import Data.Edison.Prelude
-import qualified Data.Edison.Seq as S ( Sequence(..) ) 
+import qualified Data.Edison.Seq as S ( Sequence(..) )
 import Data.Edison.Seq.Defaults
 import Data.Monoid
 import Control.Monad
@@ -149,8 +148,10 @@ data Seq a = E | Even (Seq (a,a)) | Odd a (Seq (a,a))    deriving (Eq)
 -- not exported, rewrite as bit ops?
 --even n = (n `mod` 2) == 0
 --odd n  = (n `mod` 2) <> 0
+half :: (Integral a) => a -> a
 half n = n `div` 2
 
+mkEven :: Seq (a, a) -> Seq a
 mkEven E = E
 mkEven ps = Even ps
 
@@ -169,7 +170,7 @@ append xs ys@(Even pys) =
     Odd x pxs -> Odd x (append pxs pys)
 append xs ys@(Odd _ _) = foldr lcons ys xs
 
-copy n x 
+copy n x
     | n <= 0 = E
     | otherwise = cp n x
   where cp :: Int -> a -> Seq a
@@ -186,33 +187,33 @@ lview (Odd x ps) = return (x, mkEven ps)
 
 lhead E = error "BinaryRandList.lhead: empty sequence"
 lhead (Even ps) = fst (lhead ps)
-lhead (Odd x ps) = x
+lhead (Odd x _) = x
 
 lheadM E = fail "BinaryRandList.lheadM: empty sequence"
 lheadM (Even ps) = return (fst (lhead ps))
-lheadM (Odd x ps) = return (x)
+lheadM (Odd x _) = return (x)
 
 ltail E = error "BinaryRandList.ltail: empty sequence"
 ltail (Even ps) = case lview ps of
-                    Just ((x,y), ps') -> Odd y ps'
+                    Just ((_,y), ps') -> Odd y ps'
                     Nothing -> error "BinaryRandList.ltail: bug!"
-ltail (Odd x ps) = mkEven ps
+ltail (Odd _ ps) = mkEven ps
 
 ltailM E = fail "BinaryRandList.ltailM: empty sequence"
 ltailM (Even ps) = case lview ps of
-                      Just ((x,y), ps') -> return (Odd y ps')
+                      Just ((_,y), ps') -> return (Odd y ps')
                       Nothing -> error "BinaryRandList.ltailM: bug!"
-ltailM (Odd x ps) = return (mkEven ps)
+ltailM (Odd _ ps) = return (mkEven ps)
 
 rhead E = error "BinaryRandList.rhead: empty sequence"
 rhead (Even ps) = snd (rhead ps)
 rhead (Odd x E) = x
-rhead (Odd x ps) = snd (rhead ps)
+rhead (Odd _ ps) = snd (rhead ps)
 
 rheadM E = fail "BinaryRandList.rheadM: empty sequence"
 rheadM (Even ps) = return (snd (rhead ps))
 rheadM (Odd x E) = return x
-rheadM (Odd x ps) = return (snd (rhead ps))
+rheadM (Odd _ ps) = return (snd (rhead ps))
 
 
 null E = True
@@ -220,49 +221,49 @@ null _ = False
 
 size E = 0
 size (Even ps) = 2 * size ps
-size (Odd x ps) = 1 + 2 * size ps
+size (Odd _ ps) = 1 + 2 * size ps
 
-map f E = E
+map _ E = E
 map f (Even ps)  = Even (map (\(x,y) -> (f x,f y)) ps)
-map f (Odd x ps) = Odd (f x) (map (\(x,y) -> (f x,f y)) ps)
+map f (Odd x ps) = Odd (f x) (map (\(y,z) -> (f y,f z)) ps)
 
 fold   = foldr
 fold'  = foldr'
 fold1  = fold1UsingFold
 fold1' = fold1'UsingFold'
 
-foldr f e E = e
+foldr _ e E = e
 foldr f e (Even ps)  = foldr (\(x,y) e -> f x (f y e)) e ps
 foldr f e (Odd x ps) = f x (foldr (\(x,y) e -> f x (f y e)) e ps)
 
-foldr' f e E = e
+foldr' _ e E = e
 foldr' f e (Even ps)  = foldr' (\(x,y) e -> f x $! f y $! e) e ps
 foldr' f e (Odd x ps) = f x $! (foldr' (\(x,y) e -> f x $! f y $! e) e ps)
 
-foldl f e E = e
+foldl _ e E = e
 foldl f e (Even ps)  = foldl (\e (x,y) -> f (f e x) y) e ps
 foldl f e (Odd x ps) = foldl (\e (x,y) -> f (f e x) y) (f e x) ps
 
-foldl' f e E = e
+foldl' _ e E = e
 foldl' f e (Even ps)  = foldl' (\e (x,y) -> f (f e x) y) e ps
 foldl' f e (Odd x ps) = e `seq` foldl' (\e (x,y) -> e `seq` (\z -> f z y) $! (f e x)) (f e x) ps
 
-reduce1 f E = error "BinaryRandList.reduce1: empty seq"
+reduce1 _ E = error "BinaryRandList.reduce1: empty seq"
 reduce1 f (Even ps)  = reduce1 f (map (uncurry f) ps)
-reduce1 f (Odd x E)  = x
+reduce1 _ (Odd x E)  = x
 reduce1 f (Odd x ps) = f x (reduce1 f (map (uncurry f) ps))
 
-reduce1' f E = error "BinaryRandList.reduce1': empty seq"
+reduce1' _ E = error "BinaryRandList.reduce1': empty seq"
 reduce1' f (Even ps)  = reduce1' f (map (uncurry f) ps)
-reduce1' f (Odd x E)  = x
+reduce1' _ (Odd x E)  = x
 reduce1' f (Odd x ps) = (f $! x) $! (reduce1' f (map (uncurry f) ps))
 
 
 inBounds i xs = (i >= 0) && inb xs i
   where inb :: Seq a -> Int -> Bool
-        inb E i = False
+        inb E _ = False
         inb (Even ps) i = inb ps (half i)
-        inb (Odd x ps) i = (i == 0) || inb ps (half (i-1))
+        inb (Odd _ ps) i = (i == 0) || inb ps (half (i-1))
 
 lookup i xs = runIdentity (lookupM i xs)
 
@@ -270,7 +271,7 @@ lookupM i xs
     | i < 0     = fail "BinaryRandList.lookup: bad subscript"
     | otherwise = lookFun nothing xs i return
     where
-    	nothing = fail "BinaryRandList.lookup: not found"
+        nothing = fail "BinaryRandList.lookup: not found"
 
 lookupWithDefault d i xs
     | i < 0 = d
@@ -278,7 +279,7 @@ lookupWithDefault d i xs
 
 -- not exported
 lookFun :: b -> Seq a -> Int -> (a -> b) -> b
-lookFun d E i f = d
+lookFun d E _ _ = d
 lookFun d (Even ps) i f
   | even i = lookFun d ps (half i) (f . fst)
   | otherwise = lookFun d ps (half i) (f . snd)
@@ -291,7 +292,7 @@ adjust f i xs
     | i < 0 = xs
     | otherwise = adj f i xs
   where adj :: (a -> a) -> Int -> Seq a -> Seq a
-        adj f i E = E
+        adj _ _ E = E
         adj f i (Even ps)
           | even i = Even (adj (mapFst f) (half i) ps)
           | otherwise = Even (adj (mapSnd f) (half i) ps)
@@ -301,13 +302,15 @@ adjust f i xs
           | otherwise = Odd x (adj (mapSnd f) (half (i-1)) ps)
 
 -- not exported
+mapFst :: (t -> t2) -> (t, t1) -> (t2, t1)
 mapFst f (x,y) = (f x,y)
+mapSnd :: (t1 -> t2) -> (t, t1) -> (t, t2)
 mapSnd f (x,y) = (x,f y)
 
 take n xs = if n <= 0 then E else tak n xs
   where tak :: Int -> Seq a -> Seq a
-        tak 0 xs = E
-        tak i E = E
+        tak 0 _ = E
+        tak _ E = E
         tak i (Even ps)
           | even i = Even (tak (half i) ps)
         tak i (Odd x ps)
@@ -318,7 +321,7 @@ take n xs = if n <= 0 then E else tak n xs
 drop n xs = if n <= 0 then xs else drp n xs
   where drp :: Int -> Seq a -> Seq a
         drp 0 xs = xs
-        drp i E = E
+        drp _ E = E
         drp i (Even ps)
           | even i = mkEven (drp (half i) ps)
           | otherwise = fromMaybe empty (ltailM (mkEven (drp (half i) ps)))
@@ -329,11 +332,11 @@ drop n xs = if n <= 0 then xs else drp n xs
 
 strict l@E = l
 strict l@(Even l') = strict l' `seq` l
-strict l@(Odd x l') = strict l' `seq` l
+strict l@(Odd _ l') = strict l' `seq` l
 
-strictWith f l@E = l
+strictWith _ l@E = l
 strictWith f l@(Even l')  = strictWith (\ (x,y) -> f x `seq` f y) l' `seq` l
-strictWith f l@(Odd x l') = f x `seq` strictWith (\ (x,y) -> f x `seq` f y) `seq` l
+strictWith f l@(Odd x _') = f x `seq` strictWith (\ (x,y) -> f x `seq` f y) `seq` l
 
 
 -- structural invariants are enforced by the type system
@@ -392,7 +395,7 @@ instance S.Sequence Seq where
    lview = lview; lhead = lhead; ltail = ltail;
    lheadM = lheadM; ltailM = ltailM; rheadM = rheadM; rtailM = rtailM;
    rview = rview; rhead = rhead; rtail = rtail; null = null;
-   size = size; concat = concat; reverse = reverse; 
+   size = size; concat = concat; reverse = reverse;
    reverseOnto = reverseOnto; fromList = fromList; toList = toList;
    fold = fold; fold' = fold'; fold1 = fold1; fold1' = fold1';
    foldr = foldr; foldr' = foldr'; foldl = foldl; foldl' = foldl';
@@ -410,7 +413,7 @@ instance S.Sequence Seq where
    zip3 = zip3; zipWith = zipWith; zipWith3 = zipWith3; unzip = unzip;
    unzip3 = unzip3; unzipWith = unzipWith; unzipWith3 = unzipWith3;
    strict = strict; strictWith = strictWith;
-   structuralInvariant = structuralInvariant; instanceName s = moduleName}
+   structuralInvariant = structuralInvariant; instanceName _ = moduleName}
 
 instance Functor Seq where
   fmap = map
@@ -435,7 +438,7 @@ instance Read a => Read (Seq a) where
   readsPrec = readsPrecUsingFromList
 
 instance Arbitrary a => Arbitrary (Seq a) where
-  arbitrary = do xs <- arbitrary 
+  arbitrary = do xs <- arbitrary
                  return (fromList xs)
 
   coarbitrary E = variant 0
