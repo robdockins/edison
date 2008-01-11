@@ -1,6 +1,6 @@
 -- |
 --   Module      :  Data.Edison.Coll.Defaults
---   Copyright   :  Copyright (c) 1998 Chris Okasaki
+--   Copyright   :  Copyright (c) 1998, 2008 Chris Okasaki
 --   License     :  MIT; see COPYRIGHT file for terms and conditions
 --
 --   Maintainer  :  robdockins AT fastmail DOT fm
@@ -67,29 +67,29 @@ unsafeInsertMaxUsingUnsafeAppend x c = unsafeAppend c (singleton x)
 toOrdSeqUsingFoldr :: (OrdColl c a,S.Sequence seq) => c -> seq a
 toOrdSeqUsingFoldr = foldr S.lcons S.empty
 
-unsafeFromOrdSeqUsingUnsafeInsertMin :: 
+unsafeFromOrdSeqUsingUnsafeInsertMin ::
     (OrdCollX c a,S.Sequence seq) => seq a -> c
 unsafeFromOrdSeqUsingUnsafeInsertMin = S.foldr unsafeInsertMin empty
 
 disjointUsingToOrdList :: OrdColl c a => c -> c -> Bool
 disjointUsingToOrdList xs ys = disj (toOrdList xs) (toOrdList ys)
-  where disj a@(x:xs) b@(y:ys) =
-          case compare x y of
-            LT -> disj xs b
+  where disj a@(c:cs) b@(d:ds) =
+          case compare c d of
+            LT -> disj cs b
             EQ -> False
-            GT -> disj a ys
+            GT -> disj a ds
         disj _ _ = True
 
 intersectWitnessUsingToOrdList ::
-	(OrdColl c a, Monad m) => c -> c -> m (a,a)
-intersectWitnessUsingToOrdList xs ys = witness (toOrdList xs) (toOrdList ys)
+        (OrdColl c a, Monad m) => c -> c -> m (a,a)
+intersectWitnessUsingToOrdList as bs = witness (toOrdList as) (toOrdList bs)
   where witness a@(x:xs) b@(y:ys) =
           case compare x y of
             LT -> witness xs b
             EQ -> return (x, y)
             GT -> witness a ys
-	-- XXX
-        witness _ _ = fail $ instanceName xs ++ ".intersect: failed"
+        -- XXX
+        witness _ _ = fail $ instanceName as ++ ".intersect: failed"
 
 lookupUsingLookupM :: Coll c a => a -> c -> a
 lookupUsingLookupM x ys = runIdentity (lookupM x ys)
@@ -128,10 +128,10 @@ fromSeqWithUsingInsertWith :: (Set c a,S.Sequence seq) => (a -> a -> a) -> seq a
 fromSeqWithUsingInsertWith c = S.foldr (insertWith c) empty
 
 insertUsingInsertWith :: Set c a => a -> c -> c
-insertUsingInsertWith = insertWith (\x y -> x)
+insertUsingInsertWith = insertWith (\x _ -> x)
 
 unionUsingUnionWith :: Set c a => c -> c -> c
-unionUsingUnionWith = unionWith (\x y -> x)
+unionUsingUnionWith = unionWith (\x _ -> x)
 
 filterUsingOrdLists :: OrdColl c a => (a -> Bool) -> c -> c
 filterUsingOrdLists p = unsafeFromOrdList . L.filter p . toOrdList
@@ -141,10 +141,10 @@ partitionUsingOrdLists p xs = (unsafeFromOrdList ys,unsafeFromOrdList zs)
   where (ys,zs) = L.partition p (toOrdList xs)
 
 intersectionUsingIntersectionWith :: Set c a => c -> c -> c
-intersectionUsingIntersectionWith = intersectionWith (\x y -> x)
+intersectionUsingIntersectionWith = intersectionWith (\x _ -> x)
 
 differenceUsingOrdLists :: OrdSet c a => c -> c -> c
-differenceUsingOrdLists xs ys = unsafeFromOrdList (diff (toOrdList xs) (toOrdList ys))
+differenceUsingOrdLists as bs = unsafeFromOrdList $ diff (toOrdList as) (toOrdList bs)
   where diff a@(x:xs) b@(y:ys) =
           case compare x y of
             LT -> x : diff xs b
@@ -161,6 +161,7 @@ properSubsetUsingOrdLists xs ys = properSubsetOnOrdLists (toOrdList xs) (toOrdLi
 subsetUsingOrdLists :: OrdSet c a => c -> c -> Bool
 subsetUsingOrdLists xs ys = subsetOnOrdLists (toOrdList xs) (toOrdList ys)
 
+properSubsetOnOrdLists :: (Ord t) => [t] -> [t] -> Bool
 properSubsetOnOrdLists [] [] = False
 properSubsetOnOrdLists [] (_:_) = True
 properSubsetOnOrdLists (_:_) [] = False
@@ -170,6 +171,7 @@ properSubsetOnOrdLists a@(x:xs) (y:ys) =
     EQ -> properSubsetOnOrdLists xs ys
     GT -> subsetOnOrdLists a ys
 
+subsetOnOrdLists :: (Ord t) => [t] -> [t] -> Bool
 subsetOnOrdLists [] _ = True
 subsetOnOrdLists (_:_) [] = False
 subsetOnOrdLists a@(x:xs) (y:ys) =
@@ -182,26 +184,26 @@ insertSeqWithUsingInsertWith :: (Set c a,S.Sequence seq) => (a -> a -> a) -> seq
 insertSeqWithUsingInsertWith c xs s = S.foldr (insertWith c) s xs
 
 unionlUsingUnionWith :: Set c a => c -> c -> c
-unionlUsingUnionWith xs ys = unionWith (\x y -> x) xs ys
+unionlUsingUnionWith xs ys = unionWith (\x _ -> x) xs ys
 
 unionrUsingUnionWith :: Set c a => c -> c -> c
-unionrUsingUnionWith xs ys = unionWith (\x y -> y) xs ys
+unionrUsingUnionWith xs ys = unionWith (\_ y -> y) xs ys
 
 unionWithUsingOrdLists :: OrdSet c a => (a -> a -> a) -> c -> c -> c
-unionWithUsingOrdLists c xs ys = unsafeFromOrdList (merge (toOrdList xs) (toOrdList ys))
+unionWithUsingOrdLists c as bs = unsafeFromOrdList $ merge (toOrdList as) (toOrdList bs)
   where merge a@(x:xs) b@(y:ys) =
           case compare x y of
             LT -> x : merge xs b
             EQ -> c x y : merge xs ys
             GT -> y : merge a ys
-        merge a@(x:xs) [] = a
+        merge a [] = a
         merge [] b = b
 
 unionSeqWithUsingReducer :: (Set c a,S.Sequence seq) => (a -> a -> a) -> seq c -> c
 unionSeqWithUsingReducer c = S.reducer (unionWith c) empty
 
 intersectionWithUsingOrdLists :: OrdSet c a => (a -> a -> a) -> c -> c -> c
-intersectionWithUsingOrdLists c xs ys = unsafeFromOrdList (inter (toOrdList xs) (toOrdList ys))
+intersectionWithUsingOrdLists c as bs = unsafeFromOrdList $ inter (toOrdList as) (toOrdList bs)
   where inter a@(x:xs) b@(y:ys) =
           case compare x y of
             LT -> inter xs b
@@ -219,9 +221,9 @@ showsPrecUsingToList i xs rest
   | otherwise = concat ["(",instanceName xs,".fromSeq ",showsPrec 10 (toList xs) (')':rest)]
 
 readsPrecUsingFromList :: (Coll c a, Read a) => Int -> ReadS c
-readsPrecUsingFromList i xs =
+readsPrecUsingFromList _ xs =
     let result = maybeParens p xs
-        p xs = tokenMatch ((instanceName x)++".fromSeq") xs
+        p ys = tokenMatch ((instanceName x) ++ ".fromSeq") ys
                  >>= readsPrec 10
                  >>= \(l,rest) -> return (fromList l,rest)
 
@@ -232,7 +234,7 @@ readsPrecUsingFromList i xs =
     in result
 
 compareUsingToOrdList :: OrdColl c a => c -> c -> Ordering
-compareUsingToOrdList xs ys = cmp (toOrdList xs) (toOrdList ys)
+compareUsingToOrdList as bs = cmp (toOrdList as) (toOrdList bs)
  where
   cmp [] [] = EQ
   cmp [] _  = LT
