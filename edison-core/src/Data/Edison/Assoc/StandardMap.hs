@@ -1,6 +1,6 @@
 -- |
 --   Module      :  Data.Edison.Assoc.AssocList
---   Copyright   :  Copyright (c) 2006 Robert Dockins
+--   Copyright   :  Copyright (c) 2006, 2008 Robert Dockins
 --   License     :  MIT; see COPYRIGHT file for terms and conditions
 --
 --   Maintainer  :  robdockins AT fastmail DOT fm
@@ -51,14 +51,11 @@ module Data.Edison.Assoc.StandardMap (
 
 import Prelude hiding (null,map,lookup,foldr,foldl,foldr1,foldl1,filter)
 import qualified Prelude
-import Control.Monad.Identity (runIdentity)
-import Data.Edison.Prelude
 import qualified Data.Edison.Assoc as A
 import qualified Data.Edison.Seq as S
 import qualified Data.Edison.Seq.ListSeq as L
 import Data.Edison.Assoc.Defaults
 import Data.Int
-import Data.Bits
 import Test.QuickCheck (Arbitrary(..))
 
 import qualified Data.Map as DM
@@ -132,12 +129,12 @@ partitionLT_GE    :: Ord k => k -> FM k a -> (FM k a,FM k a)
 partitionLE_GT    :: Ord k => k -> FM k a -> (FM k a,FM k a)
 partitionLT_GT    :: Ord k => k -> FM k a -> (FM k a,FM k a)
 
-fromSeqWith       :: (Ord k,S.Sequence seq) => (a -> a -> a) 
+fromSeqWith       :: (Ord k,S.Sequence seq) => (a -> a -> a)
                          -> seq (k,a) -> FM k a
 fromSeqWithKey    :: (Ord k,S.Sequence seq) => (k -> a -> a -> a)
                          -> seq (k,a) -> FM k a
 insertWith        :: Ord k => (a -> a -> a) -> k -> a
-	                 -> FM k a -> FM k a
+                         -> FM k a -> FM k a
 insertWithKey     :: Ord k => (k -> a -> a -> a) -> k -> a
                          -> FM k a -> FM k a
 insertSeqWith     :: (Ord k,S.Sequence seq) => (a -> a -> a) -> seq (k,a)
@@ -229,14 +226,14 @@ elements           = elementsUsingFold
 
 minView m          = if DM.null m
                        then fail (moduleName ++ ".minView: failed")
-                       else let ((k,x),m') = DM.deleteFindMin m 
+                       else let ((_,x),m') = DM.deleteFindMin m
                             in return (x,m')
 minElem            = snd . DM.findMin
 deleteMin          = DM.deleteMin
 unsafeInsertMin    = DM.insert
 maxView m          = if DM.null m
                        then fail (moduleName ++ ".maxView: failed")
-                       else let ((k,x),m') = DM.deleteFindMax m 
+                       else let ((_,x),m') = DM.deleteFindMax m
                             in return (x,m')
 maxElem            = snd . DM.findMax
 deleteMax          = DM.deleteMax
@@ -289,11 +286,11 @@ partitionWithKey   = DM.partitionWithKey
 
 minViewWithKey m   = if DM.null m
                         then fail (moduleName ++ ".minViewWithKey: failed")
-	                else return (DM.deleteFindMin m)
+                        else return (DM.deleteFindMin m)
 minElemWithKey     = DM.findMin
 maxViewWithKey m   = if DM.null m
                         then fail (moduleName ++ ".maxViewWithKey: failed")
-	                else return (DM.deleteFindMax m)
+                        else return (DM.deleteFindMax m)
 maxElemWithKey     = DM.findMax
 foldrWithKey        = DM.foldWithKey
 foldrWithKey' f x m = L.foldr' (\(k,a) b -> f k a b) x (DM.toAscList m)
@@ -321,7 +318,7 @@ instance Ord k => A.AssocX (FM k) k where
    fold = fold; fold' = fold'; fold1 = fold1; fold1' = fold1';
    filter = filter; partition = partition; elements = elements;
    strict = strict; strictWith = strictWith;
-   structuralInvariant = structuralInvariant; instanceName m = moduleName}
+   structuralInvariant = structuralInvariant; instanceName _ = moduleName}
 
 instance Ord k => A.OrdAssocX (FM k) k where
   {minView = minView; minElem = minElem; deleteMin = deleteMin;
@@ -369,4 +366,4 @@ instance (Ord k,Arbitrary k,Arbitrary a) => Arbitrary (FM k a) where
    arbitrary = do xs <- arbitrary
                   return (Prelude.foldr (uncurry insert) empty xs)
 
-   coarbitrary map = coarbitrary (A.toList map)
+   coarbitrary mp = coarbitrary (A.toList mp)
