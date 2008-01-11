@@ -1,6 +1,6 @@
 -- |
 --   Module      :  Data.Edison.Coll
---   Copyright   :  Copyright (c) 2006 Robert Dockins
+--   Copyright   :  Copyright (c) 2006, 2008 Robert Dockins
 --   License     :  MIT; see COPYRIGHT file for terms and conditions
 --
 --   Maintainer  :  robdockins AT fastmail DOT fm
@@ -45,7 +45,6 @@ import Prelude hiding (null,foldr,foldl,foldr1,foldl1,lookup,filter)
 import qualified Prelude
 import qualified Data.List
 
-import Data.Edison.Prelude
 import qualified Data.Edison.Coll as C
 import qualified Data.Edison.Seq as S
 import qualified Data.Edison.Seq.ListSeq as L
@@ -142,7 +141,7 @@ fromSeq            = fromSeqUsingFoldr
 insert             = DS.insert
 insertSeq          = insertSeqUsingUnion
 union              = DS.union
-unionSeq seq       = DS.unions (S.toList seq)
+unionSeq se        = DS.unions $ S.toList se
 delete             = DS.delete
 deleteAll          = DS.delete -- by set property
 deleteSeq          = deleteSeqUsingDelete
@@ -179,7 +178,7 @@ partitionLT_GE x   = DS.partition (<x)
 partitionLE_GT x   = DS.partition (<=x)
 partitionLT_GT     = DS.split
 
-minView set        = if DS.null set 
+minView set        = if DS.null set
                         then fail (moduleName ++ ".minView: failed")
                         else return (DS.deleteFindMin set)
 minElem            = DS.findMin
@@ -207,7 +206,7 @@ properSubset       = DS.isProperSubsetOf
 subset             = DS.isSubsetOf
 
 fromSeqWith        = fromSeqWithUsingInsertWith
-insertWith f x set = case lookupM x set of 
+insertWith f x set = case lookupM x set of
                         Nothing -> DS.insert x set
                         Just x' -> DS.insert (f x x') set
 insertSeqWith      = insertSeqWithUsingInsertWith
@@ -222,28 +221,28 @@ unsafeMapMonotonic = DS.mapMonotonic
 
 instance Ord a => C.CollX (Set a) a where
   {singleton = singleton; fromSeq = fromSeq; insert = insert;
-   insertSeq = insertSeq; unionSeq = unionSeq; 
+   insertSeq = insertSeq; unionSeq = unionSeq;
    delete = delete; deleteAll = deleteAll; deleteSeq = deleteSeq;
    null = null; size = size; member = member; count = count;
    strict = strict;
-   structuralInvariant = structuralInvariant; instanceName c = moduleName}
+   structuralInvariant = structuralInvariant; instanceName _ = moduleName}
 
 instance Ord a => C.OrdCollX (Set a) a where
-  {deleteMin = deleteMin; deleteMax = deleteMax; 
-   unsafeInsertMin = unsafeInsertMin; unsafeInsertMax = unsafeInsertMax; 
-   unsafeFromOrdSeq = unsafeFromOrdSeq; unsafeAppend = unsafeAppend; 
-   filterLT = filterLT; filterLE = filterLE; filterGT = filterGT; 
-   filterGE = filterGE; partitionLT_GE = partitionLT_GE; 
+  {deleteMin = deleteMin; deleteMax = deleteMax;
+   unsafeInsertMin = unsafeInsertMin; unsafeInsertMax = unsafeInsertMax;
+   unsafeFromOrdSeq = unsafeFromOrdSeq; unsafeAppend = unsafeAppend;
+   filterLT = filterLT; filterLE = filterLE; filterGT = filterGT;
+   filterGE = filterGE; partitionLT_GE = partitionLT_GE;
    partitionLE_GT = partitionLE_GT; partitionLT_GT = partitionLT_GT}
 
 instance Ord a => C.Coll (Set a) a where
-  {toSeq = toSeq; lookup = lookup; lookupM = lookupM; 
-   lookupAll = lookupAll; lookupWithDefault = lookupWithDefault; 
+  {toSeq = toSeq; lookup = lookup; lookupM = lookupM;
+   lookupAll = lookupAll; lookupWithDefault = lookupWithDefault;
    fold = fold; fold' = fold'; fold1 = fold1; fold1' = fold1';
    filter = filter; partition = partition; strictWith = strictWith}
 
 instance Ord a => C.OrdColl (Set a) a where
-  {minView = minView; minElem = minElem; maxView = maxView; 
+  {minView = minView; minElem = minElem; maxView = maxView;
    maxElem = maxElem; foldr = foldr; foldr' = foldr'; foldl = foldl;
    foldl' = foldl'; foldr1 = foldr1; foldr1' = foldr1';
    foldl1 = foldl1; foldl1' = foldl1'; toOrdSeq = toOrdSeq;
@@ -255,7 +254,7 @@ instance Ord a => C.SetX (Set a) a where
    properSubset = properSubset; subset = subset}
 
 instance Ord a => C.Set (Set a) a where
-  {fromSeqWith = fromSeqWith; insertWith = insertWith; 
+  {fromSeqWith = fromSeqWith; insertWith = insertWith;
    insertSeqWith = insertSeqWith; unionl = unionl; unionr = unionr;
    unionWith = unionWith; unionSeqWith = unionSeqWith;
    intersectionWith = intersectionWith}
