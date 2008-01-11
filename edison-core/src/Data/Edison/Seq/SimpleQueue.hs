@@ -1,6 +1,6 @@
 -- |
 --   Module      :  Data.Edison.Seq.SimpleQueue
---   Copyright   :  Copyright (c) 1998-1999 Chris Okasaki
+--   Copyright   :  Copyright (c) 1998-1999, 2008 Chris Okasaki
 --   License     :  MIT; see COPYRIGHT file for terms and conditions
 --
 --   Maintainer  :  robdockins AT fastmail DOT fm
@@ -51,7 +51,6 @@ import Prelude hiding (concat,reverse,map,concatMap,foldr,foldl,foldr1,foldl1,
                        filter,takeWhile,dropWhile,lookup,take,drop,splitAt,
                        zip,zip3,zipWith,zipWith3,unzip,unzip3,null)
 
-import Data.Edison.Prelude
 import qualified Data.Edison.Seq as S ( Sequence(..) )
 import Data.Edison.Seq.Defaults
 import qualified Data.Edison.Seq.ListSeq as L
@@ -143,6 +142,7 @@ data Seq a = Q [a] [a]
   -- invariant: front empty only if rear also empty
 
 -- not exported
+makeQ :: [a] -> [a] -> Seq a
 makeQ [] ys = Q (L.reverse ys) []
 makeQ xs ys = Q xs ys
 
@@ -161,18 +161,18 @@ lview (Q [x] ys) = return (x, Q (L.reverse ys) [])
 lview (Q (x:xs) ys) = return (x, Q xs ys)
 
 lhead (Q [] _) = error "SimpleQueue.lhead: empty sequence"
-lhead (Q (x:xs) _) = x
+lhead (Q (x:_) _) = x
 
 lheadM (Q [] _) = fail "SimpleQueue.lheadM: empty sequence"
-lheadM (Q (x:xs) _) = return x
+lheadM (Q (x:_) _) = return x
 
-ltail (Q [x] ys) = Q (L.reverse ys) []
-ltail (Q (x:xs) ys) = Q xs ys
-ltail q@(Q [] _) = error "SimpleQueue.ltail: empty sequence"
+ltail (Q [_] ys) = Q (L.reverse ys) []
+ltail (Q (_:xs) ys) = Q xs ys
+ltail (Q [] _) = error "SimpleQueue.ltail: empty sequence"
 
-ltailM (Q [x] ys) = return (Q (L.reverse ys) [])
-ltailM (Q (x:xs) ys) = return (Q xs ys)
-ltailM q@(Q [] _) = fail "SimpleQueue.ltailM: empty sequence"
+ltailM (Q [_] ys) = return (Q (L.reverse ys) [])
+ltailM (Q (_:xs) ys) = return (Q xs ys)
+ltailM (Q [] _) = fail "SimpleQueue.ltailM: empty sequence"
 
 rview (Q xs (y:ys)) = return (y, Q xs ys)
 rview (Q xs []) =
@@ -180,20 +180,20 @@ rview (Q xs []) =
     Nothing      -> fail "SimpleQueue.rview: empty sequence"
     Just (x,xs') -> return (x, Q xs' [])
 
-rhead (Q xs (y:ys)) = y
+rhead (Q _ (y:_)) = y
 rhead (Q [] []) = error "SimpleQueue.rhead: empty sequence"
 rhead (Q xs []) = L.rhead xs
 
-rheadM (Q xs (y:ys)) = return y
+rheadM (Q _ (y:_)) = return y
 rheadM (Q [] []) = fail "SimpleQueue.rheadM: empty sequence"
 rheadM (Q xs []) = return (L.rhead xs)
 
-rtail (Q xs (y:ys)) = Q xs ys
-rtail q@(Q [] []) = error "SimpleQueue.rtail: empty sequence"
+rtail (Q xs (_:ys)) = Q xs ys
+rtail (Q [] []) = error "SimpleQueue.rtail: empty sequence"
 rtail (Q xs []) = Q (L.rtail xs) []
 
-rtailM (Q xs (y:ys)) = return (Q xs ys)
-rtailM q@(Q [] []) = fail "SimpleQueue.rtailM: empty sequence"
+rtailM (Q xs (_:ys)) = return (Q xs ys)
+rtailM (Q [] []) = fail "SimpleQueue.rtailM: empty sequence"
 rtailM (Q xs []) = return (Q (L.rtail xs) [])
 
 null (Q [] _) = True
@@ -215,17 +215,21 @@ toList (Q xs ys) = xs ++ L.reverse ys
 map f (Q xs ys) = Q (L.map f xs) (L.map f ys)
 
 -- local fn on lists
-revfoldr f e [] = e
+revfoldr :: (t -> t1 -> t1) -> t1 -> [t] -> t1
+revfoldr _ e [] = e
 revfoldr f e (x:xs) = revfoldr f (f x e) xs
 
-revfoldr' f e [] = e
+revfoldr' :: (t -> a -> a) -> a -> [t] -> a
+revfoldr' _ e [] = e
 revfoldr' f e (x:xs) = e `seq` revfoldr' f (f x e) xs
 
 -- local fn on lists
-revfoldl f e [] = e
+revfoldl :: (t -> t1 -> t) -> t -> [t1] -> t
+revfoldl _ e [] = e
 revfoldl f e (x:xs) = f (revfoldl f e xs) x
 
-revfoldl' f e [] = e
+revfoldl' :: (a -> t -> a) -> a -> [t] -> a
+revfoldl' _ e [] = e
 revfoldl' f e (x:xs) = e `seq` f (revfoldl' f e xs) x
 
 fold   f e (Q xs ys) = L.foldr f (L.foldr f e ys) xs
@@ -240,18 +244,18 @@ foldl  f e (Q xs ys) = revfoldl  f (L.foldl  f e xs) ys
 foldl' f e (Q xs ys) = revfoldl' f (L.foldl' f e xs) ys
 
 foldr1  f (Q xs (y:ys)) = L.foldr f (revfoldr f y ys) xs
-foldr1  f (Q [] []) = error "SimpleQueue.foldr1: empty sequence"
+foldr1  _ (Q [] []) = error "SimpleQueue.foldr1: empty sequence"
 foldr1  f (Q xs []) = L.foldr1 f xs
 
 foldr1' f (Q xs (y:ys)) = L.foldr' f (revfoldr' f y ys) xs
-foldr1' f (Q [] []) = error "SimpleQueye.foldr1': empty sequence"
+foldr1' _ (Q [] []) = error "SimpleQueye.foldr1': empty sequence"
 foldr1' f (Q xs []) = L.foldr1' f xs
 
 foldl1  f (Q (x:xs) ys) = revfoldl f (L.foldl f x xs) ys
-foldl1  f (Q [] _) = error "SimpleQueue.foldl1: empty sequence"
+foldl1  _ (Q [] _) = error "SimpleQueue.foldl1: empty sequence"
 
 foldl1' f (Q (x:xs) ys) = revfoldl' f (L.foldl' f x xs) ys
-foldl1' f (Q [] _) = error "SimpleQueue.foldl1': empty sequence"
+foldl1' _ (Q [] _) = error "SimpleQueue.foldl1': empty sequence"
 
 filter p (Q xs ys) = makeQ (L.filter p xs) (L.filter p ys)
 
@@ -302,7 +306,7 @@ unzip3 = unzip3UsingLists
 unzipWith = unzipWithUsingLists
 unzipWith3 = unzipWith3UsingLists
 
--- invariant: 
+-- invariant:
 --   * front empty only if rear also empty
 
 structuralInvariant (Q x y) = not (L.null x) || L.null y
@@ -314,7 +318,7 @@ instance S.Sequence Seq where
    lview = lview; lhead = lhead; ltail = ltail;
    lheadM = lheadM; ltailM = ltailM; rheadM = rheadM; rtailM = rtailM;
    rview = rview; rhead = rhead; rtail = rtail; null = null;
-   size = size; concat = concat; reverse = reverse; 
+   size = size; concat = concat; reverse = reverse;
    reverseOnto = reverseOnto; fromList = fromList; toList = toList;
    fold = fold; fold' = fold'; fold1 = fold1; fold1' = fold1';
    foldr = foldr; foldr' = foldr'; foldl = foldl; foldl' = foldl';
@@ -332,7 +336,7 @@ instance S.Sequence Seq where
    zip3 = zip3; zipWith = zipWith; zipWith3 = zipWith3; unzip = unzip;
    unzip3 = unzip3; unzipWith = unzipWith; unzipWith3 = unzipWith3;
    strict = strict; strictWith = strictWith;
-   structuralInvariant = structuralInvariant; instanceName s = moduleName}
+   structuralInvariant = structuralInvariant; instanceName _ = moduleName}
 
 instance Functor Seq where
   fmap = map
