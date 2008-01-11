@@ -1,6 +1,6 @@
 -- |
 --   Module      :  Data.Edison.Seq.BankersQueue
---   Copyright   :  Copyright (c) 1998-1999 Chris Okasaki
+--   Copyright   :  Copyright (c) 1998-1999, 2008 Chris Okasaki
 --   License     :  MIT; see COPYRIGHT file for terms and conditions
 --
 --   Maintainer  :  robdockins AT fastmail DOT fm
@@ -49,12 +49,10 @@ import Prelude hiding (concat,reverse,map,concatMap,foldr,foldl,foldr1,foldl1,
                        filter,takeWhile,dropWhile,lookup,take,drop,splitAt,
                        zip,zip3,zipWith,zipWith3,unzip,unzip3,null)
 
-import Data.Edison.Prelude
-import qualified Data.Edison.Seq as S ( Sequence(..) ) 
+import qualified Data.Edison.Seq as S ( Sequence(..) )
 import Data.Edison.Seq.Defaults
 import qualified Data.Edison.Seq.ListSeq as L
 import Data.Monoid
-import Control.Monad
 import Control.Monad.Identity
 import Test.QuickCheck
 
@@ -164,16 +162,16 @@ lview (Q _ [] _ _) = fail "BankersQueue.lview: empty sequence"
 lview (Q i (x:xs) ys j) = return (x, makeQ (i-1) xs ys j)
 
 lhead (Q _ [] _ _) = error "BankersQueue.lhead: empty sequence"
-lhead (Q _ (x:xs) _ _) = x
+lhead (Q _ (x:_) _ _) = x
 
 lheadM (Q _ [] _ _) = fail "BankersQueue.lheadM: empty sequence"
-lheadM (Q _ (x:xs) _ _) = return x
+lheadM (Q _ (x:_) _ _) = return x
 
-ltail (Q i (x:xs) ys j) = makeQ (i-1) xs ys j
-ltail q = error "BankersQueue.ltail: empty sequence"
+ltail (Q i (_:xs) ys j) = makeQ (i-1) xs ys j
+ltail _ = error "BankersQueue.ltail: empty sequence"
 
-ltailM (Q i (x:xs) ys j) = return (makeQ (i-1) xs ys j)
-ltailM q = fail "BankersQueue.ltail: empty sequence"
+ltailM (Q i (_:xs) ys j) = return (makeQ (i-1) xs ys j)
+ltailM _ = fail "BankersQueue.ltail: empty sequence"
 
 rview (Q i xs (y:ys) j) = return (y, Q i xs ys (j-1))
 rview (Q i xs [] _) =
@@ -181,24 +179,24 @@ rview (Q i xs [] _) =
     Nothing      -> fail "BankersQueue.rview: empty sequence"
     Just (x,xs') -> return (x, Q (i-1) xs' [] 0)
 
-rhead (Q i xs (y:ys) j) = y
+rhead (Q _ _ (y:_) _) = y
 rhead (Q _ [] [] _) = error "BankersQueue.rhead: empty sequence"
-rhead (Q i xs [] _) = L.rhead xs
+rhead (Q _ xs [] _) = L.rhead xs
 
-rheadM (Q i xs (y:ys) j) = return y
+rheadM (Q _ _ (y:_) _) = return y
 rheadM (Q _ [] [] _) = fail "BankersQueue.rheadM: empty sequence"
-rheadM (Q i xs [] _) = return (L.rhead xs)
+rheadM (Q _ xs [] _) = return (L.rhead xs)
 
-rtail (Q i xs (y:ys) j) = Q i xs ys (j-1)
-rtail q@(Q _ [] [] _) = error "BankersQueue.rtail: empty sequence"
+rtail (Q i xs (_:ys) j) = Q i xs ys (j-1)
+rtail (Q _ [] [] _) = error "BankersQueue.rtail: empty sequence"
 rtail (Q i xs [] _) = Q (i-1) (L.rtail xs) [] 0
 
-rtailM (Q i xs (y:ys) j) = return (Q i xs ys (j-1))
-rtailM q@(Q _ [] [] _) = fail "BankersQueue.rtailM: empty sequence"
+rtailM (Q i xs (_:ys) j) = return (Q i xs ys (j-1))
+rtailM (Q _ [] [] _) = fail "BankersQueue.rtailM: empty sequence"
 rtailM (Q i xs [] _) = return (Q (i-1) (L.rtail xs) [] 0)
 
 null (Q i _ _ _) = (i == 0)
-size (Q i xs ys j) = i + j
+size (Q i _ _ j) = i + j
 reverse (Q i xs ys j) = makeQ j ys xs i
 
 reverseOnto (Q i1 xs1 ys1 j1) (Q i2 xs2 ys2 j2) =
@@ -206,53 +204,57 @@ reverseOnto (Q i1 xs1 ys1 j1) (Q i2 xs2 ys2 j2) =
 
 fromList xs = Q (length xs) xs [] 0
 
-toList (Q i xs ys j)
+toList (Q _ xs ys j)
   | j == 0 = xs
   | otherwise = xs ++ L.reverse ys
 
 map f (Q i xs ys j) = Q i (L.map f xs) (L.map f ys) j
 
 -- local fn on lists
-revfoldr f e [] = e
+revfoldr :: (t -> t1 -> t1) -> t1 -> [t] -> t1
+revfoldr _ e [] = e
 revfoldr f e (x:xs) = revfoldr f (f x e) xs
 
-revfoldr' f e [] = e
+revfoldr' :: (t -> a -> a) -> a -> [t] -> a
+revfoldr' _ e [] = e
 revfoldr' f e (x:xs) = e `seq` revfoldr' f (f x e) xs
 
 -- local fn on lists
-revfoldl f e [] = e
+revfoldl :: (t -> t1 -> t) -> t -> [t1] -> t
+revfoldl _ e [] = e
 revfoldl f e (x:xs) = f (revfoldl f e xs) x
 
-revfoldl' f e [] = e
+revfoldl' :: (b -> t -> b) -> b -> [t] -> b
+revfoldl' _ e [] = e
 revfoldl' f e (x:xs) = (\z -> f z x) $! (revfoldl f e xs)
 
-fold  f e (Q i xs ys j) = L.foldr f (L.foldr f e ys) xs
-fold' f e (Q i xs ys j) = (L.foldl' (flip f) $! (L.foldl' (flip f) e ys)) xs
+fold  f e (Q _ xs ys _) = L.foldr f (L.foldr f e ys) xs
+fold' f e (Q _ xs ys _) = (L.foldl' (flip f) $! (L.foldl' (flip f) e ys)) xs
 fold1  = fold1UsingFold
 fold1' = fold1'UsingFold'
 
-foldr  f e (Q i xs ys j) = L.foldr  f (revfoldr  f e ys) xs
-foldr' f e (Q i xs ys j) = L.foldr' f (revfoldr' f e ys) xs
-foldl  f e (Q i xs ys j) = revfoldl  f (L.foldl  f e xs) ys
-foldl' f e (Q i xs ys j) = revfoldl' f (L.foldl' f e xs) ys
+foldr  f e (Q _ xs ys _) = L.foldr  f (revfoldr  f e ys) xs
+foldr' f e (Q _ xs ys _) = L.foldr' f (revfoldr' f e ys) xs
+foldl  f e (Q _ xs ys _) = revfoldl  f (L.foldl  f e xs) ys
+foldl' f e (Q _ xs ys _) = revfoldl' f (L.foldl' f e xs) ys
 
-foldr1 f (Q i xs (y:ys) j) = L.foldr f (revfoldr f y ys) xs
+foldr1 f (Q _ xs (y:ys) _) = L.foldr f (revfoldr f y ys) xs
 foldr1 f (Q i xs [] _)
   | i == 0 = error "BankersQueue.foldr1: empty sequence"
   | otherwise = L.foldr1 f xs
 
-foldr1' f (Q i xs (y:ys) j) = L.foldr' f (revfoldr' f y ys) xs
+foldr1' f (Q _ xs (y:ys) _) = L.foldr' f (revfoldr' f y ys) xs
 foldr1' f (Q i xs [] _)
   | i == 0 = error "BankersQueue.foldr1': empty sequence"
   | otherwise = L.foldr1' f xs
 
-foldl1 f (Q i (x:xs) ys j) = revfoldl f (L.foldl f x xs) ys
-foldl1 f _ = error "BankersQueue.foldl1: empty sequence"
+foldl1 f (Q _ (x:xs) ys _) = revfoldl f (L.foldl f x xs) ys
+foldl1 _ _ = error "BankersQueue.foldl1: empty sequence"
 
-foldl1' f (Q i (x:xs) ys j) = revfoldl' f (L.foldl' f x xs) ys
-foldl1' f _ = error "BankersQueue.foldl1': empty sequence"
+foldl1' f (Q _ (x:xs) ys _) = revfoldl' f (L.foldl' f x xs) ys
+foldl1' _ _ = error "BankersQueue.foldl1': empty sequence"
 
-copy n x 
+copy n x
   | n < 0     = empty
   | otherwise = Q n (L.copy n x) [] 0
 
@@ -282,7 +284,7 @@ adjust f idx q@(Q i xs ys j)
                 in if k' < 0 then q
                    else Q i xs (L.adjust f k' ys) j
 
-{- 
+{-
 could do
   mapWithIndex   :: (Int -> a -> b) -> s a -> s b
   foldrWithIndex :: (Int -> a -> b -> b) -> b -> s a -> b
@@ -305,7 +307,7 @@ drop len q@(Q i xs ys j) =
   else let len' = len - i in
     if len' >= j then empty
     else Q (j - len') (L.reverse (L.take (j - len') ys)) [] 0
-  -- could write more efficient version of reverse (take ...) 
+  -- could write more efficient version of reverse (take ...)
 
 splitAt idx q@(Q i xs ys j) =
   if idx <= i then
@@ -317,10 +319,10 @@ splitAt idx q@(Q i xs ys j) =
     else let (ys', ys'') = L.splitAt (j - idx') ys
          in (Q i xs ys'' idx', Q (j - idx') (L.reverse ys') [] 0)
       -- could do splitAt followed by reverse more efficiently...
-  
 
-strict l@(Q i xs ys j) = L.strict xs `seq` L.strict ys `seq` l
-strictWith f l@(Q i xs ys j) = L.strictWith f xs `seq` L.strictWith f ys `seq` l
+
+strict l@(Q _ xs ys _) = L.strict xs `seq` L.strict ys `seq` l
+strictWith f l@(Q _ xs ys _) = L.strictWith f xs `seq` L.strictWith f ys `seq` l
 
 -- the remaining functions all use defaults
 
@@ -360,10 +362,10 @@ instance S.Sequence Seq where
    lview = lview; lhead = lhead; ltail = ltail;
    lheadM = lheadM; ltailM = ltailM; rheadM = rheadM; rtailM = rtailM;
    rview = rview; rhead = rhead; rtail = rtail; null = null;
-   size = size; concat = concat; reverse = reverse; 
+   size = size; concat = concat; reverse = reverse;
    reverseOnto = reverseOnto; fromList = fromList; toList = toList;
    fold = fold; fold' = fold'; fold1 = fold1; fold1' = fold1';
-   foldr = foldr; foldr' = foldr'; foldl = foldl; foldl' = foldl'; 
+   foldr = foldr; foldr' = foldr'; foldl = foldl; foldl' = foldl';
    foldr1 = foldr1; foldr1' = foldr1'; foldl1 = foldl1; foldl1' = foldl1';
    reducer = reducer; reducer' = reducer';
    reducel = reducel; reducel' = reducel'; reduce1 = reduce1; reduce1' = reduce1';
@@ -378,7 +380,7 @@ instance S.Sequence Seq where
    zip3 = zip3; zipWith = zipWith; zipWith3 = zipWith3; unzip = unzip;
    unzip3 = unzip3; unzipWith = unzipWith; unzipWith3 = unzipWith3;
    strict = strict; strictWith = strictWith;
-   structuralInvariant = structuralInvariant; instanceName s = moduleName}
+   structuralInvariant = structuralInvariant; instanceName _ = moduleName}
 
 instance Functor Seq where
   fmap = map
@@ -412,7 +414,7 @@ instance Arbitrary a => Arbitrary (Seq a) where
                    j = L.size ys
                in if i >= j then Q i xs ys j else Q j ys xs i)
 
-  coarbitrary (Q i xs ys j) = coarbitrary xs . coarbitrary ys
+  coarbitrary (Q _ xs ys _) = coarbitrary xs . coarbitrary ys
 
 instance Monoid (Seq a) where
   mempty  = empty
