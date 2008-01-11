@@ -1,6 +1,6 @@
 -- |
 --   Module      :  Data.Edison.Coll.SplayHeap
---   Copyright   :  Copyright (c) 1999 Chris Okasaki
+--   Copyright   :  Copyright (c) 1999, 2008 Chris Okasaki
 --   License     :  MIT; see COPYRIGHT file for terms and conditions
 --
 --   Maintainer  :  robdockins AT fastmail DOT fm
@@ -44,7 +44,6 @@ module Data.Edison.Coll.SplayHeap (
 ) where
 
 import Prelude hiding (null,foldr,foldl,foldr1,foldl1,lookup,filter)
-import Data.Edison.Prelude
 import qualified Data.Edison.Coll as C
 import qualified Data.Edison.Seq as S
 import Data.Edison.Coll.Defaults
@@ -52,6 +51,7 @@ import Data.Monoid
 import Control.Monad
 import Test.QuickCheck
 
+moduleName :: String
 moduleName = "Data.Edison.Coll.SplayHeap"
 
 data Heap a = E | T (Heap a) a (Heap a)
@@ -62,7 +62,7 @@ data Heap a = E | T (Heap a) a (Heap a)
 structuralInvariant :: Ord a => Heap a -> Bool
 structuralInvariant t = bounded Nothing Nothing t
    where bounded _ _ E = True
-         bounded lo hi (T l x r)  = cmp_l lo x 
+         bounded lo hi (T l x r)  = cmp_l lo x
                                  && cmp_r x hi
                                  && bounded lo (Just x) l
                                  && bounded (Just x) hi r
@@ -155,17 +155,17 @@ deleteAll x xs = unsafeAppend a b
   where (a,b) = partitionLT_GT x xs
 
 null E = True
-null (T a x b) = False
+null (T _ _ _) = False
 
 size = sz 0
   where sz n E = n
-        sz n (T a x b) = sz (sz (1+n) a) b
-  
-member x E = False
+        sz n (T a _ b) = sz (sz (1+n) a) b
+
+member _ E = False
 member x (T a y b) = if x < y then member x a else x==y || member x b
 
 count = cnt 0
-  where cnt n x E = n
+  where cnt n _ E = n
         cnt n x (T a y b)
           | x < y = cnt n x a
           | x > y = cnt n x b
@@ -175,49 +175,49 @@ toSeq xs = tos xs S.empty
   where tos E rest = rest
         tos (T a x b) rest = S.lcons x (tos a (tos b rest))
 
-lookup x E = error "SplayHeap.lookup: empty heap"
+lookup _ E = error "SplayHeap.lookup: empty heap"
 lookup x (T a y b)
   | x < y     = lookup x a
   | x > y     = lookup x b
   | otherwise = y
 
-lookupM x E = fail "SplayHeap.lookup: empty heap"
+lookupM _ E = fail "SplayHeap.lookup: empty heap"
 lookupM x (T a y b)
   | x < y     = lookupM x a
   | x > y     = lookupM x b
   | otherwise = return y
 
-lookupWithDefault d x E = d
+lookupWithDefault d _ E = d
 lookupWithDefault d x (T a y b)
   | x < y     = lookupWithDefault d x a
   | x > y     = lookupWithDefault d x b
   | otherwise = y
 
 lookupAll x xs = look xs x S.empty
-  where look E x rest = rest
+  where look E _ rest = rest
         look (T a y b) x rest
           | x < y     = look a x rest
           | x > y     = look b x rest
           | otherwise = look a x (S.lcons y (look b x rest))
 
-fold f e E = e
+fold _ e E = e
 fold f e (T a x b) = f x (fold f (fold f e b) a)
 
-fold' f e E = e
+fold' _ e E = e
 fold' f e (T a x b) = e `seq` f x $! (fold' f (fold' f e b) a)
 
-fold1 f E = error "SplayHeap.fold1: empty heap"
+fold1 _ E = error "SplayHeap.fold1: empty heap"
 fold1 f (T a x b) = fold f (fold f x b) a
 
-fold1' f E = error "SplayHeap.fold1': empty heap"
+fold1' _ E = error "SplayHeap.fold1': empty heap"
 fold1' f (T a x b) = fold' f (fold' f x b) a
 
-filter p E = E
-filter p (T a x b) 
+filter _ E = E
+filter p (T a x b)
   | p x       = T (filter p a) x (filter p b)
   | otherwise = unsafeAppend (filter p a) (filter p b)
 
-partition p E = (E, E)
+partition _ E = (E, E)
 partition p (T a x b)
     | p x       = (T a0 x b0, unsafeAppend a1 b1)
     | otherwise = (unsafeAppend a0 b0, T a1 x b1)
@@ -226,14 +226,14 @@ partition p (T a x b)
 
 deleteMin E = E
 deleteMin (T a x b) = del a x b
-  where del E x b = b
-        del (T E x b) y c = T b y c
+  where del E _ b = b
+        del (T E _ b) y c = T b y c
         del (T (T a x b) y c) z d = T (del a x b) y (T c z d)
 
 deleteMax E = E
 deleteMax (T a x b) = del a x b
-  where del a x E = a
-        del a x (T b y E) = T a x b
+  where del a _ E = a
+        del a x (T b _ E) = T a x b
         del a x (T b y (T c z d)) = T (T a x b) y (del c z d)
 
 unsafeInsertMin x xs = T E x xs
@@ -243,25 +243,25 @@ unsafeAppend a b = case maxView a of
                        Nothing      -> b
                        Just (x, a') -> T a' x b
 
-filterLT k E = E
-filterLT k t@(T a x b) = 
+filterLT _ E = E
+filterLT k t@(T a x b) =
   if x >= k then filterLT k a
   else case b of
          E -> t
          T ba y bb ->
-           if y >= k then T a x (filterLT k ba) 
+           if y >= k then T a x (filterLT k ba)
                      else T (T a x ba) y (filterLT k bb)
 
-filterLE k E = E
-filterLE k t@(T a x b) = 
+filterLE _ E = E
+filterLE k t@(T a x b) =
   if x > k then filterLE k a
   else case b of
          E -> t
          T ba y bb ->
-           if y > k then T a x (filterLE k ba) 
+           if y > k then T a x (filterLE k ba)
                     else T (T a x ba) y (filterLE k bb)
 
-filterGT k E = E
+filterGT _ E = E
 filterGT k t@(T a x b) =
   if x <= k then filterGT k b
   else case a of
@@ -270,7 +270,7 @@ filterGT k t@(T a x b) =
            if y <= k then T (filterGT k ab) x b
                      else T (filterGT k aa) y (T ab x b)
 
-filterGE k E = E
+filterGE _ E = E
 filterGE k t@(T a x b) =
   if x < k then filterGE k b
   else case a of
@@ -279,7 +279,7 @@ filterGE k t@(T a x b) =
            if y < k then T (filterGE k ab) x b
                     else T (filterGE k aa) y (T ab x b)
 
-partitionLT_GE k E = (E,E)
+partitionLT_GE _ E = (E,E)
 partitionLT_GE k t@(T a x b) =
   if x >= k then
     case a of
@@ -302,7 +302,7 @@ partitionLT_GE k t@(T a x b) =
           let (small,big) = partitionLT_GE k bb
           in (T (T a x ba) y small, big)
 
-partitionLE_GT k E = (E,E)
+partitionLE_GT _ E = (E,E)
 partitionLE_GT k t@(T a x b) =
   if x > k then
     case a of
@@ -327,7 +327,7 @@ partitionLE_GT k t@(T a x b) =
 
 
 -- could specialize calls to filterLT/filterGT
-partitionLT_GT k E = (E,E)
+partitionLT_GT _ E = (E,E)
 partitionLT_GT k t@(T a x b) =
   if x > k then
     case a of
@@ -362,9 +362,9 @@ minView (T a x b) = return (y, ys)
           where (w,ab) = minv a x b
 
 minElem E = error "SplayHeap.minElem: empty heap"
-minElem (T a x b) = minel a x
+minElem (T a x _) = minel a x
   where minel E x = x
-        minel (T a x b) _ = minel a x
+        minel (T a x _) _ = minel a x
 
 
 maxView E = fail "SplayHeap.maxView: empty heap"
@@ -376,54 +376,54 @@ maxView (T a x b) = return (y,ys)
           where (cd,w) = maxv c z d
 
 maxElem E = error "SplayHeap.minElem: empty heap"
-maxElem (T a x b) = maxel x b
+maxElem (T _ x b) = maxel x b
   where maxel x E = x
-        maxel _ (T a x b) = maxel x b
+        maxel _ (T _ x b) = maxel x b
 
-foldr f e E = e
+foldr _ e E = e
 foldr f e (T a x b) = foldr f (f x (foldr f e b)) a
 
-foldr' f e E = e
+foldr' _ e E = e
 foldr' f e (T a x b) = foldr' f (f x $! (foldr' f e b)) a
 
-foldl f e E = e
+foldl _ e E = e
 foldl f e (T a x b) = foldl f (f (foldl f e a) x) b
 
-foldl' f e E = e
+foldl' _ e E = e
 foldl' f e (T a x b) = e `seq` foldl' f ((f $! (foldl' f e a)) x) b
 
-foldr1 f E = error "SplayHeap.foldr1: empty heap"
+foldr1 _ E = error "SplayHeap.foldr1: empty heap"
 foldr1 f (T a x b) = foldr f (myfold f x b) a
-  where myfold f x E = x
+  where myfold _ x E = x
         myfold f x (T a y b) = f x (foldr f (myfold f y b) a)
 
-foldr1' f E = error "SplayHeap.foldr1': empty heap"
+foldr1' _ E = error "SplayHeap.foldr1': empty heap"
 foldr1' f (T a x b) = foldr' f (myfold f x b) a
-  where myfold f x E = x
+  where myfold _ x E = x
         myfold f x (T a y b) = f x $! (foldr' f (myfold f y b) a)
 
-foldl1 f E = error "SplayHeap.foldl1: empty heap"
+foldl1 _ E = error "SplayHeap.foldl1: empty heap"
 foldl1 f (T a x b) = foldl f (myfold f a x) b
-  where myfold f E x = x
+  where myfold _ E x = x
         myfold f (T a x b) y = f (foldl f (myfold f a x) b) y
 
-foldl1' f E = error "SplayHeap.foldl1': empty heap"
+foldl1' _ E = error "SplayHeap.foldl1': empty heap"
 foldl1' f (T a x b) = foldl' f (myfold f a x) b
-  where myfold f E x = x
+  where myfold _ E x = x
         myfold f (T a x b) y = (f $! (foldl f (myfold f a x) b)) y
 
 toOrdSeq xs = tos xs S.empty
   where tos E rest = rest
         tos (T a x b) rest = tos a (S.lcons x (tos b rest))
 
-unsafeMapMonotonic f E = E
+unsafeMapMonotonic _ E = E
 unsafeMapMonotonic f (T a x b) =
   T (unsafeMapMonotonic f a) (f x) (unsafeMapMonotonic f b)
 
 strict h@E = h
-strict h@(T l x r) = strict l `seq` strict r `seq` h
+strict h@(T l _ r) = strict l `seq` strict r `seq` h
 
-strictWith f h@E = h
+strictWith _ h@E = h
 strictWith f h@(T l x r) = f x `seq` strictWith f l `seq` strictWith f r `seq` h
 
 -- the remaining functions all use defaults
@@ -438,30 +438,30 @@ unsafeFromOrdSeq = unsafeFromOrdSeqUsingUnsafeInsertMin
 
 instance Ord a => C.CollX (Heap a) a where
   {singleton = singleton; fromSeq = fromSeq; insert = insert;
-   insertSeq = insertSeq; unionSeq = unionSeq; 
+   insertSeq = insertSeq; unionSeq = unionSeq;
    delete = delete; deleteAll = deleteAll; deleteSeq = deleteSeq;
    null = null; size = size; member = member; count = count;
    strict = strict;
-   structuralInvariant = structuralInvariant; instanceName c = moduleName}
+   structuralInvariant = structuralInvariant; instanceName _ = moduleName}
 
 instance Ord a => C.OrdCollX (Heap a) a where
-  {deleteMin = deleteMin; deleteMax = deleteMax; 
-   unsafeInsertMin = unsafeInsertMin; unsafeInsertMax = unsafeInsertMax; 
-   unsafeFromOrdSeq = unsafeFromOrdSeq; unsafeAppend = unsafeAppend; 
-   filterLT = filterLT; filterLE = filterLE; filterGT = filterGT; 
-   filterGE = filterGE; partitionLT_GE = partitionLT_GE; 
+  {deleteMin = deleteMin; deleteMax = deleteMax;
+   unsafeInsertMin = unsafeInsertMin; unsafeInsertMax = unsafeInsertMax;
+   unsafeFromOrdSeq = unsafeFromOrdSeq; unsafeAppend = unsafeAppend;
+   filterLT = filterLT; filterLE = filterLE; filterGT = filterGT;
+   filterGE = filterGE; partitionLT_GE = partitionLT_GE;
    partitionLE_GT = partitionLE_GT; partitionLT_GT = partitionLT_GT}
 
 instance Ord a => C.Coll (Heap a) a where
-  {toSeq = toSeq; lookup = lookup; lookupM = lookupM; 
-   lookupAll = lookupAll; lookupWithDefault = lookupWithDefault; 
+  {toSeq = toSeq; lookup = lookup; lookupM = lookupM;
+   lookupAll = lookupAll; lookupWithDefault = lookupWithDefault;
    fold = fold; fold' = fold'; fold1 = fold1; fold1' = fold1';
    strictWith = strictWith;
    filter = filter; partition = partition}
 
 instance Ord a => C.OrdColl (Heap a) a where
-  {minView = minView; minElem = minElem; maxView = maxView; 
-   maxElem = maxElem; foldr = foldr; foldr' = foldr'; foldl = foldl; 
+  {minView = minView; minElem = minElem; maxView = maxView;
+   maxElem = maxElem; foldr = foldr; foldr' = foldr'; foldl = foldl;
    foldl' = foldl'; foldr1 = foldr1; foldr1' = foldr1';
    foldl1 = foldl1; foldl1' = foldl1'; toOrdSeq = toOrdSeq;
    unsafeMapMonotonic = unsafeMapMonotonic}
@@ -481,7 +481,7 @@ instance (Ord a,Arbitrary a) => Arbitrary (Heap a) where
                  return (C.fromList xs)
 
   coarbitrary E = variant 0
-  coarbitrary (T a x b) = 
+  coarbitrary (T a x b) =
     variant 1 . coarbitrary a . coarbitrary x . coarbitrary b
 
 instance (Ord a) => Monoid (Heap a) where
