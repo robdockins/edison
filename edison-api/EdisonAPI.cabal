@@ -20,7 +20,6 @@ Exposed-modules:
      Data.Edison.Seq.ListSeq
 Build-Depends:
      base >= 1.0,
-     haskell98 >= 1.0,
      mtl >= 1.0
 Extensions:
      MultiParamTypeClasses

@@ -47,7 +47,8 @@ Library
      Data.Edison.Seq.SimpleQueue
      Data.Edison.Seq.SizedSeq
   Build-Depends:
-     base, haskell98, mtl, QuickCheck,
+     base, mtl,
+     QuickCheck >= 1.0 && < 2,
      EdisonAPI == 1.2.1
   if impl( ghc >= 6.8 )
      Build-Depends:

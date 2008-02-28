@@ -59,10 +59,11 @@ import qualified Data.Edison.Seq as S
 import qualified Data.List as L
 import Control.Monad.Identity
 import Data.Monoid
+import Data.Maybe (isNothing)
+
 import Data.Edison.Assoc.Defaults
 import Test.QuickCheck (Arbitrary(..), Gen(), variant)
 
-import Maybe (isNothing)
 
 -- signatures for exported functions
 moduleName    :: String
