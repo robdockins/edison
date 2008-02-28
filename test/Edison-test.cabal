@@ -9,9 +9,8 @@ Category:       Data structures
 Stability:      provisional
 Build-Depends:
      base >= 1.0,
-     haskell98 >= 1.0,
      mtl >= 1.0,
-     QuickCheck >= 1.0,
+     QuickCheck >= 1.0 && < 2,
      HUnit >= 1.1,
      EdisonAPI == 1.2.1,
      EdisonCore >= 1.2
