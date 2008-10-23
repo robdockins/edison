@@ -198,10 +198,8 @@ null               = DM.null
 size               = DM.size
 member             = DM.member
 count              = countUsingMember
-lookup k m         = case lookupM k m of
-                         Nothing -> error (moduleName ++ ".lookup: failed")
-                         Just x  -> x
-lookupM            = DM.lookup
+lookup k m         = maybe (error (moduleName ++ ".lookup: failed")) id (DM.lookup k m)
+lookupM k m        = maybe (fail (moduleName ++ ".lookupM: failed")) return (DM.lookup k m)
 lookupAll          = lookupAllUsingLookupM
 lookupWithDefault  = DM.findWithDefault
 lookupAndDelete    = lookupAndDeleteDefault
