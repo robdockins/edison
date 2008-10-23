@@ -7,3 +7,6 @@ find or reimplement the data structures from Martin Holter's thesis.
 add mapAccum?
 Add "Generic" versions of data structures requiring particular
   types of keys?
+fix the test suite so it actually will finish compiling
+  perhaps do a code generation phase to put the test for each
+  module in its own test module?
