@@ -414,6 +414,7 @@ instance Arbitrary a => Arbitrary (Seq a) where
                    j = L.size ys
                in if i >= j then Q i xs ys j else Q j ys xs i)
 
+instance CoArbitrary a => CoArbitrary (Seq a) where
   coarbitrary (Q _ xs ys _) = coarbitrary xs . coarbitrary ys
 
 instance Monoid (Seq a) where

@@ -56,7 +56,7 @@ import qualified Data.Edison.Seq as S
 import qualified Data.Edison.Seq.ListSeq as L
 import Data.Edison.Assoc.Defaults
 import Data.Int
-import Test.QuickCheck (Arbitrary(..))
+import Test.QuickCheck (Arbitrary(..), CoArbitrary(..))
 
 import qualified Data.Map as DM
 
@@ -364,4 +364,5 @@ instance (Ord k,Arbitrary k,Arbitrary a) => Arbitrary (FM k a) where
    arbitrary = do xs <- arbitrary
                   return (Prelude.foldr (uncurry insert) empty xs)
 
+instance (Ord k,CoArbitrary k,CoArbitrary a) => CoArbitrary (FM k a) where
    coarbitrary mp = coarbitrary (A.toList mp)

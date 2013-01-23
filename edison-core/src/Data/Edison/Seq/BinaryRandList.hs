@@ -441,9 +441,11 @@ instance Arbitrary a => Arbitrary (Seq a) where
   arbitrary = do xs <- arbitrary
                  return (fromList xs)
 
+instance CoArbitrary a => CoArbitrary (Seq a) where
   coarbitrary E = variant 0
   coarbitrary (Even ps) = variant 1 . coarbitrary ps
   coarbitrary (Odd x ps) = variant 2 . coarbitrary x . coarbitrary ps
+
 
 instance Monoid (Seq a) where
   mempty  = empty

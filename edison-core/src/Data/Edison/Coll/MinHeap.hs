@@ -393,6 +393,7 @@ instance (C.OrdColl h a,Arbitrary h,Arbitrary a) => Arbitrary (Min h a) where
                          else if odd i then M (C.minElem xs) xs
                                        else fromPrim xs)
 
+instance (C.OrdColl h a,CoArbitrary h,CoArbitrary a) => CoArbitrary (Min h a) where
   coarbitrary E = variant 0
   coarbitrary (M x xs) = variant 1 . coarbitrary x . coarbitrary xs
 

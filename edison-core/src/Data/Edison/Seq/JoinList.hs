@@ -416,6 +416,7 @@ instance Arbitrary a => Arbitrary (Seq a) where
                        (4, liftM2 A (arbTree (n `div` 2))
                                     (arbTree (n `div` 2)))]
 
+instance CoArbitrary a => CoArbitrary (Seq a) where
   coarbitrary E = variant 0
   coarbitrary (L x) = variant 1 . coarbitrary x
   coarbitrary (A xs ys) = variant 2 . coarbitrary xs . coarbitrary ys

@@ -80,6 +80,8 @@ import Test.QuickCheck
 
 import Data.Edison.Prelude
 
+import Control.Monad (liftM2, liftM3, liftM4)
+
 
 infixr 5 `lcons`
 infixl 5 `rcons0`
@@ -727,7 +729,14 @@ reverseDigit f (Two a b) = Two (f b) (f a)
 reverseDigit f (Three a b c) = Three (f c) (f b) (f a)
 reverseDigit f (Four a b c d) = Four (f d) (f c) (f b) (f a)
 
+two :: Monad m => m a -> m (a, a)
+two m = liftM2 (,) m m
 
+three :: Monad m => m a -> m (a, a, a)
+three m = liftM3 (,,) m m m
+
+four :: Monad m => m a -> m (a, a, a, a)
+four m = liftM4 (,,,) m m m m
 
 instance (Arbitrary a) => Arbitrary (Digit a) where
   arbitrary = oneof
@@ -737,6 +746,8 @@ instance (Arbitrary a) => Arbitrary (Digit a) where
               , four arbitrary  >>= \(x,y,z,w) -> return (Four x y z w)
               ]
 
+
+instance (CoArbitrary a) => CoArbitrary (Digit a) where
   coarbitrary p = case p of
       One x        -> variant 0 . coarbitrary x
       Two x y      -> variant 1 . coarbitrary x . coarbitrary y
@@ -752,6 +763,7 @@ instance (Measured v a, Arbitrary a) => Arbitrary (Node v a) where
               , three arbitrary >>= \(x,y,z)   -> return (node3 x y z)
               ]
 
+instance (Measured v a, CoArbitrary a) => CoArbitrary (Node v a) where
   coarbitrary p = case p of
        Node2 _ x y   -> variant 0 . coarbitrary x . coarbitrary y
        Node3 _ x y z -> variant 1 . coarbitrary x . coarbitrary y . coarbitrary z
@@ -768,6 +780,7 @@ instance (Measured v a, Arbitrary a) => Arbitrary (FingerTree v a) where
                    return (deep pf m sf)
                ]
 
+instance (Measured v a, CoArbitrary a) => CoArbitrary (FingerTree v a) where
   coarbitrary p = case p of
          Empty          -> variant 0
          Single x       -> variant 1 . coarbitrary x

@@ -474,6 +474,7 @@ instance Arbitrary a => Arbitrary (Seq a) where
   arbitrary = do xs <- arbitrary
                  return (fromList xs)
 
+instance CoArbitrary a => CoArbitrary (Seq a) where
   coarbitrary xs = coarbitrary (toList xs)
 
 instance Monoid (Seq a) where

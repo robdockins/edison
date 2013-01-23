@@ -1,5 +1,5 @@
 RUNHS=runhaskell
-VERSION=1.2.1.3
+VERSION=1.2.2
 
 help:
 	@echo ""

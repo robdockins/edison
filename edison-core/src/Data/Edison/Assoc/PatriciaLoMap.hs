@@ -63,7 +63,7 @@ import qualified Data.Edison.Seq.ListSeq as L
 import Data.Edison.Assoc.Defaults
 import Data.Int
 import Data.Bits
-import Test.QuickCheck (Arbitrary(..), variant)
+import Test.QuickCheck (Arbitrary(..), CoArbitrary(..), variant)
 
 moduleName :: String
 moduleName = "Data.Edison.Assoc.PatriciaLoMap"
@@ -834,6 +834,7 @@ instance (Arbitrary a) => Arbitrary (FM a) where
    arbitrary = do xs <- arbitrary
                   return (Prelude.foldr (uncurry insert) empty xs)
 
+instance (CoArbitrary a) => CoArbitrary (FM a) where
    coarbitrary E = variant 0
    coarbitrary (L i a) = variant 1 . coarbitrary i . coarbitrary a
    coarbitrary (B i j m n) = variant 2 . coarbitrary i . coarbitrary j

@@ -444,6 +444,7 @@ instance (Ord a, Arbitrary a) => Arbitrary (Heap a) where
             | z < x           = T z s (sift x c d)
           sift x a b = T x a b
 
+instance (Ord a, CoArbitrary a) => CoArbitrary (Heap a) where
   coarbitrary E = variant 0
   coarbitrary (T x a b) =
       variant 1 . coarbitrary x . coarbitrary a . coarbitrary b

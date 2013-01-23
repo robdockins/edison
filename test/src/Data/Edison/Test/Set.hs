@@ -12,7 +12,7 @@ import Prelude hiding (concat,reverse,map,concatMap,foldr,foldl,foldr1,foldl1,
                        filter,takeWhile,dropWhile,lookup,take,drop,splitAt,
                        zip,zip3,zipWith,zipWith3,unzip,unzip3,null)
 import qualified Prelude
-import qualified List -- not ListSeq!
+import qualified Data.List as List -- not ListSeq!
 import Data.Bits
 import Data.Word
 
@@ -49,6 +49,8 @@ instance SetTest Int SS.Set
 newtype SmallInt = SI Int deriving (Show,Read,Eq,Ord,Enum,Num,Integral,Real)
 instance Arbitrary SmallInt where
    arbitrary = arbitrary >>= \x -> return (SI $ abs x `mod` (bitSize (0::Word) - 1))
+
+instance CoArbitrary SmallInt where
    coarbitrary (SI x) = coarbitrary x
 
 instance SetTest SmallInt ES.Set

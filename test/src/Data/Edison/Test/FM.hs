@@ -174,6 +174,7 @@ si = structuralInvariant
     &&
     m1 == m2
 
+trivial x y = not x ==> y
 
 -----------------------------------------------------------------
 -- AssocX operations

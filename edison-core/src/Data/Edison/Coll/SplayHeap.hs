@@ -480,6 +480,7 @@ instance (Ord a,Arbitrary a) => Arbitrary (Heap a) where
   arbitrary = do xs <- arbitrary
                  return (C.fromList xs)
 
+instance (Ord a,CoArbitrary a) => CoArbitrary (Heap a) where
   coarbitrary E = variant 0
   coarbitrary (T a x b) =
     variant 1 . coarbitrary a . coarbitrary x . coarbitrary b

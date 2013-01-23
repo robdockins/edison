@@ -366,6 +366,7 @@ instance Arbitrary a => Arbitrary (Seq a) where
                  ys <- arbitrary
                  return (if L.null xs then Q ys [] else Q xs ys)
 
+instance CoArbitrary a => CoArbitrary (Seq a) where
   coarbitrary (Q xs ys) = coarbitrary xs . coarbitrary ys
 
 instance Monoid (Seq a) where

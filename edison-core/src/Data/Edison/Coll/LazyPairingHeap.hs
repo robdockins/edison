@@ -550,6 +550,7 @@ instance (Ord a, Arbitrary a) => Arbitrary (Heap a) where
           siftInto x (H2 _ a b) = sift x a b
           siftInto _ E = error "LazyPairingHeap.arbitrary: bug!"
 
+instance (Ord a, CoArbitrary a) => CoArbitrary (Heap a) where
   coarbitrary E = variant 0
   coarbitrary (H1 x a) = variant 1 . coarbitrary x . coarbitrary a
   coarbitrary (H2 x a b) =

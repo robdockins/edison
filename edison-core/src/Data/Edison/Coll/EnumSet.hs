@@ -165,7 +165,7 @@ import Data.Monoid (Monoid(..))
 import qualified Data.Edison.Seq as S
 import qualified Data.Edison.Coll as C
 import Data.Edison.Coll.Defaults
-import Test.QuickCheck hiding (check)
+import Test.QuickCheck (Arbitrary(..), CoArbitrary(..))
 
 moduleName :: String
 moduleName = "Data.Edison.Coll.EnumSet"
@@ -786,6 +786,7 @@ instance (Eq a, Enum a, Arbitrary a) => Arbitrary (Set a) where
   arbitrary = do (w::Int) <- arbitrary
                  return (Set (fromIntegral w))
 
+instance (Eq a, Enum a, CoArbitrary a) => CoArbitrary (Set a) where
   coarbitrary (Set w) = coarbitrary (fromIntegral w :: Int)
 
 instance (Eq a, Enum a) => Monoid (Set a) where

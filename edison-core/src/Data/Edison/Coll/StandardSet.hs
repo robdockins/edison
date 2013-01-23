@@ -268,4 +268,5 @@ instance (Ord a, Arbitrary a) => Arbitrary (Set a) where
   arbitrary = do xs <- arbitrary
                  return (Prelude.foldr insert empty xs)
 
+instance (Ord a, CoArbitrary a) => CoArbitrary (Set a) where
   coarbitrary set = coarbitrary (C.toList set)

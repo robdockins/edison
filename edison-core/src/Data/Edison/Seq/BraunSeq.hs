@@ -543,6 +543,8 @@ instance Read a => Read (Seq a) where
 
 instance Arbitrary a => Arbitrary (Seq a) where
   arbitrary = arbitrary >>= (return . fromList)
+
+instance CoArbitrary a => CoArbitrary (Seq a) where
   coarbitrary xs = coarbitrary (toList xs)
 
 instance Monoid (Seq a) where

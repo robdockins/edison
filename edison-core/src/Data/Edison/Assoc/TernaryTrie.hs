@@ -62,7 +62,7 @@ import Data.Monoid
 import Data.Maybe (isNothing)
 
 import Data.Edison.Assoc.Defaults
-import Test.QuickCheck (Arbitrary(..), Gen(), variant)
+import Test.QuickCheck (Arbitrary(..), CoArbitrary(..), Gen(), variant)
 
 
 -- signatures for exported functions
@@ -1142,15 +1142,17 @@ structuralInvariant (FM _ fmb) = structuralInvariantFMB fmb
 instance (Ord k,Arbitrary k,Arbitrary a) => Arbitrary (FM k a) where
   arbitrary = do xs <- arbitrary
                  return (Prelude.foldr (uncurry insert) empty xs)
+
+instance (Ord k,CoArbitrary k,CoArbitrary a) => CoArbitrary (FM k a) where
   coarbitrary (FM x fmb) = coarbitrary_maybe x . coarbitrary_fmb fmb
 
 
-coarbitrary_maybe :: (Arbitrary t) => Maybe t    -> Test.QuickCheck.Gen b
+coarbitrary_maybe :: (CoArbitrary t) => Maybe t  -> Test.QuickCheck.Gen b
                                                  -> Test.QuickCheck.Gen b
 coarbitrary_maybe Nothing = variant 0
 coarbitrary_maybe (Just x) = variant 1 . coarbitrary x
 
-coarbitrary_fmb :: (Arbitrary t1, Arbitrary t) => FMB t t1 -> Gen a -> Gen a
+coarbitrary_fmb :: (CoArbitrary t1, CoArbitrary t) => FMB t t1 -> Gen a -> Gen a
 coarbitrary_fmb E = variant 0
 coarbitrary_fmb (I _ k x l (FMB' m) r) =
         variant 1 . coarbitrary k . coarbitrary_maybe x .

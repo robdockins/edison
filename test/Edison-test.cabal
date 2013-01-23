@@ -1,6 +1,6 @@
 Build-type:     Simple
 Name:           Edison-test
-Version:        1.2.1.3
+Version:        1.2.2
 License:        OtherLicense
 License-File:   COPYRIGHT
 Author:         Chris Okasaki
@@ -11,10 +11,10 @@ Stability:      provisional
 Build-Depends:
      base >= 1.0,
      mtl >= 1.0,
-     QuickCheck >= 1.0 && < 2,
+     QuickCheck >= 2.0 && < 3,
      HUnit >= 1.1,
      EdisonAPI == 1.2.1,
-     EdisonCore >= 1.2
+     EdisonCore >= 1.2.2
 
 Executable: testSuite
 Main-Is: Main.hs

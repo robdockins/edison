@@ -347,6 +347,7 @@ instance (S.Sequence s, Arbitrary (s a)) => Arbitrary (Sized s a) where
   arbitrary = do xs <- arbitrary
                  return (fromSeq xs)
 
+instance (S.Sequence s, CoArbitrary (s a)) => CoArbitrary (Sized s a) where
   coarbitrary xs = coarbitrary (toSeq xs)
 
 instance S.Sequence s => Monoid (Sized s a) where

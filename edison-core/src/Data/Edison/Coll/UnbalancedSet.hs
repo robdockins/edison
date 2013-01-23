@@ -424,6 +424,7 @@ instance (Ord a, Arbitrary a) => Arbitrary (Set a) where
   arbitrary = do xs <- arbitrary
                  return (Prelude.foldr insert empty xs)
 
+instance (Ord a, CoArbitrary a) => CoArbitrary (Set a) where
   coarbitrary E = variant 0
   coarbitrary (T a x b) =
     variant 1 . coarbitrary a . coarbitrary x . coarbitrary b

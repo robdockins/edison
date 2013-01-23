@@ -370,10 +370,14 @@ instance Read a => Read (Seq a) where
 
 instance Arbitrary a => Arbitrary (Elem a) where
    arbitrary   = arbitrary >>= return . Elem
+
+instance CoArbitrary a => CoArbitrary (Elem a) where
    coarbitrary = coarbitrary . unElem
 
 instance Arbitrary a => Arbitrary (Seq a) where
    arbitrary   = arbitrary >>= return . Seq
+
+instance CoArbitrary a => CoArbitrary (Seq a) where
    coarbitrary = coarbitrary . unSeq
 
 instance Monoid (Seq a) where

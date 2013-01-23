@@ -6,30 +6,28 @@ module Data.Edison.Test.Utils where
 import Data.List (intersperse)
 
 import Test.QuickCheck
-import Test.QuickCheck.Batch
+import Test.QuickCheck.Test
 import Test.HUnit (runTestTT, Test(..),assertFailure)
 
 -- | Turn a QuickCheck 'Testable' into an HUnit 'Test'
 qcTest :: Testable a => a -> Test
 qcTest x = TestCase $ do
-   let testOpts = 
-        TestOptions 
-        { no_of_tests = 100
-        , length_of_tests = 20
-        , debug_tests = False
+   let args = 
+        stdArgs
+        { maxSuccess = 100
+        , maxSize = 20
         }
 
-   res <- run x testOpts
+   res <- quickCheckWithResult args x
 
    case res of
-     TestOk _ _ _ -> return ()
+     Success _ _ _ -> return ()
 
-     TestExausted msg i msgs -> 
-	assertFailure . concat $ ["Test time exausted: ",msg," ",show i
-                                 ," ",concat (intersperse " " (concat msgs))]
+     GaveUp i _ msg -> 
+	assertFailure . concat $ ["Test time exausted: ",msg," ",show i]
 
-     TestFailed msgs i -> 
-        assertFailure . concat $ ["Falsifiable: (| ",concat (intersperse ", " msgs)," |) ",show i]
+     Failure i _ _ _ r _ msg -> 
+        assertFailure . concat $ [r, " ", msg, " ", show i]
 
-     TestAborted ex    ->
-        assertFailure (show ex)
+     NoExpectedFailure _ _ msg ->
+        assertFailure msg

@@ -62,7 +62,7 @@ import qualified Data.Edison.Assoc as A
 import qualified Data.Edison.Seq as S
 import qualified Data.Edison.Seq.BinaryRandList as RL
 import Data.Edison.Assoc.Defaults
-import Test.QuickCheck (Arbitrary(..), variant)
+import Test.QuickCheck (Arbitrary(..), CoArbitrary(..), variant)
 
 -- signatures for exported functions
 moduleName    :: String
@@ -612,6 +612,7 @@ instance (Eq k,Arbitrary k,Arbitrary a) => Arbitrary (FM k a) where
    arbitrary = do xs <- arbitrary
                   return (Prelude.foldr (uncurry insert) empty xs)
 
+instance (Eq k,CoArbitrary k,CoArbitrary a) => CoArbitrary (FM k a) where
    coarbitrary E = variant 0
    coarbitrary (I k a m) = variant 1 . coarbitrary k
                          . coarbitrary a . coarbitrary m
