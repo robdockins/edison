@@ -1,6 +1,6 @@
 Build-type:     Simple
 Name:           EdisonAPI
-Version:        1.2.1
+Version:        1.2.2
 License:        OtherLicense
 License-File:   COPYRIGHT
 Author:         Chris Okasaki
@@ -20,10 +20,10 @@ Exposed-modules:
      Data.Edison.Seq
      Data.Edison.Seq.ListSeq
 Build-Depends:
-     base >= 1.0,
+     base >= 2.0 && < 5,
      mtl >= 1.0
 Extensions:
      MultiParamTypeClasses
      FunctionalDependencies
      UndecidableInstances
-Ghc-Options: -funbox-strict-fields -fwarn-incomplete-patterns -O2
+Ghc-Options: -funbox-strict-fields -fwarn-incomplete-patterns

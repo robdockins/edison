@@ -1,5 +1,5 @@
 Name:           EdisonCore
-Cabal-Version:  >= 1.2
+Cabal-Version:  >= 1.2.3
 Build-Type:     Simple
 Version:        1.2.2
 License:        OtherLicense
@@ -47,9 +47,10 @@ Library
      Data.Edison.Seq.SimpleQueue
      Data.Edison.Seq.SizedSeq
   Build-Depends:
-     base, mtl,
+     base < 5,
+     mtl,
      QuickCheck >= 2.0 && < 3,
-     EdisonAPI == 1.2.1
+     EdisonAPI == 1.2.2
   if impl( ghc >= 6.8 )
      Build-Depends:
         containers, array
@@ -63,4 +64,4 @@ Library
      ScopedTypeVariables
      GeneralizedNewtypeDeriving
      FlexibleContexts
-  Ghc-Options: -funbox-strict-fields -fwarn-incomplete-patterns -O2
+  Ghc-Options: -funbox-strict-fields -fwarn-incomplete-patterns

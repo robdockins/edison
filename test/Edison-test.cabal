@@ -9,11 +9,11 @@ Synopsis:       Testsuite for Edison
 Category:       Data structures
 Stability:      provisional
 Build-Depends:
-     base >= 1.0,
+     base >= 1.0 && < 5,
      mtl >= 1.0,
      QuickCheck >= 2.0 && < 3,
      HUnit >= 1.1,
-     EdisonAPI == 1.2.1,
+     EdisonAPI == 1.2.2,
      EdisonCore >= 1.2.2
 
 Executable: testSuite
