@@ -2,8 +2,6 @@ Build-type:     Simple
 Name:           Edison-test
 Version:        1.2.2
 License:        OtherLicense
-License-File:   COPYRIGHT
-Author:         Chris Okasaki
 Maintainer:     robdockins AT fastmail DOT fm
 Synopsis:       Testsuite for Edison
 Category:       Data structures
