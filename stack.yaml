@@ -1,0 +1,5 @@
+packages:
+ - edison-api
+ - edison-core
+ - test
+resolver: lts-3.3
