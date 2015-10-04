@@ -42,9 +42,6 @@ memberUsingLookupM k m
         Just _  -> True
         Nothing -> False
 
-sizeUsingElements :: (AssocX m k) => m a -> Int
-sizeUsingElements m = length (elements m)
-
 countUsingMember :: AssocX m k => k -> m a -> Int
 countUsingMember k m = if member k m then 1 else 0
 

@@ -71,10 +71,12 @@ import Prelude hiding (concat,reverse,map,concatMap,foldr,foldl,foldr1,foldl1,
                        filter,takeWhile,dropWhile,lookup,take,drop,splitAt,
                        zip,zip3,zipWith,zipWith3,unzip,unzip3,null)
 
+import qualified Control.Applicative as App
 import Control.Monad.Identity
 import Data.Maybe
 import Data.Monoid
 import Test.QuickCheck
+
 
 import qualified Data.Edison.Seq as S ( Sequence(..) )
 import Data.Edison.Seq.Defaults
@@ -521,6 +523,17 @@ instance S.Sequence Seq where
 
 instance Functor Seq where
   fmap = map
+
+instance App.Alternative Seq where
+  empty = empty
+  (<|>) = append
+
+instance App.Applicative Seq where
+  pure = return
+  x <*> y = do
+     x' <- x
+     y' <- y
+     return (x' y')
 
 instance Monad Seq where
   return = singleton

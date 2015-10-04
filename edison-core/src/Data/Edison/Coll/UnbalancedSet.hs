@@ -421,7 +421,7 @@ instance (Ord a, Read a) => Read (Set a) where
 
 
 instance (Ord a, Arbitrary a) => Arbitrary (Set a) where
-  arbitrary = do xs <- arbitrary
+  arbitrary = do (xs::[a]) <- arbitrary
                  return (Prelude.foldr insert empty xs)
 
 instance (Ord a, CoArbitrary a) => CoArbitrary (Set a) where

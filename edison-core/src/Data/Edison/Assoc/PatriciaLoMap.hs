@@ -831,7 +831,7 @@ instance (Ord a) => Ord (FM a) where
   compare = compareUsingToOrdList
 
 instance (Arbitrary a) => Arbitrary (FM a) where
-   arbitrary = do xs <- arbitrary
+   arbitrary = do (xs::[(Int,a)]) <- arbitrary
                   return (Prelude.foldr (uncurry insert) empty xs)
 
 instance (CoArbitrary a) => CoArbitrary (FM a) where

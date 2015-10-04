@@ -609,7 +609,7 @@ instance (Eq k,Read k,Read a) => Read (FM k a) where
   readsPrec = readsPrecUsingFromList
 
 instance (Eq k,Arbitrary k,Arbitrary a) => Arbitrary (FM k a) where
-   arbitrary = do xs <- arbitrary
+   arbitrary = do (xs::[(k,a)]) <- arbitrary
                   return (Prelude.foldr (uncurry insert) empty xs)
 
 instance (Eq k,CoArbitrary k,CoArbitrary a) => CoArbitrary (FM k a) where

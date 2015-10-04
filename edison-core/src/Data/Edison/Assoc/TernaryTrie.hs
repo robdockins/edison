@@ -1140,7 +1140,7 @@ structuralInvariant (FM _ fmb) = structuralInvariantFMB fmb
 
 
 instance (Ord k,Arbitrary k,Arbitrary a) => Arbitrary (FM k a) where
-  arbitrary = do xs <- arbitrary
+  arbitrary = do (xs::[([k],a)]) <- arbitrary
                  return (Prelude.foldr (uncurry insert) empty xs)
 
 instance (Ord k,CoArbitrary k,CoArbitrary a) => CoArbitrary (FM k a) where

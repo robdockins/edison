@@ -56,6 +56,8 @@ import Prelude hiding (concat,reverse,map,concatMap,foldr,foldl,foldr1,foldl1,
                        filter,takeWhile,dropWhile,lookup,take,drop,splitAt,
                        zip,zip3,zipWith,zipWith3,unzip,unzip3,null)
 
+import qualified Control.Applicative as App
+
 import qualified Data.Edison.Seq as S
 import qualified Data.Edison.Seq.ListSeq as L
 import Data.Edison.Seq.Defaults -- only used by concatMap
@@ -344,6 +346,17 @@ instance S.Sequence s => S.Sequence (Rev s) where
 
 instance S.Sequence s => Functor (Rev s) where
   fmap = map
+
+instance S.Sequence s => App.Alternative (Rev s) where
+  empty = empty
+  (<|>) = append
+
+instance S.Sequence s => App.Applicative (Rev s) where
+  pure = return
+  x <*> y = do
+     x' <- x
+     y' <- y
+     return (x' y')
 
 instance S.Sequence s => Monad (Rev s) where
   return = singleton

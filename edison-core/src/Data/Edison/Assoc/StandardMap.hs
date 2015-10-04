@@ -361,7 +361,7 @@ instance Ord k => A.FiniteMap (FM k) k where
 instance Ord k => A.OrdFiniteMap (FM k) k
 
 instance (Ord k,Arbitrary k,Arbitrary a) => Arbitrary (FM k a) where
-   arbitrary = do xs <- arbitrary
+   arbitrary = do (xs::[(k,a)]) <- arbitrary
                   return (Prelude.foldr (uncurry insert) empty xs)
 
 instance (Ord k,CoArbitrary k,CoArbitrary a) => CoArbitrary (FM k a) where
