@@ -9,7 +9,7 @@ import Prelude hiding (concat,reverse,map,concatMap,foldr,foldl,foldr1,foldl1,
 import qualified Prelude
 import qualified Data.List as List -- not ListSeq!
 
-import Test.QuickCheck
+import Test.QuickCheck hiding( (===) )
 import Test.HUnit (Test(..))
 
 import Data.Edison.Prelude

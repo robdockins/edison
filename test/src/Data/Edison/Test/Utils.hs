@@ -12,7 +12,7 @@ import Test.HUnit (runTestTT, Test(..),assertFailure)
 -- | Turn a QuickCheck 'Testable' into an HUnit 'Test'
 qcTest :: Testable a => a -> Test
 qcTest x = TestCase $ do
-   let args = 
+   let args =
         stdArgs
         { maxSuccess = 100
         , maxSize = 20
@@ -21,13 +21,13 @@ qcTest x = TestCase $ do
    res <- quickCheckWithResult args x
 
    case res of
-     Success _ _ _ -> return ()
+     Success{} -> return ()
 
-     GaveUp i _ msg -> 
+     GaveUp{ numTests = i, output = msg } ->
 	assertFailure . concat $ ["Test time exausted: ",msg," ",show i]
 
-     Failure i _ _ _ r _ msg -> 
+     Failure{ numTests = i, reason = r, output = msg } ->
         assertFailure . concat $ [r, " ", msg, " ", show i]
 
-     NoExpectedFailure _ _ msg ->
+     NoExpectedFailure{ output = msg } ->
         assertFailure msg

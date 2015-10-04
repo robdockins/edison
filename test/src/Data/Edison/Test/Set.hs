@@ -16,7 +16,7 @@ import qualified Data.List as List -- not ListSeq!
 import Data.Bits
 import Data.Word
 
-import Test.QuickCheck
+import Test.QuickCheck hiding( (===) )
 import Test.HUnit (Test(..))
 
 import Data.Edison.Prelude

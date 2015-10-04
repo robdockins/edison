@@ -10,7 +10,7 @@ import qualified Prelude
 import qualified Data.List as L
 import Data.Maybe
 
-import Test.QuickCheck hiding (elements)
+import Test.QuickCheck hiding (elements, (===))
 import Test.HUnit (Test(..))
 
 import Data.Edison.Test.Utils

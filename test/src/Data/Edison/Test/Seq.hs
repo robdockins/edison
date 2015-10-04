@@ -13,7 +13,7 @@ import Data.Edison.Prelude
 import Data.Edison.Seq
 import Data.Edison.Test.Utils
 
-import Test.QuickCheck
+import Test.QuickCheck hiding( (===) )
 import Test.HUnit (Test(..))
 
 ------------------------------------------------------
