@@ -1,3 +1,10 @@
+Changes in 1.3
+  * Updates to compile with GHC 7.10
+     - Added Applicative and Alternative instances as required
+     - Disambiguate the types of some operations
+     - Resolve namespace clashes
+  * Added stack.yaml file to build with stack
+
 Changes in 1.2.2
   * Update edison-core to use QuickCheck version 2.*
   * Likewise update the test suite
@@ -79,7 +86,7 @@ Changes in 1.2rc1
     as Haddock comments
   * use cabal for build system
   * add Data.Edison module to re-export typeclasses
-  * reorder 'lookup*' and 'find*' methods for 
+  * reorder 'lookup*' and 'find*' methods for
     Collections and Associated Collections
   * add 'unsafeMapMonotonic' to main Collection API
   * organize QuickCheck properties into a full test suite

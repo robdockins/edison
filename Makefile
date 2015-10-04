@@ -1,5 +1,5 @@
 RUNHS=runhaskell
-VERSION=1.2.2
+VERSION=1.3
 
 help:
 	@echo ""
@@ -39,7 +39,6 @@ version:
 	@echo "Makefile version: $(VERSION)"
 	@sed -n 's/Version:[[:space:]]*\(.*\)/README version:   \1/p' README
 	@grep '^Changes in' CHANGES | sed -n '1 s/Changes in \(.*\)/CHANGES version:  \1/p'
-	@darcs changes | grep '^  tagged' | sed -n '1 s/^  tagged \(.*\)/Darcs version:    \1/p'
 
 user : api-user core-user
 system : api-system core-system

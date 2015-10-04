@@ -1,11 +1,11 @@
 Edison: A Library of Efficient Data Structures
-Version: 1.2.2
-Jan 22, 2013
+Version: 1.3
+Oct 4, 2015
 
-This is the darcs version of Edison. Since you
+This is the source version of Edison. Since you
 are looking at this, I'm mostly going to assume
 you know what you are doing.  The homepage for
 Edison can be found at "home/index.html" from this
 directory or on the web at:
 
-http://www.cs.princeton.edu/~rdockins/edison/home/index.html
+http://rwd.rdockins.name/edison/home/index.html
