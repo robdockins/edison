@@ -1,23 +1,30 @@
 Build-type:     Simple
 Name:           Edison-test
 Version:        1.3
+Cabal-version:  >= 1.22
 License:        OtherLicense
 Maintainer:     robdockins AT fastmail DOT fm
 Synopsis:       Testsuite for Edison
 Category:       Data structures
 Stability:      provisional
-Build-Depends:
+
+Source-Repository head
+  Type: git
+  Location: https://github.com/robdockins/edison/
+  Subdir: test
+
+Executable testSuite
+  Main-Is: Main.hs
+  Hs-Source-Dirs:  src
+  Build-Depends:
      base == 4.*,
      mtl >= 1.0,
      QuickCheck >= 2.8 && < 3,
      HUnit >= 1.1,
      EdisonAPI,
      EdisonCore
-
-Executable: testSuite
-Main-Is: Main.hs
-Hs-Source-Dirs:  src
-Extensions:
+  Default-Language: Haskell2010
+  Default-Extensions:
      MultiParamTypeClasses
      FunctionalDependencies
      UndecidableInstances

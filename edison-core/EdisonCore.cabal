@@ -1,5 +1,5 @@
 Name:           EdisonCore
-Cabal-Version:  >= 1.2.3
+Cabal-Version:  >= 1.22
 Build-Type:     Simple
 Version:        1.3
 License:        OtherLicense
@@ -16,6 +16,11 @@ Description:
      implementations with various performance characteristics. The
      implementations in this package have no dependencies other than those
      commonly bundled with Haskell compilers.
+
+Source-Repository head
+  Type: git
+  Location: https://github.com/robdockins/edison/
+  Subdir: edison-core
 
 Library
   Hs-Source-Dirs: src
@@ -53,7 +58,8 @@ Library
      EdisonAPI,
      containers,
      array
-  Extensions:
+  Default-Language: Haskell2010
+  Default-Extensions:
      MultiParamTypeClasses
      FunctionalDependencies
      UndecidableInstances

@@ -1,5 +1,6 @@
 Build-type:     Simple
 Name:           EdisonAPI
+Cabal-Version:  >= 1.22
 Version:        1.3
 License:        OtherLicense
 License-File:   COPYRIGHT
@@ -20,8 +21,14 @@ Description:
    Associative Collections such as finite maps and priority queues
     where the priority and element are distinct.
 
-Hs-Source-Dirs: src
-Exposed-modules:
+Source-Repository head
+  Type: git
+  Location: https://github.com/robdockins/edison/
+  Subdir: edison-api
+
+Library
+  Hs-Source-Dirs: src
+  Exposed-modules:
      Data.Edison
      Data.Edison.Prelude
      Data.Edison.Sym
@@ -30,11 +37,12 @@ Exposed-modules:
      Data.Edison.Coll.Utils
      Data.Edison.Seq
      Data.Edison.Seq.ListSeq
-Build-Depends:
+  Build-Depends:
      base == 4.*,
      mtl >= 1.0
-Extensions:
+  Default-Language: Haskell2010
+  Default-Extensions:
      MultiParamTypeClasses
      FunctionalDependencies
      UndecidableInstances
-Ghc-Options: -funbox-strict-fields -fwarn-incomplete-patterns
+  Ghc-Options: -funbox-strict-fields -fwarn-incomplete-patterns
