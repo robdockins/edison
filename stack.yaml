@@ -2,4 +2,12 @@ packages:
  - edison-api
  - edison-core
  - test
-resolver: lts-3.3
+extra-deps:
+ - HUnit-1.3.1.1
+ - QuickCheck-2.8.2
+ - mtl-2.2.1
+ - primitive-0.6.1.0
+ - random-1.1
+ - tf-random-0.5
+resolver: ghc-7.10.3
+

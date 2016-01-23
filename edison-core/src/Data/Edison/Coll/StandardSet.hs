@@ -262,10 +262,3 @@ instance Ord a => C.Set (Set a) a where
 instance Ord a => C.OrdSetX (Set a) a
 
 instance Ord a => C.OrdSet (Set a) a
-
-instance (Ord a, Arbitrary a) => Arbitrary (Set a) where
-  arbitrary = do (xs::[a]) <- arbitrary
-                 return (Prelude.foldr insert empty xs)
-
-instance (Ord a, CoArbitrary a) => CoArbitrary (Set a) where
-  coarbitrary set = coarbitrary (C.toList set)
