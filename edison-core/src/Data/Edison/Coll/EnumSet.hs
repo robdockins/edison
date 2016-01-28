@@ -179,7 +179,13 @@ moduleName = "Data.Edison.Coll.EnumSet"
 newtype Set a = Set Word deriving (Eq)
 
 wordLength :: Int
-wordLength = finiteBitSize (0::Word)
+wordLength =
+#if MIN_VERSION_base(4,7,0)
+  finiteBitSize
+#else
+  bitSize
+#endif
+    (0::Word)
 
 check :: String -> Int -> Int
 check msg x
