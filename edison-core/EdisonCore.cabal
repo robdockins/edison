@@ -6,7 +6,7 @@ License:        OtherLicense
 License-File:   COPYRIGHT
 Author:         Chris Okasaki
 Maintainer:     robdockins AT fastmail DOT fm
-Synopsis:       A library of efficent, purely-functional data structures (Core Implementations)
+Synopsis:       A library of efficient, purely-functional data structures (Core Implementations)
 Category:       Data Structures
 Homepage:	http://rwd.rdockins.name/edison/home/
 Stability:      Stable

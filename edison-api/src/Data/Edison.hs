@@ -143,7 +143,7 @@
 --   information.  Unless otherwise stated, these are amortized time complexities, assuming
 --   persistent usage of the datastructure.  Much of this data comes from:
 --
---   Martin Holters. /Efficent Data Structures in a Lazy Functional Language/.  Master's Thesis.
+--   Martin Holters. /Efficient Data Structures in a Lazy Functional Language/.  Master's Thesis.
 --   Chalmers University of Technology, Sweden. 2003.
 --
 --   /Notes on unsafe functions:/

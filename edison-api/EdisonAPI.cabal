@@ -6,14 +6,14 @@ License:        OtherLicense
 License-File:   COPYRIGHT
 Author:         Chris Okasaki
 Maintainer:     robdockins AT fastmail DOT fm
-Synopsis:       A library of efficent, purely-functional data structures (API)
+Synopsis:       A library of efficient, purely-functional data structures (API)
 Category:       Data Structures
 Homepage:	http://rwd.rdockins.name/edison/home/
 Stability:      Stable
 Description:
    Edison is a library of purely functional data structures written by
    Chris Okasaki.  It is named after Thomas Alva Edison and for the
-   mnemonic value EDiSon (Efficent Data Structures).
+   mnemonic value EDiSon (Efficient Data Structures).
    Edison provides several families of abstractions, each with
    multiple implementations.  The main abstractions provided by Edison are:
    Sequences such as stacks, queues, and dequeues;
