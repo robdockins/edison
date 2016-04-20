@@ -36,7 +36,7 @@ Changes in 1.2.1
     many problems.
 
 Changes in 1.2.0.1
-  * Change use more efficent operations for StandardSet.{filterGT,filterLT}
+  * Change use more efficient operations for StandardSet.{filterGT,filterLT}
     and StandardMap.{filterLE,filterGE,partitionLE_GT,partitionLT_GE}
 
 Changes in 1.2 final
