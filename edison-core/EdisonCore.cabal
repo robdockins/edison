@@ -1,7 +1,7 @@
 Name:           EdisonCore
 Cabal-Version:  >= 1.10
 Build-Type:     Simple
-Version:        1.3.1.1
+Version:        1.3.2
 License:        MIT
 License-File:   COPYRIGHT
 Author:         Chris Okasaki
@@ -69,4 +69,4 @@ Library
      ScopedTypeVariables
      GeneralizedNewtypeDeriving
      FlexibleContexts
-  Ghc-Options: -funbox-strict-fields -fwarn-incomplete-patterns
+  Ghc-Options: -funbox-strict-fields -fwarn-incomplete-patterns -Wcompat
