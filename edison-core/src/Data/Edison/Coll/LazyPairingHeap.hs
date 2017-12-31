@@ -47,6 +47,7 @@ import qualified Data.Edison.Seq as S
 import Data.Edison.Coll.Defaults
 import Data.List (sort)
 import Data.Monoid
+import Data.Semigroup as SG
 import Control.Monad
 import Test.QuickCheck
 
@@ -556,9 +557,12 @@ instance (Ord a, CoArbitrary a) => CoArbitrary (Heap a) where
   coarbitrary (H2 x a b) =
       variant 2 . coarbitrary x . coarbitrary a . coarbitrary b
 
+instance (Ord a) => Semigroup (Heap a) where
+    (<>) = union
+
 instance (Ord a) => Monoid (Heap a) where
     mempty  = empty
-    mappend = union
+    mappend = (SG.<>)
     mconcat = unionSeq
 
 instance (Ord a) => Ord (Heap a) where

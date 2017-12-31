@@ -57,6 +57,7 @@ module Data.Edison.Assoc.AssocList (
 import Prelude hiding (null,map,lookup,foldr,foldl,foldr1,foldl1,filter)
 import qualified Prelude
 import Data.Monoid
+import Data.Semigroup as SG
 import Control.Monad.Identity
 import qualified Data.Edison.Assoc as A
 import qualified Data.Edison.Seq as S
@@ -618,7 +619,9 @@ instance (Eq k,CoArbitrary k,CoArbitrary a) => CoArbitrary (FM k a) where
                          . coarbitrary a . coarbitrary m
 
 
+instance Eq k => Semigroup (FM k a) where
+   (<>) = union
 instance Eq k => Monoid (FM k a) where
    mempty  = empty
-   mappend = union
+   mappend = (SG.<>)
    mconcat = unionSeq

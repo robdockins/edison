@@ -44,6 +44,7 @@ import qualified Data.Edison.Seq as S
 import Data.Edison.Coll.Defaults
 import Data.Edison.Seq.Defaults (tokenMatch,maybeParens)
 import Data.Monoid
+import qualified Data.Semigroup as SG
 import Control.Monad
 import Test.QuickCheck
 
@@ -397,9 +398,11 @@ instance (C.OrdColl h a,CoArbitrary h,CoArbitrary a) => CoArbitrary (Min h a) wh
   coarbitrary E = variant 0
   coarbitrary (M x xs) = variant 1 . coarbitrary x . coarbitrary xs
 
+instance (C.OrdColl h a) => SG.Semigroup (Min h a) where
+    (<>) = union
 instance (C.OrdColl h a) => Monoid (Min h a) where
     mempty  = empty
-    mappend = union
+    mappend = (SG.<>)
     mconcat = unionSeq
 
 instance (Eq h, C.OrdColl h a) => Ord (Min h a) where

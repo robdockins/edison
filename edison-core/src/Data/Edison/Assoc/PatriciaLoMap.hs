@@ -57,6 +57,7 @@ import Prelude hiding (null,map,lookup,foldr,foldl,foldr1,foldl1,filter)
 import qualified Prelude
 import Control.Monad.Identity (runIdentity)
 import Data.Monoid
+import Data.Semigroup as SG
 import qualified Data.Edison.Assoc as A
 import qualified Data.Edison.Seq as S
 import qualified Data.Edison.Seq.ListSeq as L
@@ -841,7 +842,9 @@ instance (CoArbitrary a) => CoArbitrary (FM a) where
                            . coarbitrary m . coarbitrary n
 
 
+instance Semigroup (FM a) where
+   (<>) = union
 instance Monoid (FM a) where
    mempty  = empty
-   mappend = union
+   mappend = (SG.<>)
    mconcat = unionSeq

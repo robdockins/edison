@@ -59,6 +59,7 @@ import qualified Data.Edison.Seq as S
 import qualified Data.List as L
 import Control.Monad.Identity
 import Data.Monoid
+import Data.Semigroup as SG
 import Data.Maybe (isNothing)
 
 import Data.Edison.Assoc.Defaults
@@ -1158,8 +1159,10 @@ coarbitrary_fmb (I _ k x l (FMB' m) r) =
         variant 1 . coarbitrary k . coarbitrary_maybe x .
         coarbitrary_fmb l . coarbitrary_fmb m . coarbitrary_fmb r
 
+instance Ord k => Semigroup (FM k a) where
+   (<>) = union
 instance Ord k => Monoid (FM k a) where
    mempty  = empty
-   mappend = union
+   mappend = (SG.<>)
    mconcat = unionSeq
 

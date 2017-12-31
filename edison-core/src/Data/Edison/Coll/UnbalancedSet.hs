@@ -47,6 +47,7 @@ import qualified Data.Edison.Coll as C
 import qualified Data.Edison.Seq as S
 import Data.Edison.Coll.Defaults
 import Data.Monoid
+import Data.Semigroup as SG
 import Test.QuickCheck
 
 -- signatures for exported functions
@@ -429,9 +430,12 @@ instance (Ord a, CoArbitrary a) => CoArbitrary (Set a) where
   coarbitrary (T a x b) =
     variant 1 . coarbitrary a . coarbitrary x . coarbitrary b
 
+instance (Ord a) => Semigroup (Set a) where
+  (<>) = union
+
 instance (Ord a) => Monoid (Set a) where
     mempty  = empty
-    mappend = union
+    mappend = (SG.<>)
     mconcat = unionSeq
 
 instance (Ord a) => Ord (Set a) where

@@ -161,6 +161,7 @@ import qualified Data.Bits as Bits
 import Data.Bits hiding (complement)
 import Data.Word
 import Data.Monoid (Monoid(..))
+import Data.Semigroup as SG
 
 import qualified Data.Edison.Seq as S
 import qualified Data.Edison.Coll as C
@@ -795,9 +796,11 @@ instance (Eq a, Enum a, Arbitrary a) => Arbitrary (Set a) where
 instance (Eq a, Enum a, CoArbitrary a) => CoArbitrary (Set a) where
   coarbitrary (Set w) = coarbitrary (fromIntegral w :: Int)
 
+instance (Eq a, Enum a) => Semigroup (Set a) where
+    (<>) = union
 instance (Eq a, Enum a) => Monoid (Set a) where
     mempty  = empty
-    mappend = union
+    mappend = (SG.<>)
     mconcat = unionSeq
 
 instance (Ord a, Enum a) => Ord (Set a) where

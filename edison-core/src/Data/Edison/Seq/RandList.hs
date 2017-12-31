@@ -59,6 +59,7 @@ import qualified Data.Edison.Seq as S( Sequence(..) )
 import Data.Edison.Seq.Defaults
 import Control.Monad.Identity
 import Data.Monoid
+import Data.Semigroup as SG
 import Test.QuickCheck
 
 -- signatures for exported functions
@@ -490,6 +491,8 @@ instance Arbitrary a => Arbitrary (Seq a) where
 instance CoArbitrary a => CoArbitrary (Seq a) where
   coarbitrary xs = coarbitrary (toList xs)
 
+instance Semigroup (Seq a) where
+  (<>) = append
 instance Monoid (Seq a) where
   mempty  = empty
-  mappend = append
+  mappend = (SG.<>)

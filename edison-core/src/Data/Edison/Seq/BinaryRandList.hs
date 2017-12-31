@@ -61,6 +61,7 @@ import Data.Maybe
 import qualified Data.Edison.Seq as S ( Sequence(..) )
 import Data.Edison.Seq.Defaults
 import Data.Monoid
+import Data.Semigroup as SG
 import Control.Monad
 import Test.QuickCheck
 
@@ -459,6 +460,8 @@ instance CoArbitrary a => CoArbitrary (Seq a) where
   coarbitrary (Odd x ps) = variant 2 . coarbitrary x . coarbitrary ps
 
 
+instance Semigroup (Seq a) where
+  (<>) = append
 instance Monoid (Seq a) where
   mempty  = empty
-  mappend = append
+  mappend = (SG.<>)

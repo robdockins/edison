@@ -63,6 +63,7 @@ import qualified Data.Edison.Seq.ListSeq as L
 import Data.Edison.Seq.Defaults -- only used by concatMap
 import Control.Monad
 import Data.Monoid
+import Data.Semigroup as SG
 import Test.QuickCheck
 
 
@@ -390,6 +391,8 @@ instance (S.Sequence s, Arbitrary (s a)) => Arbitrary (Rev s a) where
 instance (S.Sequence s, CoArbitrary (s a)) => CoArbitrary (Rev s a) where
   coarbitrary xs = coarbitrary (toSeq xs)
 
+instance S.Sequence s => Semigroup (Rev s a) where
+  (<>) = append
 instance S.Sequence s => Monoid (Rev s a) where
   mempty  = empty
-  mappend = append
+  mappend = (SG.<>)

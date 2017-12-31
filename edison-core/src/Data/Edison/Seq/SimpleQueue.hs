@@ -57,6 +57,7 @@ import qualified Data.Edison.Seq as S ( Sequence(..) )
 import Data.Edison.Seq.Defaults
 import qualified Data.Edison.Seq.ListSeq as L
 import Data.Monoid
+import Data.Semigroup as SG
 import Control.Monad
 import Test.QuickCheck
 
@@ -382,6 +383,8 @@ instance Arbitrary a => Arbitrary (Seq a) where
 instance CoArbitrary a => CoArbitrary (Seq a) where
   coarbitrary (Q xs ys) = coarbitrary xs . coarbitrary ys
 
+instance Semigroup (Seq a) where
+  (<>) = append
 instance Monoid (Seq a) where
   mempty  = empty
-  mappend = append
+  mappend = (SG.<>)

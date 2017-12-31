@@ -58,6 +58,7 @@ import qualified Control.Applicative as App
 import Data.Edison.Seq.Defaults
 import Control.Monad
 import Data.Monoid
+import Data.Semigroup as SG
 import Test.QuickCheck
 
 -- signatures for exported functions
@@ -434,6 +435,8 @@ instance CoArbitrary a => CoArbitrary (Seq a) where
   coarbitrary (L x) = variant 1 . coarbitrary x
   coarbitrary (A xs ys) = variant 2 . coarbitrary xs . coarbitrary ys
 
+instance Semigroup (Seq a) where
+  (<>) = append
 instance Monoid (Seq a) where
   mempty  = empty
-  mappend = append
+  mappend = (SG.<>)

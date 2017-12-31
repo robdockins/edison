@@ -42,6 +42,7 @@ import qualified Data.Edison.Seq as S
 import Data.Edison.Seq.Defaults
 import Control.Monad.Identity
 import Data.Monoid
+import Data.Semigroup as SG
 import Test.QuickCheck
 
 #ifdef __GLASGOW_HASKELL__
@@ -60,10 +61,11 @@ newtype SizeM = SizeM Int deriving (Eq,Ord,Num,Enum,Show)
 unSizeM :: SizeM -> Int
 unSizeM (SizeM x) = x
 
+instance Semigroup SizeM where
+   (<>) = (+)
 instance Monoid SizeM where
    mempty  = 0
-   mappend = (+)
-
+   mappend = (SG.<>)
 
 newtype Elem a = Elem a
 
@@ -392,6 +394,8 @@ instance Arbitrary a => Arbitrary (Seq a) where
 instance CoArbitrary a => CoArbitrary (Seq a) where
    coarbitrary = coarbitrary . unSeq
 
+instance Semigroup (Seq a) where
+  (<>) = append
 instance Monoid (Seq a) where
   mempty  = empty
-  mappend = append
+  mappend = (SG.<>)
