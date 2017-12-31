@@ -48,7 +48,7 @@ instance SetTest Int SS.Set
 
 newtype SmallInt = SI Int deriving (Show,Read,Eq,Ord,Enum,Num,Integral,Real)
 instance Arbitrary SmallInt where
-   arbitrary = arbitrary >>= \x -> return (SI $ abs x `mod` (bitSize (0::Word) - 1))
+   arbitrary = arbitrary >>= \x -> return (SI $ abs x `mod` (finiteBitSize (0::Word) - 1))
 
 instance CoArbitrary SmallInt where
    coarbitrary (SI x) = coarbitrary x
@@ -286,7 +286,7 @@ prop_deleteMin_Max set xs =
 
 
 prop_unsafeInsertMin_Max :: SetTest a set => 
-	set a -> a -> set a -> Bool
+        set a -> a -> set a -> Bool
 prop_unsafeInsertMin_Max set i xs =
     if null xs then
       unsafeInsertMin 0 xs === singleton 0
@@ -304,7 +304,7 @@ prop_unsafeFromOrdSeq set xs =
     unsafeFromOrdSeq (sort xs) === (fromSeq xs `asTypeOf` set)
 
 prop_unsafeAppend :: SetTest a set => 
-	set a -> a -> set a -> Bool
+        set a -> a -> set a -> Bool
 prop_unsafeAppend set i xs =
        union ys zs === unsafeAppend ys zs
     where (ys,zs) = partitionLE_GT i xs
@@ -388,14 +388,14 @@ prop_toOrdSeq set xs =
 -- SetX operations
 
 prop_intersect_difference :: SetTest a set => 
-	set a -> set a -> set a -> Bool
+        set a -> set a -> set a -> Bool
 prop_intersect_difference set xs ys =
     intersection xs ys === filter (\x -> member x xs) ys
     &&
     difference xs ys === filter (\x -> not (member x ys)) xs
 
 prop_subset_subsetEq :: SetTest a set => 
-	set a -> set a -> set a -> Bool
+        set a -> set a -> set a -> Bool
 prop_subset_subsetEq set xs ys =
     properSubset xs ys == (subset xs ys && xs /= ys)
     &&
@@ -418,7 +418,7 @@ prop_insertSeqWith set xs ys =
     insertSeqWith const xs ys === insertSeq xs ys
 
 prop_unionl_unionr_unionWith :: SetTest a set => 
-	set a -> set a -> set a -> Bool
+        set a -> set a -> set a -> Bool
 prop_unionl_unionr_unionWith set xs ys =
     unionl xs ys === u
     &&
@@ -440,7 +440,7 @@ prop_unsafeMapMonotonic set xs =
    if null xs
       then True
       else let xs' = deleteMax xs 
-	    in toOrdList (unsafeMapMonotonic (+1) xs') == Prelude.map (+1) (toOrdList xs')
+            in toOrdList (unsafeMapMonotonic (+1) xs') == Prelude.map (+1) (toOrdList xs')
 
 prop_show_read :: (SetTest a set,Read (set a),Show (set a)) 
                => set a -> set a -> Bool

@@ -243,85 +243,85 @@ prop_Member fm xs
             && all (\x -> member x fm1) xs
             && all (\k -> lookupM k fm1 == Just 0) xs)
     where
-	fm1 = fromSeq [ (x,0) | x <- xs ] `asTypeOf` fm
+        fm1 = fromSeq [ (x,0) | x <- xs ] `asTypeOf` fm
 
 
 prop_Elements :: FMTest k Int fm => fm Int -> [(k,Int)] -> Property
 prop_Elements fm xs
   = (L.null xs) `trivial`
-  	(si fm1 &&
+        (si fm1 &&
            L.sort (elements fm1) == L.sort (L.map snd cleaned))
     where
-    	cleaned = removeDups xs
-	fm1 = fromSeq cleaned `asTypeOf` fm
+        cleaned = removeDups xs
+        fm1 = fromSeq cleaned `asTypeOf` fm
 
 
 prop_PartitionKey :: FMTest k Int fm => fm Int -> k -> [(k,Int)] -> Property
 prop_PartitionKey fm key xs
   = (L.null xs) `trivial`
-  	(si fm1 && si fm2 &&
-		L.sort (toSeq fm1) ==
-			L.sort [ el | el@(k,v) <- cleaned, p k v ] &&
-		L.sort (toSeq fm2) ==
-			L.sort [ el | el@(k,v) <- cleaned, not (p k v) ])
+        (si fm1 && si fm2 &&
+                L.sort (toSeq fm1) ==
+                        L.sort [ el | el@(k,v) <- cleaned, p k v ] &&
+                L.sort (toSeq fm2) ==
+                        L.sort [ el | el@(k,v) <- cleaned, not (p k v) ])
     where
-    	cleaned = removeDups xs
-	fm0 = fromSeq cleaned `asTypeOf` fm
-	(fm1, fm2) = partitionWithKey p fm0
-	p k v = k < key
+        cleaned = removeDups xs
+        fm0 = fromSeq cleaned `asTypeOf` fm
+        (fm1, fm2) = partitionWithKey p fm0
+        p k v = k < key
 
 
 prop_Partition :: FMTest k Int fm => fm Int -> Int -> [(k,Int)] -> Property
 prop_Partition fm val xs
   = (L.null xs) `trivial`
-  	(si fm1 && si fm2 &&
-		L.sort (toSeq fm1) ==
-			L.sort [ el | el@(k,v) <- cleaned, p v ] &&
-		L.sort (toSeq fm2) ==
-			L.sort [ el | el@(k,v) <- cleaned, not (p v) ])
+        (si fm1 && si fm2 &&
+                L.sort (toSeq fm1) ==
+                        L.sort [ el | el@(k,v) <- cleaned, p v ] &&
+                L.sort (toSeq fm2) ==
+                        L.sort [ el | el@(k,v) <- cleaned, not (p v) ])
     where
-    	cleaned = removeDups xs
-	fm0 = fromSeq cleaned `asTypeOf` fm
-	(fm1, fm2) = partition p fm0
-	p v = v < val
+        cleaned = removeDups xs
+        fm0 = fromSeq cleaned `asTypeOf` fm
+        (fm1, fm2) = partition p fm0
+        p v = v < val
 
 prop_Difference :: FMTest k Int fm => 
-	fm Int -> [(k,Int)] -> [(k,Int)] -> Property
+        fm Int -> [(k,Int)] -> [(k,Int)] -> Property
 prop_Difference fm xs ys
   = (L.null xs || L.null ys) `trivial`
-  	(si fm1 && si fm2 && si fm3 &&
-  	  check s1 s2 s3 && (not (L.null s3) || null fm3))
+        (si fm1 && si fm2 && si fm3 &&
+          check s1 s2 s3 && (not (L.null s3) || null fm3))
     where
-	fm1 = fromSeq xs `asTypeOf` fm
-	fm2 = fromSeq ys `asTypeOf` fm
-	fm3 = difference fm1 fm2
-	s1 = L.sort . L.map fst . toSeq $ fm1
-	s2 = L.sort . L.map fst . toSeq $ fm2
-	s3 = L.sort . L.map fst . toSeq $ fm3
+        fm1 = fromSeq xs `asTypeOf` fm
+        fm2 = fromSeq ys `asTypeOf` fm
+        fm3 = difference fm1 fm2
+        s1 = L.sort . L.map fst . toSeq $ fm1
+        s2 = L.sort . L.map fst . toSeq $ fm2
+        s3 = L.sort . L.map fst . toSeq $ fm3
 
-	check []     _      zs
-	  = L.null zs
-	check xs     []     zs
-	  = xs == zs
-	check (x:xs) (y:ys) []
-	  | x > y     = check (x:xs) ys []
-	  | x == y    = check xs ys []
-	  | otherwise = False
-	check (x:xs) (y:ys) (z:zs)
-	  | x > y     = check (x:xs) ys     (z:zs)
-	  | x < y     = x == z &&
-	                check xs     (y:ys) zs
-	  | otherwise = check xs     ys     (z:zs)
+        check []     _      zs
+          = L.null zs
+        check xs     []     zs
+          = xs == zs
+        check (x:xs) (y:ys) []
+          | x > y     = check (x:xs) ys []
+          | x == y    = check xs ys []
+          | otherwise = False
+        check (x:xs) (y:ys) (z:zs)
+          | x > y     = check (x:xs) ys     (z:zs)
+          | x < y     = x == z &&
+                        check xs     (y:ys) zs
+          | otherwise = check xs     ys     (z:zs)
 
 
 prop_insert :: FMTest k Int fm =>
-	fm Int -> k -> Int -> [(k,Int)] -> Bool
+        fm Int -> k -> Int -> [(k,Int)] -> Bool
 prop_insert fm k x xs =
    let xs' = (k,x) : (L.filter ( (/=k) .  fst ) xs)
    in insert k x (fromSeq xs) === (fromSeq xs' `asTypeOf` fm)
 
 prop_insertSeq :: FMTest k Int fm =>
-	fm Int -> [(k,Int)] -> fm Int -> Bool
+        fm Int -> [(k,Int)] -> fm Int -> Bool
 prop_insertSeq fm ins xs =
    insertSeq (removeDups ins) xs === L.foldr (uncurry insert) xs (removeDups ins)
 
@@ -490,7 +490,7 @@ prop_min fm xs =
             snd min == z
             &&
             minElem xs' == z
-	    &&
+            &&
             delete (fst min) xs' === zs
             &&
             deleteMin xs' === zs
@@ -509,7 +509,7 @@ prop_max fm xs =
             snd max == z
             &&
             maxElem xs' == z
-	    &&
+            &&
             delete (fst max) xs' === zs
             &&
             deleteMax xs' === zs
@@ -523,11 +523,11 @@ prop_max fm xs =
 prop_foldr :: OrdFMTest k Int fm =>
           fm Int -> [(k,Int)] -> Bool
 prop_foldr fm xs =
-	foldr f 17 map == L.foldr f 17 (L.map snd xs')
+        foldr f 17 map == L.foldr f 17 (L.map snd xs')
         &&
         foldr f 17 map == foldr' f 17 map
-	&&
-	(null map || foldr1 f map == L.foldr1 f (L.map snd xs'))
+        &&
+        (null map || foldr1 f map == L.foldr1 f (L.map snd xs'))
         &&
         (null map || foldr1 f map == foldr1' f map)
 
@@ -538,11 +538,11 @@ prop_foldr fm xs =
 prop_foldl :: OrdFMTest k Int fm =>
           fm Int -> [(k,Int)] -> Bool
 prop_foldl fm xs =
-	foldl f 17 map == L.foldl f 17 (L.map snd xs')
+        foldl f 17 map == L.foldl f 17 (L.map snd xs')
         &&
         foldl f 17 map == foldl' f 17 map
-	&&
-	(null map || foldl1 f map == L.foldl1 f (L.map snd xs'))
+        &&
+        (null map || foldl1 f map == L.foldl1 f (L.map snd xs'))
         &&
         (null map || foldl1 f map == foldl1' f map)
 
@@ -595,7 +595,7 @@ prop_fromSeqWith :: FMTest k Int fm =>
           fm Int -> [(k,Int)] -> Bool
 prop_fromSeqWith fm xs = map1 === map2
    where map1 = fromSeqWith (+) xs `asTypeOf` fm
-	 map2 = fromSeq .
+         map2 = fromSeq .
                 L.map (\l -> L.foldr (\ (_,x) (i,y) -> (i,x+y))
                                      (fst $ head l,snd $ head l)
                                      (tail l)) .
@@ -605,7 +605,7 @@ prop_fromSeqWith fm xs = map1 === map2
 prop_fromSeqWithKey :: FMTest k Int fm =>
           fm Int -> [(k,Int)] -> Bool
 prop_fromSeqWithKey fm xs =
-	fromSeqWithKey (const (+)) xs === (fromSeqWith (+) xs `asTypeOf` fm)
+        fromSeqWithKey (const (+)) xs === (fromSeqWith (+) xs `asTypeOf` fm)
 
 prop_insertWith :: FMTest k Int fm =>
           fm Int -> k -> Int -> [(k,Int)] -> Bool
@@ -626,7 +626,7 @@ prop_insertWithKey fm k x xs =
 prop_insertSeqWith :: FMTest k Int fm =>
           fm Int -> [(k,Int)] -> fm Int -> Bool
 prop_insertSeqWith fm xs map =
-	insertSeqWith (+) xs map === L.foldr (uncurry (insertWith (+))) map xs
+        insertSeqWith (+) xs map === L.foldr (uncurry (insertWith (+))) map xs
 
 prop_insertSeqWithKey :: FMTest k Int fm =>
           fm Int -> [(k,Int)] -> fm Int -> Bool
@@ -637,14 +637,14 @@ prop_unionWith :: FMTest k Int fm =>
           fm Int -> [(k,Int)] -> [(k,Int)] -> Bool
 prop_unionWith fm as bs = map1 === map2
   where f = (+)
-	map1 = unionWith f (fromSeq (removeDups as)) (fromSeq (removeDups bs))
-	map2 = fromSeq zs `asTypeOf` fm
+        map1 = unionWith f (fromSeq (removeDups as)) (fromSeq (removeDups bs))
+        map2 = fromSeq zs `asTypeOf` fm
         zs = merge (sortFst (removeDups as)) (sortFst (removeDups bs))
         sortFst = L.sortBy (\x y -> compare (fst x) (fst y))
         merge [] ys = ys
         merge xs [] = xs
         merge ((k1,x):xs) ((k2,y):ys) =
-	   case compare k1 k2 of
+           case compare k1 k2 of
                 EQ -> (k1,f x y) : merge xs ys
                 LT -> (k1,x) : merge xs ((k2,y):ys)
                 GT -> (k2,y) : merge ((k1,x):xs) ys
@@ -674,7 +674,7 @@ prop_intersectionWith fm xs ys =
 prop_difference :: FMTest k Int fm =>
           fm Int -> [(k,Int)] -> [(k,Int)] -> Bool
 prop_difference fm xs ys =
-	difference as bs === fromSeq xs'
+        difference as bs === fromSeq xs'
 
   where as = fromSeq (removeDups xs) `asTypeOf` fm
         bs = fromSeq (removeDups ys) `asTypeOf` fm
@@ -695,7 +695,7 @@ prop_properSubset fm xs ys =
 prop_subset :: FMTest k Int fm =>
            fm Int -> [(k,Int)] -> [(k,Int)] -> Bool
 prop_subset fm xs ys =
-	subset as bs == isSub
+        subset as bs == isSub
 
   where as = fromSeq xs' `asTypeOf` fm
         bs = fromSeq ys' `asTypeOf` fm
@@ -721,7 +721,7 @@ prop_properSubmapBy fm xs ys =
 prop_sameMapBy :: FMTest k Int fm =>
            fm Int -> fm Int -> fm Int -> Bool
 prop_sameMapBy fm xs ys =
-	 sameMapBy f xs ys ==
+         sameMapBy f xs ys ==
          (subset xs ys && subset ys xs && fold (&&) True (intersectionWith f xs ys))
   where f x y = x + y `mod` 3 == 0
 
@@ -779,7 +779,7 @@ prop_minViewWithKey fm xs =
     case minViewWithKey xs of
       Nothing -> minView xs == Nothing
       Just ((k,x), xs') ->
-	(minView xs == Just (x,xs')) && 
+        (minView xs == Just (x,xs')) && 
         (minElemWithKey xs == (k,x)) &&
         (lookupM k xs == Just x)
 
@@ -789,7 +789,7 @@ prop_maxViewWithKey fm xs =
     case maxViewWithKey xs of
       Nothing -> maxView xs == Nothing
       Just ((k,x), xs') ->
-	(maxView xs == Just (x,xs')) && 
+        (maxView xs == Just (x,xs')) && 
         (maxElemWithKey xs == (k,x)) &&
         (lookupM k xs == Just x)
 
@@ -839,5 +839,5 @@ prop_strict fm xs =
      strictWith id xs === xs
 
 prop_show_read :: (FMTest k Int fm, Read (fm Int)) =>
-	fm Int -> fm Int -> Bool
+        fm Int -> fm Int -> Bool
 prop_show_read fm xs = xs === read (show xs)

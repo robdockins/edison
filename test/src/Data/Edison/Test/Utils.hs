@@ -24,7 +24,7 @@ qcTest x = TestCase $ do
      Success{} -> return ()
 
      GaveUp{ numTests = i, output = msg } ->
-	assertFailure . concat $ ["Test time exausted: ",msg," ",show i]
+        assertFailure . concat $ ["Test time exausted: ",msg," ",show i]
 
      Failure{ numTests = i, reason = r, output = msg } ->
         assertFailure . concat $ [r, " ", msg, " ", show i]

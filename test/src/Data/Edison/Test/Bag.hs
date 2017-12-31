@@ -258,7 +258,7 @@ prop_deleteMin_Max bag xs =
                   in if L.null l then L.empty else L.rtail l)
 
 prop_unsafeInsertMin_Max :: BagTest Int bag => 
-	bag Int -> Int -> bag Int -> Bool
+        bag Int -> Int -> bag Int -> Bool
 prop_unsafeInsertMin_Max bag i xs =
     if null xs then
       unsafeInsertMin 0 xs === singleton 0
@@ -358,7 +358,7 @@ prop_toOrdSeq bag xs =
     S.toList (toOrdSeq xs) == toOrdList xs
 
 prop_unsafeAppend :: BagTest Int bag => 
-	bag Int -> Int -> bag Int -> bag Int -> Bool
+        bag Int -> Int -> bag Int -> bag Int -> Bool
 prop_unsafeAppend bag i xs ys =
     if null xs || null ys then
       unsafeAppend xs ys === union xs ys

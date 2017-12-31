@@ -358,7 +358,7 @@ prop_subseq seq i len xs =
     subseq i len xs === take len (drop i xs)
 
 prop_filter_takeWhile_dropWhile :: SeqTest Int seq =>
-	seq Int -> Int -> seq Int -> Bool
+        seq Int -> Int -> seq Int -> Bool
 
 prop_filter_takeWhile_dropWhile seq x xs =
     toList (filter p xs) == Prelude.filter p (toList xs)
@@ -369,7 +369,7 @@ prop_filter_takeWhile_dropWhile seq x xs =
   where p = (< x)
 
 prop_partition_splitWhile :: SeqTest Int seq =>
-	seq Int -> Int -> seq Int -> Bool
+        seq Int -> Int -> seq Int -> Bool
 
 prop_partition_splitWhile seq x xs =
     partition p xs == (filter p xs, filter (not . p) xs)
@@ -386,7 +386,7 @@ prop_zip_zipWith seq xs ys =
   where xys = Prelude.zip (toList xs) (toList ys)
 
 prop_zip3_zipWith3 :: SeqTest Int seq =>
-	seq Int -> seq Int -> seq Int -> seq Int -> Bool
+        seq Int -> seq Int -> seq Int -> seq Int -> Bool
 
 prop_zip3_zipWith3 seq xs ys zs =
     toList (zip3 xs ys zs) == xyzs
@@ -396,7 +396,7 @@ prop_zip3_zipWith3 seq xs ys zs =
 
 
 prop_unzip_unzipWith :: (SeqTest Int seq,SeqTest (Int,Int) seq) =>
-	seq Int -> seq (Int,Int) -> Bool
+        seq Int -> seq (Int,Int) -> Bool
 
 prop_unzip_unzipWith seq xys =
     si xs
@@ -411,7 +411,7 @@ prop_unzip_unzipWith seq xys =
 
 
 prop_unzip3_unzipWith3 :: (SeqTest Int seq,SeqTest (Int,Int,Int) seq) =>
-	seq Int -> seq (Int,Int,Int) -> Bool
+        seq Int -> seq (Int,Int,Int) -> Bool
 
 prop_unzip3_unzipWith3 seq xyzs =
     si xs
@@ -434,18 +434,18 @@ prop_unzip3_unzipWith3 seq xyzs =
 
 prop_concat :: (SeqTest (seq Int) seq,SeqTest Int seq) => seq Int -> Property
 prop_concat seq = forAll (genss seq) $
-	\xss -> concat xss === foldr append empty xss
+        \xss -> concat xss === foldr append empty xss
 
 
 genss :: (SeqTest (seq Int) seq,SeqTest Int seq) =>
-	seq Int -> Gen (seq (seq Int))
+        seq Int -> Gen (seq (seq Int))
 
 genss seq = sized (\n -> resize (min 20 n) arbitrary)
 
 
 
 prop_concatMap :: (SeqTest (seq Int) seq, SeqTest Int seq) =>
-	seq Int -> seq Int -> Property
+        seq Int -> seq Int -> Property
 
 prop_concatMap seq xs = forAll (genss seq) check
   where check xss = concatMap f xs === concat (map f xs)
