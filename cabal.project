@@ -1,0 +1,4 @@
+packages:
+  edison-api
+  edison-core
+  test
