@@ -50,6 +50,7 @@ import Data.Edison.Coll.Defaults
 import Data.Monoid
 import Data.Semigroup as SG
 import Control.Monad
+import qualified Control.Monad.Fail as MF
 import Test.QuickCheck
 
 moduleName :: String
@@ -93,7 +94,7 @@ strict    :: Heap a -> Heap a
 
 toSeq     :: (Ord a, S.Sequence s) => Heap a -> s a
 lookup    :: Ord a => a -> Heap a -> a
-lookupM   :: (Ord a,Monad m) => a -> Heap a -> m a
+lookupM   :: (Ord a, MF.MonadFail m) => a -> Heap a -> m a
 lookupAll :: (Ord a,S.Sequence s) => a -> Heap a -> s a
 lookupWithDefault :: Ord a => a -> a -> Heap a -> a
 fold      :: Ord a => (a -> b -> b) -> b -> Heap a -> b
@@ -118,9 +119,9 @@ partitionLT_GE   :: Ord a => a -> Heap a -> (Heap a, Heap a)
 partitionLE_GT   :: Ord a => a -> Heap a -> (Heap a, Heap a)
 partitionLT_GT   :: Ord a => a -> Heap a -> (Heap a, Heap a)
 
-minView  :: (Ord a,Monad m) => Heap a -> m (a, Heap a)
+minView  :: (Ord a, MF.MonadFail m) => Heap a -> m (a, Heap a)
 minElem  :: Ord a => Heap a -> a
-maxView  :: (Ord a,Monad m) => Heap a -> m (a, Heap a)
+maxView  :: (Ord a, MF.MonadFail m) => Heap a -> m (a, Heap a)
 maxElem  :: Ord a => Heap a -> a
 foldr    :: Ord a => (a -> b -> b) -> b -> Heap a -> b
 foldl    :: Ord a => (b -> a -> b) -> b -> Heap a -> b

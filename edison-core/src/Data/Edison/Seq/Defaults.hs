@@ -17,6 +17,7 @@ import Prelude hiding (concat,reverse,map,concatMap,foldr,foldl,foldr1,foldl1,
                        filter,takeWhile,dropWhile,lookup,take,drop,splitAt,
                        zip,zip3,zipWith,zipWith3,unzip,unzip3,null)
 
+import qualified Control.Monad.Fail as MF
 import Control.Monad.Identity
 import Data.Char (isSpace)
 
@@ -33,7 +34,7 @@ appendUsingFoldr :: Sequence s => s a -> s a -> s a
 appendUsingFoldr s t | null t = s
                             | otherwise = foldr lcons t s
 
-rviewDefault :: (Monad m, Sequence s) => s a -> m (a, s a)
+rviewDefault :: (MF.MonadFail m, Sequence s) => s a -> m (a, s a)
 rviewDefault xs
   | null xs   = fail $ instanceName xs ++ ".rview: empty sequence"
   | otherwise = return (rhead xs, rtail xs)
@@ -49,7 +50,7 @@ rtailUsingLview xs =
             Nothing      -> empty
             Just (y, ys) -> lcons x (rt y ys)
 
-rtailMUsingLview :: (Monad m,Sequence s) => s a -> m (s a)
+rtailMUsingLview :: (MF.MonadFail m, Sequence s) => s a -> m (s a)
 rtailMUsingLview xs =
     case lview xs of
       Nothing      -> fail $ instanceName xs ++ ".rtailM: empty sequence"
@@ -220,7 +221,7 @@ lookupWithDefaultUsingDrop d i s
   | otherwise = lhead s'
   where s' = drop i s
 
-lookupMUsingDrop :: (Monad m, Sequence s) => Int -> s a -> m a
+lookupMUsingDrop :: (MF.MonadFail m, Sequence s) => Int -> s a -> m a
 lookupMUsingDrop i s
   -- XXX better error message!
   | i < 0 || null s' = fail $ instanceName s

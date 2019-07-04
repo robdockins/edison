@@ -58,6 +58,7 @@ import Prelude hiding (concat,reverse,map,concatMap,foldr,foldl,foldr1,foldl1,
                        zip,zip3,zipWith,zipWith3,unzip,unzip3,null)
 
 import Control.Monad
+import qualified Control.Monad.Fail as MF
 import Data.Monoid
 
 import Data.Edison.Prelude
@@ -221,7 +222,7 @@ class (Functor s, MonadPlus s) => Sequence s where
   --   This function is always /unambiguous/.
   --
   --   Default running time: @O( 1 )@
-  lview     :: (Monad m) => s a -> m (a, s a)
+  lview     :: (MF.MonadFail m) => s a -> m (a, s a)
 
   -- | Return the first element of a sequence.
   --   Signals an error if the sequence is empty.
@@ -249,7 +250,7 @@ class (Functor s, MonadPlus s) => Sequence s where
   --   This function is always /unambiguous/.
   --
   --   Default running time: @O( 1 )@
-  lheadM    :: (Monad m) => s a -> m a 
+  lheadM    :: (MF.MonadFail m) => s a -> m a 
 
   -- | Delete the first element of the sequence.
   --   Signals error if sequence is empty.
@@ -277,7 +278,7 @@ class (Functor s, MonadPlus s) => Sequence s where
   --   This function is always /unambiguous/.
   --
   --   Default running time: @O( 1 )@
-  ltailM    :: (Monad m) => s a -> m (s a)
+  ltailM    :: (MF.MonadFail m) => s a -> m (s a)
 
   -- | Separate a sequence into its last (rightmost) element and the
   --   remaining sequence.  Calls 'fail' if the sequence is empty.
@@ -291,7 +292,7 @@ class (Functor s, MonadPlus s) => Sequence s where
   --   This function is always /unambiguous/.
   --
   --   Default running time: @O( n )@
-  rview     :: (Monad m) => s a -> m (a, s a)
+  rview     :: (MF.MonadFail m) => s a -> m (a, s a)
 
   -- | Return the last (rightmost) element of the sequence.
   --   Signals error if sequence is empty.
@@ -319,7 +320,7 @@ class (Functor s, MonadPlus s) => Sequence s where
   --   This function is always /unambiguous/.
   --
   --   Default running time: @O( n )@
-  rheadM    :: (Monad m) => s a -> m a
+  rheadM    :: (MF.MonadFail m) => s a -> m a
 
   -- | Delete the last (rightmost) element of the sequence.
   --   Signals an error if the sequence is empty.
@@ -347,7 +348,7 @@ class (Functor s, MonadPlus s) => Sequence s where
   --   This function is always /unambiguous/.
   --
   --   Default running time: @O( n )@
-  rtailM    :: (Monad m) => s a -> m (s a)
+  rtailM    :: (MF.MonadFail m) => s a -> m (s a)
 
   -- | Returns 'True' if the sequence is empty and 'False' otherwise.
   -- 
@@ -948,7 +949,7 @@ class (Functor s, MonadPlus s) => Sequence s where
   --   This function is always /unambiguous/.
   --
   --   Default running time: @O( i )@
-  lookupM   :: (Monad m) => Int -> s a -> m a
+  lookupM   :: (MF.MonadFail m) => Int -> s a -> m a
 
   -- | Return the element at the given index, or the
   --   default argument if the index is out of bounds.  All indexes are

@@ -14,6 +14,7 @@
 module Data.Edison.Coll.Defaults where
 
 import Prelude hiding (null,foldr,foldl,foldr1,foldl1,lookup,filter)
+import qualified Control.Monad.Fail as MF
 import Control.Monad.Identity
 
 import Data.Edison.Coll
@@ -81,7 +82,7 @@ disjointUsingToOrdList xs ys = disj (toOrdList xs) (toOrdList ys)
         disj _ _ = True
 
 intersectWitnessUsingToOrdList ::
-        (OrdColl c a, Monad m) => c -> c -> m (a,a)
+        (OrdColl c a, MF.MonadFail m) => c -> c -> m (a,a)
 intersectWitnessUsingToOrdList as bs = witness (toOrdList as) (toOrdList bs)
   where witness a@(x:xs) b@(y:ys) =
           case compare x y of
@@ -100,7 +101,7 @@ lookupUsingLookupAll x ys =
     (y:_) -> y
     [] -> error $ instanceName ys ++ ".lookup: lookup failed"
 
-lookupMUsingLookupAll :: (Coll c a, Monad m) => a -> c -> m a
+lookupMUsingLookupAll :: (Coll c a, MF.MonadFail m) => a -> c -> m a
 lookupMUsingLookupAll x ys =
   case lookupAll x ys of
     (y:_) -> return y

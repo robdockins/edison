@@ -157,6 +157,7 @@ module Data.Edison.Coll.EnumSet (
 
 import qualified Prelude
 import Prelude hiding (filter,foldl,foldr,null,map,lookup,foldl1,foldr1)
+import qualified Control.Monad.Fail as MF
 import qualified Data.Bits as Bits
 import Data.Bits hiding (complement)
 import Data.Word
@@ -251,7 +252,7 @@ count = countUsingMember
 lookup :: (Eq a, Enum a) => a -> Set a -> a
 lookup = lookupUsingLookupAll
 
-lookupM :: (Eq a, Enum a, Monad m) => a -> Set a -> m a
+lookupM :: (Eq a, Enum a, MF.MonadFail m) => a -> Set a -> m a
 lookupM x s
    | member x s = return x
    | otherwise  = fail (moduleName++".lookupM: lookup failed")
@@ -340,12 +341,12 @@ deleteMax (Set w)
    | w == 0    = empty
    | otherwise = Set $ clearBit w $ msb w
 
-minView :: (Enum a, Monad m) => Set a -> m (a, Set a)
+minView :: (Enum a, MF.MonadFail m) => Set a -> m (a, Set a)
 minView (Set w)
    | w == 0    = fail (moduleName++".minView: empty set")
    | otherwise = let i = lsb w in return (toEnum i,Set $ clearBit w i)
 
-maxView :: (Enum a, Monad m) => Set a -> m (a, Set a)
+maxView :: (Enum a, MF.MonadFail m) => Set a -> m (a, Set a)
 maxView (Set w)
    | w == 0    = fail (moduleName++".maxView: empty set")
    | otherwise = let i = msb w in return (toEnum i, Set $ clearBit w i)

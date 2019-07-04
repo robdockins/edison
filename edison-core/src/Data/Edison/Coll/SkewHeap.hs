@@ -47,6 +47,7 @@ import Data.Edison.Coll.Defaults
 import Data.Monoid
 import Data.Semigroup as SG
 import Control.Monad
+import qualified Control.Monad.Fail as MF
 
 import Test.QuickCheck
 
@@ -142,7 +143,7 @@ toSeq h = tol h S.empty
   where tol E rest = rest
         tol (T x a b) rest = S.lcons x (tol b (tol a rest))
 
-lookupM :: (Ord a, Monad m) => a -> Heap a -> m a
+lookupM :: (Ord a, MF.MonadFail m) => a -> Heap a -> m a
 lookupM _ E = fail "SkewHeap.lookupM: XXX"
 lookupM x (T y a b) =
   case compare x y of
@@ -267,7 +268,7 @@ partitionLT_GT y h = (h', C.unionList hs)
                       (b', hs'') = collect b hs'
                   in (T x a' b', hs'')
 
-minView :: (Ord a, Monad m) => Heap a -> m (a, Heap a)
+minView :: (Ord a, MF.MonadFail m) => Heap a -> m (a, Heap a)
 minView E = fail "SkewHeap.minView: empty heap"
 minView (T x a b) = return (x, union a b)
 
@@ -275,7 +276,7 @@ minElem :: Ord a => Heap a -> a
 minElem E = error "SkewHeap.minElem: empty collection"
 minElem (T x _ _) = x
 
-maxView :: (Ord a, Monad m) => Heap a -> m (a, Heap a)
+maxView :: (Ord a, MF.MonadFail m) => Heap a -> m (a, Heap a)
 maxView E = fail "SkewHeap.maxView: empty heap"
 maxView (T x E E) = return (x, E)
 maxView (T x a E) = return (y, T x a' E)

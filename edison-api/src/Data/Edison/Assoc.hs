@@ -71,6 +71,8 @@ module Data.Edison.Assoc (
 
 import Prelude hiding (null,map,lookup,foldr,foldl,foldr1,foldl1,filter)
 
+import qualified Control.Monad.Fail as MF
+
 import Data.Edison.Prelude
 
 import Data.Edison.Seq(Sequence)
@@ -212,7 +214,7 @@ class (Eq k,Functor m) => AssocX m k | m -> k where
   --
   --   This function is /ambiguous/ at finite relation types if the key appears
   --   more than once in the finite relation.  Otherwise, it is /unambiguous/.
-  lookupM        :: (Monad rm) => k -> m a -> rm a
+  lookupM        :: (MF.MonadFail rm) => k -> m a -> rm a
 
   -- | Return all elements bound by the given key in an unspecified order.
   --
@@ -236,7 +238,7 @@ class (Eq k,Functor m) => AssocX m k | m -> k where
   --
   --   This function is /ambiguous/ at finite relation types if the key appears
   --   more than once in the finite relation.  Otherwise, it is /unambiguous/.
-  lookupAndDeleteM :: (Monad rm) => k -> m a -> rm (a, m a)
+  lookupAndDeleteM :: (MF.MonadFail rm) => k -> m a -> rm (a, m a)
 
   -- | Find all elements bound by the given key; return a sequence containing
   --   all such bound elements in an unspecified order and the collection
@@ -395,7 +397,7 @@ class (AssocX m k, Ord k) => OrdAssocX m k | m -> k where
   --
   --   This function is /ambiguous/ at finite relation types if the finite relation
   --   contains more than one minimum key.  Otherwise it is /unambiguous/.
-  minView            :: (Monad rm) => m a -> rm (a, m a)
+  minView            :: (MF.MonadFail rm) => m a -> rm (a, m a)
 
   -- | Find the binding with the minimum key and return its element. Signals
   --   an error if the associative collection is empty.  Which element is chosen
@@ -426,7 +428,7 @@ class (AssocX m k, Ord k) => OrdAssocX m k | m -> k where
   --
   --   This function is /ambiguous/ at finite relation types if the finite relation
   --   contains more than one minimum key.  Otherwise it is /unambiguous/.
-  maxView            :: (Monad rm) => m a -> rm (a, m a)
+  maxView            :: (MF.MonadFail rm) => m a -> rm (a, m a)
 
   -- | Find the binding with the maximum key and return its element.  Signals
   --   an error if the associative collection is empty.  Which element is chosen
@@ -777,7 +779,7 @@ class (Assoc m k, OrdAssocX m k) => OrdAssoc m k | m -> k where
   --   minimum key exists in the relation.  Furthermore, it is /ambiguous/
   --   with respect to the actual key observed unless the @Eq@ instance on
   --   keys corresponds to indistinguisability.
-  minViewWithKey  :: (Monad rm) => m a -> rm ((k, a), m a)
+  minViewWithKey  :: (MF.MonadFail rm) => m a -> rm ((k, a), m a)
 
   -- | Find the binding with the minimum key in an associative collection and
   --   return the key and the element.  Signals an error if the associative
@@ -800,7 +802,7 @@ class (Assoc m k, OrdAssocX m k) => OrdAssoc m k | m -> k where
   --   maximum key exists in the relation.  Furthermore, it is /ambiguous/
   --   with respect to the actual key observed unless the @Eq@ instance on
   --   keys corresponds to indistinguisability.
-  maxViewWithKey  :: (Monad rm) => m a -> rm ((k, a), m a)
+  maxViewWithKey  :: (MF.MonadFail rm) => m a -> rm ((k, a), m a)
 
   -- | Find the binding with the maximum key in an associative collection and
   --   return the key and the element.  Signals an error if the associative

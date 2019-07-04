@@ -43,6 +43,7 @@ module Data.Edison.Coll.StandardSet (
 
 import Prelude hiding (null,foldr,foldl,foldr1,foldl1,lookup,filter)
 import qualified Prelude
+import qualified Control.Monad.Fail as MF
 import qualified Data.List
 
 import qualified Data.Edison.Coll as C
@@ -73,7 +74,7 @@ strict     :: Ord a => Set a -> Set a
 
 toSeq      :: (Ord a,S.Sequence seq) => Set a -> seq a
 lookup     :: Ord a => a -> Set a -> a
-lookupM    :: (Ord a,Monad m) => a -> Set a -> m a
+lookupM    :: (Ord a, Monad m, MF.MonadFail m) => a -> Set a -> m a
 lookupAll  :: (Ord a,S.Sequence seq) => a -> Set a -> seq a
 lookupWithDefault :: Ord a => a -> a -> Set a  -> a
 fold       :: (a -> b -> b) -> b -> Set a -> b
@@ -98,9 +99,9 @@ partitionLT_GE   :: Ord a => a -> Set a -> (Set a, Set a)
 partitionLE_GT   :: Ord a => a -> Set a -> (Set a, Set a)
 partitionLT_GT   :: Ord a => a -> Set a -> (Set a, Set a)
 
-minView       :: (Ord a,Monad m) => Set a -> m (a, Set a)
+minView       :: (Ord a, Monad m, MF.MonadFail m) => Set a -> m (a, Set a)
 minElem       :: Set a -> a
-maxView       :: (Ord a,Monad m) => Set a -> m (a, Set a)
+maxView       :: (Ord a, Monad m, MF.MonadFail m) => Set a -> m (a, Set a)
 maxElem       :: Set a -> a
 foldr         :: (a -> b -> b) -> b -> Set a -> b
 foldl         :: (b -> a -> b) -> b -> Set a -> b

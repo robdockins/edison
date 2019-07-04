@@ -40,6 +40,8 @@ Library
   Build-Depends:
      base == 4.*,
      mtl >= 1.0
+  if impl(ghc < 8.0)
+    build-depends: fail
   Default-Language: Haskell2010
   Default-Extensions:
      MultiParamTypeClasses

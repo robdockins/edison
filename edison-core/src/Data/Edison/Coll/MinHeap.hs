@@ -46,6 +46,7 @@ import Data.Edison.Seq.Defaults (tokenMatch,maybeParens)
 import Data.Monoid
 import qualified Data.Semigroup as SG
 import Control.Monad
+import qualified Control.Monad.Fail as MF
 import Test.QuickCheck
 
 data Min h a = E | M a h  deriving (Eq)
@@ -75,7 +76,7 @@ strict    :: (C.CollX h a,Ord a) => Min h a -> Min h a
 
 toSeq     :: (C.Coll h a,S.Sequence s) => Min h a -> s a
 lookup    :: (C.Coll h a,Ord a) => a -> Min h a -> a
-lookupM   :: (C.Coll h a,Ord a,Monad m) => a -> Min h a -> m a
+lookupM   :: (C.Coll h a, Ord a, MF.MonadFail m) => a -> Min h a -> m a
 lookupAll :: (C.Coll h a,Ord a,S.Sequence s) => a -> Min h a -> s a
 lookupWithDefault :: (C.Coll h a,Ord a) => a -> a -> Min h a -> a
 fold      :: (C.Coll h a) => (a -> b -> b) -> b -> Min h a -> b
@@ -100,9 +101,9 @@ partitionLT_GE :: (C.OrdColl h a,Ord a) => a -> Min h a -> (Min h a, Min h a)
 partitionLE_GT :: (C.OrdColl h a,Ord a) => a -> Min h a -> (Min h a, Min h a)
 partitionLT_GT :: (C.OrdColl h a,Ord a) => a -> Min h a -> (Min h a, Min h a)
 
-minView :: (C.OrdColl h a,Ord a,Monad m) => Min h a -> m (a, Min h a)
+minView :: (C.OrdColl h a, Ord a, MF.MonadFail m) => Min h a -> m (a, Min h a)
 minElem :: (C.OrdColl h a,Ord a) => Min h a -> a
-maxView :: (C.OrdColl h a,Ord a,Monad m) => Min h a -> m (a, Min h a)
+maxView :: (C.OrdColl h a, Ord a, MF.MonadFail m) => Min h a -> m (a, Min h a)
 maxElem :: (C.OrdColl h a,Ord a) => Min h a -> a
 foldr :: (C.OrdColl h a,Ord a) => (a -> b -> b) -> b -> Min h a -> b
 foldl :: (C.OrdColl h a,Ord a) => (b -> a -> b) -> b -> Min h a -> b

@@ -81,6 +81,7 @@ import Test.QuickCheck
 import Data.Edison.Prelude
 
 import Control.Monad (liftM2, liftM3, liftM4)
+import qualified Control.Monad.Fail as MF
 
 
 infixr 5 `lcons`
@@ -334,7 +335,7 @@ null Empty = True
 null _ = False
 
 -- | /O(1)/. Analyse the left end of a sequence.
-lview :: (Measured v a, Monad m) => FingerTree v a -> m (a,FingerTree v a)
+lview :: (Measured v a, MF.MonadFail m) => FingerTree v a -> m (a,FingerTree v a)
 lview Empty                 =  fail "FingerTree.lview: empty tree"
 lview (Single x)            =  return (x, Empty)
 lview (Deep _ (One x) m sf) =  return . (,) x $
@@ -357,7 +358,7 @@ ltailDigit (Four _ b c d) = Three b c d
 ltailDigit _ = error "FingerTree.ltailDigit: bug!"
 
 -- | /O(1)/. Analyse the right end of a sequence.
-rview :: (Measured v a, Monad m) => FingerTree v a -> m (a, FingerTree v a)
+rview :: (Measured v a, MF.MonadFail m) => FingerTree v a -> m (a, FingerTree v a)
 rview Empty                  = fail "FingerTree.rview: empty tree"
 rview (Single x)             = return (x, Empty)
 rview (Deep _ pr m (One x))  = return . (,) x $

@@ -51,6 +51,7 @@ module Data.Edison.Assoc.StandardMap (
 
 import Prelude hiding (null,map,lookup,foldr,foldl,foldr1,foldl1,filter)
 import qualified Prelude
+import qualified Control.Monad.Fail as MF
 import qualified Data.Edison.Assoc as A
 import qualified Data.Edison.Seq as S
 import qualified Data.Edison.Seq.ListSeq as L
@@ -81,10 +82,10 @@ member            :: Ord k => k -> FM k a -> Bool
 count             :: Ord k => k -> FM k a -> Int
 lookup            :: Ord k => k -> FM k a -> a
 lookupAll         :: (Ord k,S.Sequence seq) => k -> FM k a -> seq a
-lookupM           :: (Ord k,Monad m) => k -> FM k a -> m a
+lookupM           :: (Ord k, MF.MonadFail m) => k -> FM k a -> m a
 lookupWithDefault :: Ord k => a -> k -> FM k a -> a
 lookupAndDelete   :: Ord k => k -> FM k a -> (a, FM k a)
-lookupAndDeleteM  :: (Ord k,Monad m) => k -> FM k a -> m (a, FM k a)
+lookupAndDeleteM  :: (Ord k, MF.MonadFail m) => k -> FM k a -> m (a, FM k a)
 lookupAndDeleteAll :: (Ord k,S.Sequence seq) => k -> FM k a -> (seq a,FM k a)
 adjust            :: Ord k => (a->a) -> k -> FM k a -> FM k a
 adjustAll         :: Ord k => (a->a) -> k -> FM k a -> FM k a
@@ -103,11 +104,11 @@ filter            :: Ord k => (a -> Bool) -> FM k a -> FM k a
 partition         :: Ord k => (a -> Bool) -> FM k a -> (FM k a,FM k a)
 elements          :: (Ord k,S.Sequence seq) => FM k a -> seq a
 
-minView           :: (Ord k,Monad m) => FM k a -> m (a, FM k a)
+minView           :: (Ord k, MF.MonadFail m) => FM k a -> m (a, FM k a)
 minElem           :: Ord k => FM k a -> a
 deleteMin         :: Ord k => FM k a -> FM k a
 unsafeInsertMin   :: Ord k => k -> a -> FM k a -> FM k a
-maxView           :: (Ord k,Monad m) => FM k a -> m (a, FM k a)
+maxView           :: (Ord k, MF.MonadFail m) => FM k a -> m (a, FM k a)
 maxElem           :: Ord k => FM k a -> a
 deleteMax         :: Ord k => FM k a -> FM k a
 unsafeInsertMax   :: Ord k => k -> a -> FM k a -> FM k a
@@ -165,9 +166,9 @@ foldWithKey'      :: Ord k => (k -> a -> b -> b) -> b -> FM k a -> b
 filterWithKey     :: Ord k => (k -> a -> Bool) -> FM k a -> FM k a
 partitionWithKey  :: Ord k => (k -> a -> Bool) -> FM k a -> (FM k a,FM k a)
 
-minViewWithKey    :: (Ord k,Monad m) => FM k a -> m ((k, a), FM k a)
+minViewWithKey    :: (Ord k, MF.MonadFail m) => FM k a -> m ((k, a), FM k a)
 minElemWithKey    :: Ord k => FM k a -> (k,a)
-maxViewWithKey    :: (Ord k,Monad m) => FM k a -> m ((k, a), FM k a)
+maxViewWithKey    :: (Ord k, MF.MonadFail m) => FM k a -> m ((k, a), FM k a)
 maxElemWithKey    :: Ord k => FM k a -> (k,a)
 foldrWithKey      :: (k -> a -> b -> b) -> b -> FM k a -> b
 foldlWithKey      :: (b -> k -> a -> b) -> b -> FM k a -> b

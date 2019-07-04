@@ -41,11 +41,15 @@ import Prelude hiding (concat,reverse,map,concatMap,foldr,foldl,foldr1,foldl1,
                        filter,takeWhile,dropWhile,lookup,take,drop,splitAt,
                        zip,zip3,zipWith,zipWith3,unzip,unzip3,null)
 import qualified Control.Monad.Identity as ID
+import qualified Control.Monad.Fail as MF
 import qualified Prelude
 import Data.Edison.Prelude
 import qualified Data.List
 import Data.Monoid
 import qualified Data.Edison.Seq as S ( Sequence(..) ) 
+
+instance MF.MonadFail ID.Identity where
+  fail = error "Identity(fail)"
 
 -- signatures for exported functions
 moduleName     :: String
@@ -54,16 +58,16 @@ singleton      :: a -> [a]
 lcons          :: a -> [a] -> [a]
 rcons          :: a -> [a] -> [a]
 append         :: [a] -> [a] -> [a]
-lview          :: (Monad rm) => [a] -> rm (a, [a])
+lview          :: (MF.MonadFail rm) => [a] -> rm (a, [a])
 lhead          :: [a] -> a
-lheadM         :: (Monad rm) => [a] -> rm a
+lheadM         :: (MF.MonadFail rm) => [a] -> rm a
 ltail          :: [a] -> [a]
-ltailM         :: (Monad rm) => [a] -> rm [a]
-rview          :: (Monad rm) => [a] -> rm (a, [a])
+ltailM         :: (MF.MonadFail rm) => [a] -> rm [a]
+rview          :: (MF.MonadFail rm) => [a] -> rm (a, [a])
 rhead          :: [a] -> a
-rheadM         :: (Monad rm) => [a] -> rm a
+rheadM         :: (MF.MonadFail rm) => [a] -> rm a
 rtail          :: [a] -> [a]
-rtailM         :: (Monad rm) => [a] -> rm [a]
+rtailM         :: (MF.MonadFail rm) => [a] -> rm [a]
 null           :: [a] -> Bool
 size           :: [a] -> Int
 concat         :: [[a]] -> [a]
@@ -92,7 +96,7 @@ reduce1'       :: (a -> a -> a) -> [a] -> a
 copy           :: Int -> a -> [a]
 inBounds       :: Int -> [a] -> Bool
 lookup         :: Int -> [a] -> a
-lookupM        :: (Monad m) => Int -> [a] -> m a
+lookupM        :: (MF.MonadFail m) => Int -> [a] -> m a
 lookupWithDefault :: a -> Int -> [a] -> a
 update         :: Int -> a -> [a] -> [a]
 adjust         :: (a -> a) -> Int -> [a] -> [a]

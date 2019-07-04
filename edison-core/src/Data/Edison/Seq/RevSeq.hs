@@ -62,6 +62,7 @@ import qualified Data.Edison.Seq as S
 import qualified Data.Edison.Seq.ListSeq as L
 import Data.Edison.Seq.Defaults -- only used by concatMap
 import Control.Monad
+import qualified Control.Monad.Fail as MF
 import Data.Monoid
 import Data.Semigroup as SG
 import Test.QuickCheck
@@ -75,16 +76,16 @@ singleton      :: S.Sequence s => a -> Rev s a
 lcons          :: S.Sequence s => a -> Rev s a -> Rev s a
 rcons          :: S.Sequence s => a -> Rev s a -> Rev s a
 append         :: S.Sequence s => Rev s a -> Rev s a -> Rev s a
-lview          :: (S.Sequence s, Monad m) => Rev s a -> m (a, Rev s a)
+lview          :: (S.Sequence s, MF.MonadFail m) => Rev s a -> m (a, Rev s a)
 lhead          :: S.Sequence s => Rev s a -> a
-lheadM         :: (S.Sequence s, Monad m) => Rev s a -> m a
+lheadM         :: (S.Sequence s, MF.MonadFail m) => Rev s a -> m a
 ltail          :: S.Sequence s => Rev s a -> Rev s a
-ltailM         :: (S.Sequence s, Monad m) => Rev s a -> m (Rev s a)
-rview          :: (S.Sequence s, Monad m) => Rev s a -> m (a, Rev s a)
+ltailM         :: (S.Sequence s, MF.MonadFail m) => Rev s a -> m (Rev s a)
+rview          :: (S.Sequence s, MF.MonadFail m) => Rev s a -> m (a, Rev s a)
 rhead          :: S.Sequence s => Rev s a -> a
-rheadM         :: (S.Sequence s, Monad m) => Rev s a -> m a
+rheadM         :: (S.Sequence s, MF.MonadFail m) => Rev s a -> m a
 rtail          :: S.Sequence s => Rev s a -> Rev s a
-rtailM         :: (S.Sequence s, Monad m) => Rev s a -> m (Rev s a)
+rtailM         :: (S.Sequence s, MF.MonadFail m) => Rev s a -> m (Rev s a)
 null           :: S.Sequence s => Rev s a -> Bool
 size           :: S.Sequence s => Rev s a -> Int
 concat         :: S.Sequence s => Rev s (Rev s a) -> Rev s a
@@ -115,7 +116,7 @@ reduce1'       :: S.Sequence s => (a -> a -> a) -> Rev s a -> a
 copy           :: S.Sequence s => Int -> a -> Rev s a
 inBounds       :: S.Sequence s => Int -> Rev s a -> Bool
 lookup         :: S.Sequence s => Int -> Rev s a -> a
-lookupM        :: (S.Sequence s, Monad m) => Int -> Rev s a -> m a
+lookupM        :: (S.Sequence s, MF.MonadFail m) => Int -> Rev s a -> m a
 lookupWithDefault :: S.Sequence s => a -> Int -> Rev s a -> a
 update         :: S.Sequence s => Int -> a -> Rev s a -> Rev s a
 adjust         :: S.Sequence s => (a -> a) -> Int -> Rev s a -> Rev s a
