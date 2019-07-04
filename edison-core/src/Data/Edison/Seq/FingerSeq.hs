@@ -37,9 +37,10 @@ import Prelude hiding (concat,reverse,map,concatMap,foldr,foldl,foldr1,foldl1,
                        zip,zip3,zipWith,zipWith3,unzip,unzip3,null)
 
 import qualified Control.Applicative as App
-import Data.Edison.Prelude (measure, Measured())
+import Data.Edison.Prelude (measure, Measured(), runFail_)
 import qualified Data.Edison.Seq as S
 import Data.Edison.Seq.Defaults
+import qualified Control.Monad.Fail as Fail
 import Control.Monad.Identity
 import Data.Monoid
 import Data.Semigroup as SG
@@ -87,16 +88,16 @@ singleton      :: a -> Seq a
 lcons          :: a -> Seq a -> Seq a
 rcons          :: a -> Seq a -> Seq a
 append         :: Seq a -> Seq a -> Seq a
-lview          :: (Monad m) => Seq a -> m (a, Seq a)
+lview          :: (Fail.MonadFail m) => Seq a -> m (a, Seq a)
 lhead          :: Seq a -> a
-lheadM         :: (Monad m) => Seq a -> m a
+lheadM         :: (Fail.MonadFail m) => Seq a -> m a
 ltail          :: Seq a -> Seq a
-ltailM         :: (Monad m) => Seq a -> m (Seq a)
-rview          :: (Monad m) => Seq a -> m (a, Seq a)
+ltailM         :: (Fail.MonadFail m) => Seq a -> m (Seq a)
+rview          :: (Fail.MonadFail m) => Seq a -> m (a, Seq a)
 rhead          :: Seq a -> a
-rheadM         :: (Monad m) => Seq a -> m a
+rheadM         :: (Fail.MonadFail m) => Seq a -> m a
 rtail          :: Seq a -> Seq a
-rtailM         :: (Monad m) => Seq a -> m (Seq a)
+rtailM         :: (Fail.MonadFail m) => Seq a -> m (Seq a)
 null           :: Seq a -> Bool
 size           :: Seq a -> Int
 concat         :: Seq (Seq a) -> Seq a
@@ -127,7 +128,7 @@ reduce1'       :: (a -> a -> a) -> Seq a -> a
 copy           :: Int -> a -> Seq a
 inBounds       :: Int -> Seq a -> Bool
 lookup         :: Int -> Seq a -> a
-lookupM        :: (Monad m) => Int -> Seq a -> m a
+lookupM        :: (Fail.MonadFail m) => Int -> Seq a -> m a
 lookupWithDefault :: a -> Int -> Seq a -> a
 update         :: Int -> a -> Seq a -> Seq a
 adjust         :: (a -> a) -> Int -> Seq a -> Seq a
@@ -206,10 +207,10 @@ lheadM xs = lview xs >>= return . fst
 ltailM xs = lview xs >>= return . snd
 rheadM xs = rview xs >>= return . fst
 rtailM xs = rview xs >>= return . snd
-lhead = runIdentity . lheadM
-ltail = runIdentity . ltailM
-rhead = runIdentity . rheadM
-rtail = runIdentity . rtailM
+lhead = runFail_ . lheadM
+ltail = runFail_ . ltailM
+rhead = runFail_ . rheadM
+rtail = runFail_ . rtailM
 
 fold     = foldr
 fold'    = foldr'

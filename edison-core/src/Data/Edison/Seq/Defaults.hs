@@ -17,9 +17,11 @@ import Prelude hiding (concat,reverse,map,concatMap,foldr,foldl,foldr1,foldl1,
                        filter,takeWhile,dropWhile,lookup,take,drop,splitAt,
                        zip,zip3,zipWith,zipWith3,unzip,unzip3,null)
 
+import qualified Control.Monad.Fail as Fail
 import Control.Monad.Identity
 import Data.Char (isSpace)
 
+import Data.Edison.Prelude ( runFail_ )
 import Data.Edison.Seq
 import qualified Data.Edison.Seq.ListSeq as L
 
@@ -33,7 +35,7 @@ appendUsingFoldr :: Sequence s => s a -> s a -> s a
 appendUsingFoldr s t | null t = s
                             | otherwise = foldr lcons t s
 
-rviewDefault :: (Monad m, Sequence s) => s a -> m (a, s a)
+rviewDefault :: (Fail.MonadFail m, Sequence s) => s a -> m (a, s a)
 rviewDefault xs
   | null xs   = fail $ instanceName xs ++ ".rview: empty sequence"
   | otherwise = return (rhead xs, rtail xs)
@@ -49,7 +51,7 @@ rtailUsingLview xs =
             Nothing      -> empty
             Just (y, ys) -> lcons x (rt y ys)
 
-rtailMUsingLview :: (Monad m,Sequence s) => s a -> m (s a)
+rtailMUsingLview :: (Fail.MonadFail m, Sequence s) => s a -> m (s a)
 rtailMUsingLview xs =
     case lview xs of
       Nothing      -> fail $ instanceName xs ++ ".rtailM: empty sequence"
@@ -200,7 +202,7 @@ inBoundsUsingSize :: Sequence s => Int -> s a -> Bool
 inBoundsUsingSize i s = i >= 0 && i < size s
 
 lookupUsingLookupM :: Sequence s => Int -> s a -> a
-lookupUsingLookupM i s = runIdentity (lookupM i s)
+lookupUsingLookupM i s = runFail_ (lookupM i s)
 
 lookupUsingDrop :: Sequence s => Int -> s a -> a
 lookupUsingDrop i s
@@ -220,7 +222,7 @@ lookupWithDefaultUsingDrop d i s
   | otherwise = lhead s'
   where s' = drop i s
 
-lookupMUsingDrop :: (Monad m, Sequence s) => Int -> s a -> m a
+lookupMUsingDrop :: (Fail.MonadFail m, Sequence s) => Int -> s a -> m a
 lookupMUsingDrop i s
   -- XXX better error message!
   | i < 0 || null s' = fail $ instanceName s

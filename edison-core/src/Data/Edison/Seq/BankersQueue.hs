@@ -51,11 +51,13 @@ import Prelude hiding (concat,reverse,map,concatMap,foldr,foldl,foldr1,foldl1,
 
 import qualified Control.Applicative as App
 
+import Data.Edison.Prelude ( runFail_ )
 import qualified Data.Edison.Seq as S ( Sequence(..) )
 import Data.Edison.Seq.Defaults
 import qualified Data.Edison.Seq.ListSeq as L
 import Data.Monoid
 import Data.Semigroup as SG
+import qualified Control.Monad.Fail as Fail
 import Control.Monad.Identity
 import Test.QuickCheck
 
@@ -66,16 +68,16 @@ singleton      :: a -> Seq a
 lcons          :: a -> Seq a -> Seq a
 rcons          :: a -> Seq a -> Seq a
 append         :: Seq a -> Seq a -> Seq a
-lview          :: (Monad m) => Seq a -> m (a, Seq a)
+lview          :: (Fail.MonadFail m) => Seq a -> m (a, Seq a)
 lhead          :: Seq a -> a
-lheadM         :: (Monad m) => Seq a -> m a
+lheadM         :: (Fail.MonadFail m) => Seq a -> m a
 ltail          :: Seq a -> Seq a
-ltailM         :: (Monad m) => Seq a -> m (Seq a)
-rview          :: (Monad m) => Seq a -> m (a, Seq a)
+ltailM         :: (Fail.MonadFail m) => Seq a -> m (Seq a)
+rview          :: (Fail.MonadFail m) => Seq a -> m (a, Seq a)
 rhead          :: Seq a -> a
-rheadM         :: (Monad m) => Seq a -> m a
+rheadM         :: (Fail.MonadFail m) => Seq a -> m a
 rtail          :: Seq a -> Seq a
-rtailM         :: (Monad m) => Seq a -> m (Seq a)
+rtailM         :: (Fail.MonadFail m) => Seq a -> m (Seq a)
 null           :: Seq a -> Bool
 size           :: Seq a -> Int
 concat         :: Seq (Seq a) -> Seq a
@@ -106,7 +108,7 @@ reduce1'       :: (a -> a -> a) -> Seq a -> a
 copy           :: Int -> a -> Seq a
 inBounds       :: Int -> Seq a -> Bool
 lookup         :: Int -> Seq a -> a
-lookupM        :: (Monad m) => Int -> Seq a -> m a
+lookupM        :: (Fail.MonadFail m) => Int -> Seq a -> m a
 lookupWithDefault :: a -> Int -> Seq a -> a
 update         :: Int -> a -> Seq a -> Seq a
 adjust         :: (a -> a) -> Int -> Seq a -> Seq a
@@ -263,7 +265,7 @@ copy n x
 
 -- reduce1: given sizes could do more effective job of dividing evenly!
 
-lookup idx q = runIdentity (lookupM idx q)
+lookup idx q = runFail_ (lookupM idx q)
 
 lookupM idx (Q i xs ys j)
   | idx < i   = L.lookupM idx xs

@@ -14,8 +14,9 @@
 module Data.Edison.Coll.Defaults where
 
 import Prelude hiding (null,foldr,foldl,foldr1,foldl1,lookup,filter)
-import Control.Monad.Identity
+import qualified Control.Monad.Fail as Fail
 
+import Data.Edison.Prelude ( runFail_ )
 import Data.Edison.Coll
 import qualified Data.Edison.Seq as S
 import qualified Data.Edison.Seq.ListSeq as L
@@ -81,7 +82,7 @@ disjointUsingToOrdList xs ys = disj (toOrdList xs) (toOrdList ys)
         disj _ _ = True
 
 intersectWitnessUsingToOrdList ::
-        (OrdColl c a, Monad m) => c -> c -> m (a,a)
+        (OrdColl c a, Fail.MonadFail m) => c -> c -> m (a,a)
 intersectWitnessUsingToOrdList as bs = witness (toOrdList as) (toOrdList bs)
   where witness a@(x:xs) b@(y:ys) =
           case compare x y of
@@ -92,7 +93,7 @@ intersectWitnessUsingToOrdList as bs = witness (toOrdList as) (toOrdList bs)
         witness _ _ = fail $ instanceName as ++ ".intersect: failed"
 
 lookupUsingLookupM :: Coll c a => a -> c -> a
-lookupUsingLookupM x ys = runIdentity (lookupM x ys)
+lookupUsingLookupM x ys = runFail_ (lookupM x ys)
 
 lookupUsingLookupAll :: Coll c a => a -> c -> a
 lookupUsingLookupAll x ys =
@@ -100,7 +101,7 @@ lookupUsingLookupAll x ys =
     (y:_) -> y
     [] -> error $ instanceName ys ++ ".lookup: lookup failed"
 
-lookupMUsingLookupAll :: (Coll c a, Monad m) => a -> c -> m a
+lookupMUsingLookupAll :: (Coll c a, Fail.MonadFail m) => a -> c -> m a
 lookupMUsingLookupAll x ys =
   case lookupAll x ys of
     (y:_) -> return y

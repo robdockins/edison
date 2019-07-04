@@ -47,6 +47,7 @@ import Data.Edison.Coll.Defaults
 import Data.Monoid
 import Data.Semigroup as SG
 import Control.Monad
+import qualified Control.Monad.Fail as Fail
 import Test.QuickCheck
 
 moduleName :: String
@@ -173,7 +174,7 @@ toSeq h = tol h S.empty
   where tol E rest = rest
         tol (L _ x a b) rest = S.lcons x (tol b (tol a rest))
 
-lookupM :: (Ord a, Monad m) => a -> Heap a -> m a
+lookupM :: (Ord a, Fail.MonadFail m) => a -> Heap a -> m a
 lookupM _ E = fail "LeftistHeap.lookupM: XXX"
 lookupM x (L _ y a b) =
   case compare x y of
@@ -299,7 +300,7 @@ partitionLT_GT y h = (h', C.unionList hs)
                       (b', hs'') = collect b hs'
                   in (node x a' b', hs'')
 
-minView :: (Ord a, Monad m) => Heap a -> m (a, Heap a)
+minView :: (Ord a, Fail.MonadFail m) => Heap a -> m (a, Heap a)
 minView E = fail "LeftistHeap.minView: empty collection"
 minView (L _ x a b) = return (x, union a b)
 
@@ -307,7 +308,7 @@ minElem :: Ord a => Heap a -> a
 minElem E = error "LeftistHeap.minElem: empty collection"
 minElem (L _ x _ _) = x
 
-maxView :: (Ord a, Monad m) => Heap a -> m (a, Heap a)
+maxView :: (Ord a, Fail.MonadFail m) => Heap a -> m (a, Heap a)
 maxView E = fail "LeftistHeap.maxView: empty collection"
 maxView (L _ x E _) = return (x, E)
 maxView (L _ x a E) = return (y, L 1 x a' E)

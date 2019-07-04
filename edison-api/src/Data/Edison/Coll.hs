@@ -97,6 +97,7 @@ module Data.Edison.Coll (
 ) where
 
 import Prelude hiding (null,foldr,foldl,foldr1,foldl1,lookup,filter)
+import qualified Control.Monad.Fail as Fail
 import Data.Monoid
 
 import Data.Edison.Prelude
@@ -421,7 +422,7 @@ class CollX c a => Coll c a | c -> a where
   --   This function is /ambiguous/ at bag types, when more than one
   --   element equivalent to the given item is in the bag.  Otherwise
   --   it is /unambiguous/.
-  lookupM    :: (Monad m) => a -> c -> m a
+  lookupM    :: (Fail.MonadFail m) => a -> c -> m a
 
   -- | Return a sequence containing all elements in the collection equal to
   --   the given element in an unspecified order.
@@ -504,7 +505,7 @@ class (Coll c a, OrdCollX c a) => OrdColl c a | c -> a where
   --
   --   This function is /ambiguous/ at bag types, if more than one minimum
   --   element exists in the bag.  Otherwise, it is /unambiguous/.
-  minView    :: (Monad m) => c -> m (a, c)
+  minView    :: (Fail.MonadFail m) => c -> m (a, c)
 
   -- | Return the minimum element in the collection.  If there are multiple
   --   copies of the minimum element, it is unspecified which is chosen.
@@ -523,7 +524,7 @@ class (Coll c a, OrdCollX c a) => OrdColl c a | c -> a where
   --
   --   This function is /ambiguous/ at bag types, if more than one maximum
   --   element exists in the bag.  Otherwise, it is /unambiguous/.
-  maxView    :: (Monad m) => c -> m (a, c)
+  maxView    :: (Fail.MonadFail m) => c -> m (a, c)
 
   -- | Return the maximum element in the collection.  If there are multiple
   --   copies of the maximum element, it is unspecified which is chosen.

@@ -15,6 +15,8 @@ module Data.Edison.Assoc.Defaults where
 
 import Prelude hiding (null,map,lookup,foldr,foldl,foldr1,foldl1,filter)
 
+import qualified Control.Monad.Fail as Fail
+
 import Data.Edison.Assoc
 import qualified Data.Edison.Seq as S
 import qualified Data.Edison.Seq.ListSeq as L
@@ -190,7 +192,7 @@ lookupAndDeleteDefault k m =
      Nothing -> error (instanceName m ++ ".lookupAndDelete: lookup failed")
      Just x  -> (x, delete k m)
 
-lookupAndDeleteMDefault :: (Monad rm, AssocX m k) => k -> m a -> rm (a, m a)
+lookupAndDeleteMDefault :: (Fail.MonadFail rm, AssocX m k) => k -> m a -> rm (a, m a)
 lookupAndDeleteMDefault k m =
   case lookupM k m of
      Nothing -> fail (instanceName m ++ ".lookupAndDelete: lookup failed")

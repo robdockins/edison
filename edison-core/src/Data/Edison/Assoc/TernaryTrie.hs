@@ -55,8 +55,10 @@ module Data.Edison.Assoc.TernaryTrie (
 import Prelude hiding (null,map,lookup,foldr,foldl,foldr1,foldl1,filter)
 import qualified Prelude
 import qualified Data.Edison.Assoc as A
+import Data.Edison.Prelude ( runFail_ )
 import qualified Data.Edison.Seq as S
 import qualified Data.List as L
+import qualified Control.Monad.Fail as Fail
 import Control.Monad.Identity
 import Data.Monoid
 import Data.Semigroup as SG
@@ -83,10 +85,10 @@ size          :: Ord k => FM k a -> Int
 member        :: Ord k => [k] -> FM k a -> Bool
 count         :: Ord k => [k] -> FM k a -> Int
 lookup        :: Ord k => [k] -> FM k a -> a
-lookupM       :: (Ord k, Monad rm) => [k] -> FM k a -> rm a
+lookupM       :: (Ord k, Fail.MonadFail rm) => [k] -> FM k a -> rm a
 lookupAll     :: (Ord k,S.Sequence seq) => [k] -> FM k a -> seq a
 lookupAndDelete    :: Ord k => [k] -> FM k a -> (a, FM k a)
-lookupAndDeleteM   :: (Ord k, Monad rm) => [k] -> FM k a -> rm (a, FM k a)
+lookupAndDeleteM   :: (Ord k, Fail.MonadFail rm) => [k] -> FM k a -> rm (a, FM k a)
 lookupAndDeleteAll :: (Ord k, S.Sequence seq) => [k] -> FM k a -> (seq a,FM k a)
 lookupWithDefault  :: Ord k => a -> [k] -> FM k a -> a
 adjust        :: Ord k => (a -> a) -> [k] -> FM k a -> FM k a
@@ -527,7 +529,7 @@ member = memberUsingLookupM
 
 count = countUsingMember
 
-lookup m k = runIdentity (lookupM m k)
+lookup m k = runFail_ (lookupM m k)
 
 lookupM [] (FM Nothing _)
   = fail "TernaryTrie.lookup: lookup failed"
@@ -854,18 +856,18 @@ intersectionWithKey f
 
 -- OrdAssocX
 
-minViewFMB :: Monad m => FMB k a -> (FMB k a -> FM k a) -> m (a, FM k a)
+minViewFMB :: Fail.MonadFail m => FMB k a -> (FMB k a -> FM k a) -> m (a, FM k a)
 minViewFMB E _ = fail $ moduleName++".minView: empty map"
 minViewFMB (I i k (Just v) E m r)        f = return (v, f (I i k Nothing E m r))
 minViewFMB (I _ _ Nothing  E (FMB' E) _) _ = error $ moduleName++".minView: bug!"
 minViewFMB (I _ k Nothing  E (FMB' m) r) f = minViewFMB m (\m' -> f (mkVBalancedFMB k Nothing E (FMB' m') r))
 minViewFMB (I _ k mv l m r)              f = minViewFMB l (\l' -> f (mkVBalancedFMB k mv l' m r))
 
-minView :: Monad m => FM k a -> m (a,FM k a)
+minView :: Fail.MonadFail m => FM k a -> m (a,FM k a)
 minView (FM (Just v) fmb) = return (v, FM Nothing fmb)
 minView (FM Nothing fmb)  = minViewFMB fmb (FM Nothing)
 
-minViewWithKeyFMB :: Monad m => FMB k a -> ([k] -> [k]) -> (FMB k a -> FM k a) -> m (([k],a),FM k a)
+minViewWithKeyFMB :: Fail.MonadFail m => FMB k a -> ([k] -> [k]) -> (FMB k a -> FM k a) -> m (([k],a),FM k a)
 minViewWithKeyFMB E _ _ = fail $ moduleName++".minView: empty map"
 minViewWithKeyFMB (I i k (Just v) E m r)        kf f = return ((kf [k],v),f (I i k Nothing E m r))
 minViewWithKeyFMB (I _ _ Nothing  E (FMB' E) _) _ _ = error $ moduleName++".minViewWithKey: bug!"
@@ -874,7 +876,7 @@ minViewWithKeyFMB (I _ k Nothing  E (FMB' m) r) kf f = minViewWithKeyFMB m (kf .
 minViewWithKeyFMB (I _ k mv l m r)              kf f = minViewWithKeyFMB l kf
                                                         (\l' -> f (mkVBalancedFMB k mv l' m r))
 
-minViewWithKey :: Monad m => FM k a -> m (([k],a),FM k a)
+minViewWithKey :: Fail.MonadFail m => FM k a -> m (([k],a),FM k a)
 minViewWithKey (FM (Just v) fmb) = return (([],v),FM Nothing fmb)
 minViewWithKey (FM Nothing fmb)  = minViewWithKeyFMB fmb id (FM Nothing)
 
@@ -906,7 +908,7 @@ deleteMin = deleteMinUsingMinView
 unsafeInsertMin :: Ord k => [k] -> a -> FM k a -> FM k a
 unsafeInsertMin = insert
 
-maxViewFMB :: Monad m => FMB k a -> (FMB k a -> FM k a) -> m (a, FM k a)
+maxViewFMB :: Fail.MonadFail m => FMB k a -> (FMB k a -> FM k a) -> m (a, FM k a)
 maxViewFMB (I _ _ (Just v) l (FMB' E) E) f = return (v, f l)
 --maxViewFMB (I i k (Just v) l (FMB' E) E) f = return (v, f (I i k Nothing l (FMB' E) E))
 maxViewFMB (I _ _ Nothing  _ (FMB' E) E) _ = error $ moduleName++".maxView: bug!"
@@ -914,7 +916,7 @@ maxViewFMB (I i k mv l (FMB' m) E)       f = maxViewFMB m (\m' -> f (I i k mv l 
 maxViewFMB (I _ k mv l m r)              f = maxViewFMB r (\r' -> f (mkVBalancedFMB k mv l m r'))
 maxViewFMB E                             _ = error $ moduleName++".maxView: bug!"
 
-maxView :: Monad m => FM k a -> m (a, FM k a)
+maxView :: Fail.MonadFail m => FM k a -> m (a, FM k a)
 maxView (FM Nothing E)  = fail $ moduleName++".maxView: empty map"
 maxView (FM (Just v) E) = return (v,FM Nothing E)
 maxView (FM mv fmb)     = maxViewFMB fmb (FM mv)
@@ -930,7 +932,7 @@ maxViewWithKeyFMB (I _ k mv l m r)              kf f = maxViewWithKeyFMB r kf
 maxViewWithKeyFMB E                             _ _ = error $ moduleName++".maxViewWithKey: bug!"
 
 
-maxViewWithKey :: Monad m => FM k a -> m (([k],a), FM k a)
+maxViewWithKey :: Fail.MonadFail m => FM k a -> m (([k],a), FM k a)
 maxViewWithKey (FM Nothing E)  = fail $ moduleName++".maxViewWithKey: empty map"
 maxViewWithKey (FM (Just v) E) = return (([],v),FM Nothing E)
 maxViewWithKey (FM mv fmb)     = maxViewWithKeyFMB fmb id (FM mv)
