@@ -47,7 +47,7 @@ import Data.Semigroup as SG
 import Test.QuickCheck
 
 #ifdef __GLASGOW_HASKELL__
-import GHC.Base (unsafeCoerce#)
+import GHC.Exts (unsafeCoerce#)
 #endif
 
 
