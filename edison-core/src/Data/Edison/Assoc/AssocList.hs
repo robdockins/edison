@@ -58,8 +58,9 @@ import Prelude hiding (null,map,lookup,foldr,foldl,foldr1,foldl1,filter)
 import qualified Prelude
 import Data.Monoid
 import Data.Semigroup as SG
-import Control.Monad.Identity
+import qualified Control.Monad.Fail as Fail
 import qualified Data.Edison.Assoc as A
+import Data.Edison.Prelude ( runFail_ )
 import qualified Data.Edison.Seq as S
 import qualified Data.Edison.Seq.BinaryRandList as RL
 import Data.Edison.Assoc.Defaults
@@ -82,10 +83,10 @@ size          :: Eq k => FM k a -> Int
 member        :: Eq k => k -> FM k a -> Bool
 count         :: Eq k => k -> FM k a -> Int
 lookup        :: Eq k => k -> FM k a -> a
-lookupM       :: (Eq k, Monad rm) => k -> FM k a -> rm a
+lookupM       :: (Eq k, Fail.MonadFail rm) => k -> FM k a -> rm a
 lookupAll     :: (Eq k,S.Sequence seq) => k -> FM k a -> seq a
 lookupAndDelete    :: Eq k => k -> FM k a -> (a,FM k a)
-lookupAndDeleteM   :: (Eq k,Monad rm)   => k -> FM k a -> rm (a,FM k a)
+lookupAndDeleteM   :: (Eq k, Fail.MonadFail rm)   => k -> FM k a -> rm (a,FM k a)
 lookupAndDeleteAll :: (Eq k,S.Sequence seq) => k -> FM k a -> (seq a,FM k a)
 lookupWithDefault  :: Eq k => a -> k -> FM k a -> a
 adjust             :: Eq k => (a -> a) -> k -> FM k a -> FM k a
@@ -143,11 +144,11 @@ unionSeqWithKey  :: (Eq k,S.Sequence seq) =>
                         (k -> a -> a -> a) -> seq (FM k a) -> FM k a
 intersectionWithKey :: Eq k => (k -> a -> b -> c) -> FM k a -> FM k b -> FM k c
 
-minView          :: (Ord k,Monad m) => FM k a -> m (a,FM k a)
+minView          :: (Ord k, Fail.MonadFail m) => FM k a -> m (a,FM k a)
 minElem          :: Ord k => FM k a -> a
 deleteMin        :: Ord k => FM k a -> FM k a
 unsafeInsertMin  :: Ord k => k -> a -> FM k a -> FM k a
-maxView          :: (Ord k,Monad m) => FM k a -> m (a,FM k a)
+maxView          :: (Ord k, Fail.MonadFail m) => FM k a -> m (a,FM k a)
 maxElem          :: Ord k => FM k a -> a
 deleteMax        :: Ord k => FM k a -> FM k a
 unsafeInsertMax  :: Ord k => k -> a -> FM k a -> FM k a
@@ -169,9 +170,9 @@ partitionLT_GE   :: Ord k => k -> FM k a -> (FM k a,FM k a)
 partitionLE_GT   :: Ord k => k -> FM k a -> (FM k a,FM k a)
 partitionLT_GT   :: Ord k => k -> FM k a -> (FM k a,FM k a)
 
-minViewWithKey    :: (Ord k,Monad m) => FM k a -> m ((k, a), FM k a)
+minViewWithKey    :: (Ord k, Fail.MonadFail m) => FM k a -> m ((k, a), FM k a)
 minElemWithKey    :: Ord k => FM k a -> (k,a)
-maxViewWithKey    :: (Ord k,Monad m) => FM k a -> m ((k, a), FM k a)
+maxViewWithKey    :: (Ord k, Fail.MonadFail m) => FM k a -> m ((k, a), FM k a)
 maxElemWithKey    :: Ord k => FM k a -> (k,a)
 foldrWithKey      :: Ord k => (k -> a -> b -> b) -> b -> FM k a -> b
 foldlWithKey      :: Ord k => (b -> k -> a -> b) -> b -> FM k a -> b
@@ -309,7 +310,7 @@ count _ E = 0
 count key (I k _ m) | key == k  = 1
                     | otherwise = count key m
 
-lookup key m = runIdentity (lookupM key m)
+lookup key m = runFail_ (lookupM key m)
 
 lookupM _ E = fail "AssocList.lookup: lookup failed"
 lookupM key (I k x m) | key == k  = return x
@@ -319,7 +320,7 @@ lookupAll _ E = S.empty
 lookupAll key (I k x m) | key == k  = S.singleton x
                         | otherwise = lookupAll key m
 
-lookupAndDelete key m = runIdentity (lookupAndDeleteM key m)
+lookupAndDelete key m = runFail_ (lookupAndDeleteM key m)
 
 lookupAndDeleteM _ E = fail "AssocList.lookupAndDeleteM: lookup failed"
 lookupAndDeleteM key (I k x m)

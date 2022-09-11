@@ -10,14 +10,19 @@
 --   This module is a central depository of common definitions
 --   used throughout Edison.
 
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
+
 module Data.Edison.Prelude (
 -- * Hashing classes
   Hash (..)
 , UniqueHash
 , ReversibleHash (..)
 , Measured (..)
+-- * Pure MonadFail
+,  runFail_
 ) where
 
+import Control.Monad.Fail
 import Data.Monoid
 
 -- | This class represents hashable objects. If obeys the 
@@ -62,3 +67,14 @@ class UniqueHash a => ReversibleHash a where
 --   the computation.
 class (Monoid v) => Measured v a | a -> v where
   measure :: a -> v
+
+-- From Agda source code: src/full/Agda/Utils/Fail.hs
+-- | A pure MonadFail.
+newtype Fail a = Fail { runFail :: Either String a }
+  deriving (Functor, Applicative, Monad)
+
+instance MonadFail Fail where
+  fail = Fail . Left
+
+runFail_ :: Fail a -> a
+runFail_ = either error id . runFail

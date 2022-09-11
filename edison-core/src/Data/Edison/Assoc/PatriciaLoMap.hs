@@ -55,10 +55,11 @@ module Data.Edison.Assoc.PatriciaLoMap (
 
 import Prelude hiding (null,map,lookup,foldr,foldl,foldr1,foldl1,filter)
 import qualified Prelude
-import Control.Monad.Identity (runIdentity)
+import qualified Control.Monad.Fail as Fail
 import Data.Monoid
 import Data.Semigroup as SG
 import qualified Data.Edison.Assoc as A
+import Data.Edison.Prelude ( runFail_ )
 import qualified Data.Edison.Seq as S
 import qualified Data.Edison.Seq.ListSeq as L
 import Data.Edison.Assoc.Defaults
@@ -210,9 +211,9 @@ member k (L j _) = (j == k)
 member k (B _ m t0 t1) = if zeroBit k m then member k t0 else member k t1
 
 lookup :: Int -> FM a -> a
-lookup k m = runIdentity (lookupM k m)
+lookup k m = runFail_ (lookupM k m)
 
-lookupM :: (Monad rm) => Int -> FM a -> rm a
+lookupM :: (Fail.MonadFail rm) => Int -> FM a -> rm a
 lookupM _ E = fail "PatriciaLoMap.lookup: lookup failed"
 lookupM k (L j x)
   | j == k    = return x
@@ -233,7 +234,7 @@ lookupAndDelete        = doLookupAndDelete
                            (error "PatriciaLoMap.lookupAndDelete: lookup failed")
                            (,)
 
-lookupAndDeleteM :: Monad m => Int -> FM a -> m (a, FM a)
+lookupAndDeleteM :: Fail.MonadFail m => Int -> FM a -> m (a, FM a)
 lookupAndDeleteM       = doLookupAndDelete
                            (fail "PatriciaLoMap.lookupAndDelete: lookup failed")
                            (\x m -> return (x,m))
@@ -583,25 +584,25 @@ ordListFM_rev (B _ _ t0 t1) = merge (ordListFM_rev t0) (ordListFM_rev t1)
             GT -> x : merge xs (y:ys)
             EQ -> error "PatriciaLoMap: bug in ordListFM_rev"
 
-minView :: Monad m => FM a -> m (a, FM a)
+minView :: Fail.MonadFail m => FM a -> m (a, FM a)
 minView fm =
    case ordListFM fm of
      [] -> fail $ moduleName++".minView: empty map"
      ((k,x):_) -> return (x,delete k fm)
 
-minViewWithKey :: Monad m => FM a -> m ((Int, a), FM a)
+minViewWithKey :: Fail.MonadFail m => FM a -> m ((Int, a), FM a)
 minViewWithKey fm =
    case ordListFM fm of
      [] -> fail $ moduleName++".minViewWithKey: empty map"
      ((k,x):_) -> return ((k,x),delete k fm)
 
-maxView :: Monad m => FM a -> m (a, FM a)
+maxView :: Fail.MonadFail m => FM a -> m (a, FM a)
 maxView fm =
   case ordListFM_rev fm of
      [] -> fail $ moduleName++".maxView: empty map"
      ((k,x):_) -> return (x,delete k fm)
 
-maxViewWithKey :: Monad m => FM a -> m ((Int, a), FM a)
+maxViewWithKey :: Fail.MonadFail m => FM a -> m ((Int, a), FM a)
 maxViewWithKey fm =
    case ordListFM_rev fm of
      [] -> fail $ moduleName++".maxViewWithKey: empty map"

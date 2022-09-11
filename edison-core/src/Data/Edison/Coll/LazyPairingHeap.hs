@@ -49,6 +49,7 @@ import Data.List (sort)
 import Data.Monoid
 import Data.Semigroup as SG
 import Control.Monad
+import qualified Control.Monad.Fail as Fail
 import Test.QuickCheck
 
 moduleName :: String
@@ -359,7 +360,7 @@ lookupAll y h = look h S.empty
             EQ -> S.lcons x $ look i $ look xs rest
             GT -> rest
 
-minView :: (Ord a, Monad m) => Heap a -> m (a, Heap a)
+minView :: (Ord a, Fail.MonadFail m) => Heap a -> m (a, Heap a)
 minView E = fail "LazyPairingHeap.minView: empty heap"
 minView (H1 x xs) = return (x,xs)
 minView (H2 x h xs) = return (x,union h xs)
@@ -369,7 +370,7 @@ minElem E = error "LazyPairingHeap.minElem: empty heap"
 minElem (H1 x _) = x
 minElem (H2 x _ _) = x
 
-maxView :: (Ord a, Monad m) => Heap a -> m (a, Heap a)
+maxView :: (Ord a, Fail.MonadFail m) => Heap a -> m (a, Heap a)
 maxView E = fail "LazyPairingHeap.maxView: empty heap"
 maxView xs = return (y,xs')
   where (xs', y) = maxView' xs
@@ -474,7 +475,7 @@ deleteMax = deleteMaxUsingMaxView
 lookup :: Ord a => a -> Heap a -> a
 lookup = lookupUsingLookupAll
 
-lookupM :: (Ord a, Monad m) => a -> Heap a -> m a
+lookupM :: (Ord a, Fail.MonadFail m) => a -> Heap a -> m a
 lookupM = lookupMUsingLookupAll
 
 lookupWithDefault :: Ord a => a -> a -> Heap a -> a

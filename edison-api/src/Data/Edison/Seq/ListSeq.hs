@@ -40,9 +40,9 @@ module Data.Edison.Seq.ListSeq (
 import Prelude hiding (concat,reverse,map,concatMap,foldr,foldl,foldr1,foldl1,
                        filter,takeWhile,dropWhile,lookup,take,drop,splitAt,
                        zip,zip3,zipWith,zipWith3,unzip,unzip3,null)
-import qualified Control.Monad.Identity as ID
+import qualified Control.Monad.Fail as Fail
 import qualified Prelude
-import Data.Edison.Prelude
+import Data.Edison.Prelude ( runFail_ )
 import qualified Data.List
 import Data.Monoid
 import qualified Data.Edison.Seq as S ( Sequence(..) ) 
@@ -54,16 +54,16 @@ singleton      :: a -> [a]
 lcons          :: a -> [a] -> [a]
 rcons          :: a -> [a] -> [a]
 append         :: [a] -> [a] -> [a]
-lview          :: (Monad rm) => [a] -> rm (a, [a])
+lview          :: (Fail.MonadFail rm) => [a] -> rm (a, [a])
 lhead          :: [a] -> a
-lheadM         :: (Monad rm) => [a] -> rm a
+lheadM         :: (Fail.MonadFail rm) => [a] -> rm a
 ltail          :: [a] -> [a]
-ltailM         :: (Monad rm) => [a] -> rm [a]
-rview          :: (Monad rm) => [a] -> rm (a, [a])
+ltailM         :: (Fail.MonadFail rm) => [a] -> rm [a]
+rview          :: (Fail.MonadFail rm) => [a] -> rm (a, [a])
 rhead          :: [a] -> a
-rheadM         :: (Monad rm) => [a] -> rm a
+rheadM         :: (Fail.MonadFail rm) => [a] -> rm a
 rtail          :: [a] -> [a]
-rtailM         :: (Monad rm) => [a] -> rm [a]
+rtailM         :: (Fail.MonadFail rm) => [a] -> rm [a]
 null           :: [a] -> Bool
 size           :: [a] -> Int
 concat         :: [[a]] -> [a]
@@ -92,7 +92,7 @@ reduce1'       :: (a -> a -> a) -> [a] -> a
 copy           :: Int -> a -> [a]
 inBounds       :: Int -> [a] -> Bool
 lookup         :: Int -> [a] -> a
-lookupM        :: (Monad m) => Int -> [a] -> m a
+lookupM        :: (Fail.MonadFail m) => Int -> [a] -> m a
 lookupWithDefault :: a -> Int -> [a] -> a
 update         :: Int -> a -> [a] -> [a]
 adjust         :: (a -> a) -> Int -> [a] -> [a]
@@ -252,7 +252,7 @@ inBounds i xs
   | i >= 0    = not (null (drop i xs))
   | otherwise = False
 
-lookup i xs = ID.runIdentity (lookupM i xs)
+lookup i xs = runFail_ (lookupM i xs)
 
 lookupM i xs
   | i < 0 = fail "ListSeq.lookup: not found"
