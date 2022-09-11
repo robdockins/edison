@@ -1,3 +1,7 @@
+Changes in 1.3.3
+  * Updates to handle MonadFail changes in GHC 8.x
+  * Updates to fix compile issues in GHC 9
+
 Changes in 1.3.2.1
   * Fix compile problems on GHC 7.10
 
