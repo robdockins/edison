@@ -8,13 +8,14 @@ import Data.List (intersperse)
 import Test.QuickCheck
 import Test.QuickCheck.Test
 import Test.HUnit (runTestTT, Test(..),assertFailure)
+import GHC.Stack (HasCallStack)
 
 -- | Turn a QuickCheck 'Testable' into an HUnit 'Test'
-qcTest :: Testable a => a -> Test
+qcTest :: (Testable a, HasCallStack) => a -> Test
 qcTest x = TestCase $ do
    let args =
         stdArgs
-        { maxSuccess = 100
+        { maxSuccess = 1000
         , maxSize = 20
         , chatty = False
         }
