@@ -16,6 +16,7 @@ qcTest x = TestCase $ do
         stdArgs
         { maxSuccess = 100
         , maxSize = 20
+        , chatty = False
         }
 
    res <- quickCheckWithResult args x
