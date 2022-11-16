@@ -25,8 +25,7 @@ import qualified Data.Edison.Assoc.PatriciaLoMap as PLM
 -- A utility class to propagate class contexts down
 -- to the quick check properties
 
-class (Ord k, Show k, Arbitrary k,
-       Arbitrary (fm a), Show (fm a),
+class (Ord k, Show k, Arbitrary k, Show (fm a),
        Eq (fm a), FiniteMap fm k)
         => FMTest k a fm | fm -> k 
 
