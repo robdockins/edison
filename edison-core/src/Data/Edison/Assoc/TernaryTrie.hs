@@ -7,7 +7,8 @@
 --   Stability   :  stable
 --   Portability :  GHC, Hugs (MPTC and FD)
 --
---   Finite maps implemented as ternary search tries
+--   Finite maps indexed by lists or strings @[k]@, implemented as ternary
+--   search tries
 
 module Data.Edison.Assoc.TernaryTrie (
     -- * Type of ternary search tries
@@ -163,6 +164,29 @@ moduleName = "Data.Edison.Assoc.TernaryTrie"
 data FM k a
   = FM !(Maybe a) !(FMB k a)
 
+-- | This is isomorphic to an iteration of binary trees with keys @k@.
+--
+-- @
+-- data BT k v = E | I k v (BT k v) (BT k v)
+-- data Layer k v x = Layer (Maybe v) (BT k x)
+--
+-- FMB k v = Fix (Layer k v)
+-- @
+--
+-- The trees are weight-balanced trees, ensuring that the sizes of the
+-- two subtrees of any node are bounded by each other up to a constant factor.
+--
+-- @
+-- size l + size r <= 1
+--
+-- -- or --
+--
+-- size l <= 6 * size r
+-- size r <= 6 * size l
+-- @
+--
+-- Source: <https://yoichihirai.com/bst.pdf Balancing Weight-Balanced Trees>
+-- by Hirai and Yamamoto, 2011 (Section 4)
 data FMB k v
   = E
   | I !Int !k !(Maybe v) !(FMB k v) !(FMB' k v) !(FMB k v)
