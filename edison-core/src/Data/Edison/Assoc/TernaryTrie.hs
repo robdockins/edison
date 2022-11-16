@@ -172,8 +172,11 @@ newtype FMB' k v
   = FMB' (FMB k v)
   deriving Show
 
+-- | The balance factor must be either 3 or 4.
+-- With other factors, the invariant gets broken by delete, minViewWithKey and maxViewWithKey.
+-- (cf. Section 4 of the paper linked above)
 balance :: Int
-balance = 6
+balance = 4
 
 sizeFMB :: FMB k v -> Int
 sizeFMB E = 0
