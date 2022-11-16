@@ -37,6 +37,7 @@ Library
      Data.Edison.Coll.Utils
      Data.Edison.Seq
      Data.Edison.Seq.ListSeq
+     Data.Edison.Test
   Build-Depends:
      base == 4.*,
      mtl >= 1.0

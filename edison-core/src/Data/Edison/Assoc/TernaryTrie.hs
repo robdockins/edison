@@ -7,7 +7,8 @@
 --   Stability   :  stable
 --   Portability :  GHC, Hugs (MPTC and FD)
 --
---   Finite maps implemented as ternary search tries
+--   Finite maps indexed by lists or strings @[k]@, implemented as ternary
+--   search tries
 
 module Data.Edison.Assoc.TernaryTrie (
     -- * Type of ternary search tries
@@ -60,12 +61,14 @@ import qualified Data.Edison.Seq as S
 import qualified Data.List as L
 import qualified Control.Monad.Fail as Fail
 import Control.Monad.Identity
+import Data.Coerce (coerce)
 import Data.Monoid
 import Data.Semigroup as SG
 import Data.Maybe (isNothing)
 
 import Data.Edison.Assoc.Defaults
-import Test.QuickCheck (Arbitrary(..), CoArbitrary(..), Gen(), variant)
+import Data.Edison.Test (InternalTest(..))
+import Test.QuickCheck (Arbitrary(..), CoArbitrary(..), Gen(), NonNegative(..), variant, sized, resize, choose, oneof)
 
 
 -- signatures for exported functions
@@ -162,15 +165,43 @@ moduleName = "Data.Edison.Assoc.TernaryTrie"
 data FM k a
   = FM !(Maybe a) !(FMB k a)
 
+-- | This is isomorphic to an iteration of binary trees with keys @k@.
+--
+-- @
+-- data BT k v = E | I k v (BT k v) (BT k v)
+-- data Layer k v x = Layer (Maybe v) (BT k x)
+--
+-- FMB k v = Fix (Layer k v)
+-- @
+--
+-- The trees are weight-balanced trees, ensuring that the sizes of the
+-- two subtrees of any node are bounded by each other up to a constant factor.
+--
+-- @
+-- size l + size r <= 1
+--
+-- -- or --
+--
+-- size l <= 6 * size r
+-- size r <= 6 * size l
+-- @
+--
+-- Source: <https://yoichihirai.com/bst.pdf Balancing Weight-Balanced Trees>
+-- by Hirai and Yamamoto, 2011 (Section 4)
 data FMB k v
   = E
   | I !Int !k !(Maybe v) !(FMB k v) !(FMB' k v) !(FMB k v)
+  deriving Show
 
 newtype FMB' k v
   = FMB' (FMB k v)
+  deriving Show
 
+-- | The balance factor must be either 3 or 4.
+-- With other factors, the invariant gets broken by delete, minViewWithKey and maxViewWithKey.
+-- (cf. Section 4 of the paper linked above)
 balance :: Int
-balance = 6
+balance = 4
 
 sizeFMB :: FMB k v -> Int
 sizeFMB E = 0
@@ -1132,8 +1163,11 @@ structuralInvariantFMB fmb@(I size k _ l (FMB' m) r)
     && keyInvariantFMB (<k) l
     && keyInvariantFMB (>k) r
     && actualSizeFMB fmb == size
-    && (sizel + sizer < 2
-        || (sizel <= balance * sizer && sizer <= balance * sizel))
+    && isBalanced l r
+
+isBalanced :: FMB k a -> FMB k a -> Bool
+isBalanced l r = sizel + sizer <= 1
+  || (sizel <= balance * sizer && sizer <= balance * sizel)
   where
       sizel = sizeFMB l
       sizer = sizeFMB r
@@ -1141,10 +1175,9 @@ structuralInvariantFMB fmb@(I size k _ l (FMB' m) r)
 structuralInvariant :: Ord k => FM k a -> Bool
 structuralInvariant (FM _ fmb) = structuralInvariantFMB fmb
 
-
-instance (Ord k,Arbitrary k,Arbitrary a) => Arbitrary (FM k a) where
-  arbitrary = do (xs::[([k],a)]) <- arbitrary
-                 return (Prelude.foldr (uncurry insert) empty xs)
+instance (Arbitrary k, Ord k, Arbitrary a) => Arbitrary (FM k a) where
+  arbitrary = fromSeq <$> (arbitrary :: Gen [([k], a)])
+  shrink xs = fromSeq <$> shrink (toSeq xs :: [([k], a)])
 
 instance (Ord k,CoArbitrary k,CoArbitrary a) => CoArbitrary (FM k a) where
   coarbitrary (FM x fmb) = coarbitrary_maybe x . coarbitrary_fmb fmb
@@ -1168,3 +1201,70 @@ instance Ord k => Monoid (FM k a) where
    mappend = (SG.<>)
    mconcat = unionSeq
 
+-- InternalTest
+
+instance (Show k, Show a) => Show (InternalTest (FM k a)) where
+  show (InternalTest (FM a m)) = "InternalTest (FM " ++ showsPrec 11 a "" ++ " " ++ showsPrec 11 m "" ++ ")"
+
+-- | Generate weight-balanced trees either by direct recursion or via
+-- 'fromSeq'. The former is much more likely to hit counterexamples to wrong
+-- @balance@ coefficients. We keep the latter generator around just in case,
+-- because it generates a more realistic distribution.
+instance (Integral k, Arbitrary k, Arbitrary a) => Arbitrary (InternalTest (FM k a)) where
+  arbitrary = InternalTest <$> oneof [genFM, arbitrary]
+  shrink (InternalTest (FM v m)) = [InternalTest (FM v m) | (v, FMB' m) <- shrinkTuple shrink shrinkFMB' (v, FMB' m)]
+
+genFM :: (Integral k, Arbitrary a) => Gen (FM k a)
+genFM = do
+  FM <$> arbitrary <*> genFMB_
+
+-- Choose the number of elements in the top layer upfront,
+-- and distribute it while recursing down.
+genFMB_ :: (Integral k, Arbitrary a) => Gen (FMB k a)
+genFMB_ = sized $ \sz -> do
+  n <- choose (0, sz)
+  resize (sz - n) (genFMB 0 n)
+
+-- Distribute the size @sz@ to generate the middle children of the nodes in the
+-- top layer.
+genFMB :: (Integral k, Arbitrary a) => Int -> Int -> Gen (FMB k a)
+genFMB i 0 = pure E
+genFMB i n = sized $ \sz -> do
+  let b = if n <= 2 then 0 else (n-1+balance) `div` (balance+1)
+  l <- choose (b, n-1-b)
+  z <- choose (0, sz)
+  let k = fromIntegral (i+l)
+  I n k
+        -- Ensure leaves (nodes with both E children) are nonempty.
+    <$> (if n == 1 then Just <$> arbitrary else arbitrary)
+    <*> resize z (genFMB i l)
+    <*> (FMB' <$> resize (min z (sz-z)) genFMB_)
+    <*> resize (sz - z) (genFMB (i+l+1) (n-l-1))
+
+-- Be careful to preserve balance during shrinking.
+shrinkFMB :: Arbitrary a => FMB k a -> [FMB k a]
+shrinkFMB E = []
+shrinkFMB (I s k v l m r) = E : l : r : do
+    let (*-) = shrinkTuple ; infixr 3 *-
+    (v, (l, (m, r))) <- (shrinkJust *- shrinkFMB *- shrinkFMB' *- shrinkFMB) (v, (l, (m, r)))
+    let s = sizeFMB l + sizeFMB r + 1
+        t = I s k v l m r
+    guard (isBalanced l r)
+    pure t
+
+shrinkFMB' :: Arbitrary a => FMB' k a -> [FMB' k a]
+shrinkFMB' (FMB' m) = coerce $
+  tailsFMB m ++ shrinkFMB m
+
+-- List the middle children of the top layer.
+tailsFMB :: FMB k a -> [FMB k a]
+tailsFMB E = []
+tailsFMB (I _ _ _ l (FMB' m) r) = m : tailsFMB l ++ tailsFMB r
+
+-- Don't remove elements
+shrinkJust :: Arbitrary a => Maybe a -> [Maybe a]
+shrinkJust Nothing = []
+shrinkJust (Just x) = Just <$> shrink x
+
+shrinkTuple :: (a -> [a]) -> (b -> [b]) -> (a, b) -> [(a, b)]
+shrinkTuple sa sb (a, b) = [(a', b) | a' <- sa a] ++ [(a, b') | b' <- sb b]

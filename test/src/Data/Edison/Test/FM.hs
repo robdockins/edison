@@ -11,6 +11,7 @@ import qualified Data.List as L
 import Data.Maybe
 
 import Test.QuickCheck hiding (elements, (===))
+import qualified Test.QuickCheck as QC
 import Test.HUnit (Test(..))
 
 import Data.Edison.Test.Utils
@@ -24,8 +25,7 @@ import qualified Data.Edison.Assoc.PatriciaLoMap as PLM
 -- A utility class to propigate class contexts down
 -- to the quick check properties
 
-class (Ord k, Show k, Arbitrary k,
-       Arbitrary (fm a), Show (fm a),
+class (Ord k, Show k, Arbitrary k, Show (fm a),
        Eq (fm a), FiniteMap fm k)
         => FMTest k a fm | fm -> k 
 
@@ -339,12 +339,15 @@ prop_unionSeq fm xss =
    keysList (unionSeq xss) == keysList (L.foldr union empty xss)
 
 prop_delete :: FMTest k Int fm =>
-        fm Int -> k -> fm Int -> Bool
-prop_delete fm k xs =
+        fm Int -> fm Int -> Property
+prop_delete fm xs = forAll genKey $ \k ->
      L.sort (keysList (delete k xs)) == 
      L.sort (L.filter (/=k) (keysList xs)) 
   &&
      delete k xs === deleteAll k xs
+  where
+    genKey | null xs = arbitrary
+           | otherwise = frequency [(1, arbitrary), (10, QC.elements (keysList xs))]
 
 prop_deleteSeq :: FMTest k Int fm =>
         fm Int -> [k] -> fm Int -> Bool
