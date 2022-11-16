@@ -64,7 +64,7 @@ import Control.Monad
 import Data.Coerce (coerce)
 import Data.Monoid
 import Data.Semigroup as SG
-import Data.Maybe (isNothing)
+import Data.Maybe (isJust, isNothing)
 
 import Data.Edison.Assoc.Defaults
 import Test.QuickCheck (Arbitrary(..), CoArbitrary(..), Gen(), NonNegative(..), variant, sized, resize, choose, oneof)
@@ -1155,7 +1155,7 @@ actualSizeFMB (I _ _ _ l _ r) = 1 + actualSizeFMB l + actualSizeFMB r
 
 structuralInvariantFMB :: Ord k => FMB k a -> Bool
 structuralInvariantFMB E = True
-structuralInvariantFMB fmb@(I size k _ l (FMB' m) r)
+structuralInvariantFMB fmb@(I size k v l (FMB' m) r)
   =    structuralInvariantFMB l
     && structuralInvariantFMB m
     && structuralInvariantFMB r
@@ -1163,6 +1163,7 @@ structuralInvariantFMB fmb@(I size k _ l (FMB' m) r)
     && keyInvariantFMB (>k) r
     && actualSizeFMB fmb == size
     && isBalanced l r
+    && relevantRoot fmb
 
 isBalanced :: FMB k a -> FMB k a -> Bool
 isBalanced l r = sizel + sizer <= 1
@@ -1170,6 +1171,11 @@ isBalanced l r = sizel + sizer <= 1
   where
       sizel = sizeFMB l
       sizer = sizeFMB r
+
+-- | This invariant is used by minView
+relevantRoot :: FMB k a -> Bool
+relevantRoot (I _ _ Nothing _ (FMB' E) _) = False
+relevantRoot _ = True
 
 structuralInvariant :: Ord k => FM k a -> Bool
 structuralInvariant (FM _ fmb) = structuralInvariantFMB fmb
@@ -1225,12 +1231,12 @@ genFMB i n = sized $ \sz -> do
   let b = if n <= 2 then 0 else (n-1+balance) `div` (balance+1)
   l <- choose (b, n-1-b)
   z <- choose (0, sz)
+  m <- resize (min z (sz-z)) genFMB_
+  v <- case m of E -> Just <$> arbitrary ; _ -> arbitrary
   let k = fromIntegral (i+l)
-  I n k
-        -- Ensure leaves (nodes with both E children) are nonempty.
-    <$> (if n == 1 then Just <$> arbitrary else arbitrary)
-    <*> resize z (genFMB i l)
-    <*> (FMB' <$> resize (min z (sz-z)) genFMB_)
+  I n k v
+    <$> resize z (genFMB i l)
+    <*> pure (FMB' m)
     <*> resize (sz - z) (genFMB (i+l+1) (n-l-1))
 
 -- Be careful to preserve balance during shrinking.
@@ -1238,11 +1244,15 @@ shrinkFMB :: Arbitrary a => FMB k a -> [FMB k a]
 shrinkFMB E = []
 shrinkFMB (I s k v l m r) = E : l : r : do
     let (*-) = shrinkTuple ; infixr 3 *-
-    (v, (l, (m, r))) <- (shrinkJust *- shrinkFMB *- shrinkFMB' *- shrinkFMB) (v, (l, (m, r)))
+    (v, (l, (m@(FMB' m'), r))) <- (shrinkJust *- shrinkFMB *- shrinkFMB' *- shrinkFMB) (v, (l, (m, r)))
     let s = sizeFMB l + sizeFMB r + 1
         t = I s k v l m r
-    guard (isBalanced l r)
+    guard (isBalanced l r && (isJust v || not (nullFMB' m)))
     pure t
+
+nullFMB' :: FMB' k v -> Bool
+nullFMB' (FMB' E) = True
+nullFMB' _ = False
 
 shrinkFMB' :: Arbitrary a => FMB' k a -> [FMB' k a]
 shrinkFMB' (FMB' m) = coerce $
