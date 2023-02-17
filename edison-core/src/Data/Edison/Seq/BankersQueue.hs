@@ -58,7 +58,7 @@ import qualified Data.Edison.Seq.ListSeq as L
 import Data.Monoid
 import Data.Semigroup as SG
 import qualified Control.Monad.Fail as Fail
-import Control.Monad.Identity
+import Control.Monad
 import Test.QuickCheck
 
 -- signatures for exported functions

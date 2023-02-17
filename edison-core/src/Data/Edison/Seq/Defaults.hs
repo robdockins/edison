@@ -18,7 +18,7 @@ import Prelude hiding (concat,reverse,map,concatMap,foldr,foldl,foldr1,foldl1,
                        zip,zip3,zipWith,zipWith3,unzip,unzip3,null)
 
 import qualified Control.Monad.Fail as Fail
-import Control.Monad.Identity
+import Control.Monad
 import Data.Char (isSpace)
 
 import Data.Edison.Prelude ( runFail_ )

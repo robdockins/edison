@@ -41,7 +41,7 @@ import Data.Edison.Prelude (measure, Measured(), runFail_)
 import qualified Data.Edison.Seq as S
 import Data.Edison.Seq.Defaults
 import qualified Control.Monad.Fail as Fail
-import Control.Monad.Identity
+import Control.Monad
 import Data.Monoid
 import Data.Semigroup as SG
 import Test.QuickCheck

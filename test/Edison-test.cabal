@@ -25,7 +25,6 @@ Executable testSuite
   Hs-Source-Dirs:  src
   Build-Depends:
      base == 4.*,
-     mtl >= 1.0,
      QuickCheck >= 2.8.2 && < 3,
      HUnit >= 1.1,
      EdisonAPI,

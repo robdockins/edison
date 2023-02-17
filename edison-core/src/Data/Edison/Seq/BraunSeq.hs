@@ -73,7 +73,7 @@ import Prelude hiding (concat,reverse,map,concatMap,foldr,foldl,foldr1,foldl1,
 
 import qualified Control.Applicative as App
 import qualified Control.Monad.Fail as Fail
-import Control.Monad.Identity
+import Control.Monad
 import Data.Maybe
 import Data.Monoid
 import Data.Semigroup as SG
