@@ -432,8 +432,8 @@ subset' :: FM t -> FM t1 -> Ordering
 subset' s@(B p m s0 s1) (B q n t0 t1)
   | m < n    = GT
   | m > n    = if matchPrefix p q n then
-                  if zeroBit p n then subset' s t0
-                                 else subset' s t1
+                  if zeroBit p n then subset' s t0 SG.<> LT
+                                 else subset' s t1 SG.<> LT
                 else GT
   | otherwise = if p == q then case (subset' s0 t0,subset' s1 t1) of
                                   (GT,_)  -> GT
