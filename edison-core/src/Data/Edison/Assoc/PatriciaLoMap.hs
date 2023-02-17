@@ -121,7 +121,7 @@ rmakeB :: Int -> Int -> FM a -> FM a -> FM a
 rmakeB _ _ t E = t
 rmakeB p m t0 t1 = B p m t0 t1
 
-lowestBit :: Int32 -> Int32
+lowestBit :: Word -> Word
 lowestBit x = x .&. (-x)
 
 branchingBit :: Int -> Int -> Int
@@ -129,10 +129,13 @@ branchingBit p0 p1 =
   fromIntegral (lowestBit (fromIntegral p0 `xor` fromIntegral p1))
 
 mask :: Int -> Int -> Int
-mask p m = fromIntegral (fromIntegral p .&. (fromIntegral m - (1 :: Int32)))
+mask p m = fromIntegral (fromIntegral p .&. (fromIntegral m - (1 :: Word)))
+
+shorter :: Int -> Int -> Bool
+shorter m n = fromIntegral m < (fromIntegral n :: Word)
 
 zeroBit :: Int -> Int -> Bool
-zeroBit p m = (fromIntegral p) .&. (fromIntegral m) == (0 :: Int32)
+zeroBit p m = (fromIntegral p) .&. (fromIntegral m) == (0 :: Word)
 
 matchPrefix :: Int -> Int -> Int -> Bool
 matchPrefix k p m = mask k m == p
@@ -168,11 +171,11 @@ insert k x t@(B p m t0 t1) =
 
 union :: FM a -> FM a -> FM a
 union s@(B p m s0 s1) t@(B q n t0 t1)
-  | m < n    = if matchPrefix q p m then
+  | shorter m n = if matchPrefix q p m then
                   if zeroBit q m then B p m (union s0 t) s1
                                  else B p m s0 (union s1 t)
                 else join p s q t
-  | m > n    = if matchPrefix p q n then
+  | shorter n m = if matchPrefix p q n then
                   if zeroBit p n then B q n (union s t0) t1
                                  else B q n t0 (union s t1)
                 else join p s q t
@@ -320,11 +323,11 @@ insertWith f k x t@(B p m t0 t1) =
 
 unionl :: FM a -> FM a -> FM a
 unionl s@(B p m s0 s1) t@(B q n t0 t1)
-  | m < n    = if matchPrefix q p m then
+  | shorter m n = if matchPrefix q p m then
                   if zeroBit q m then B p m (unionl s0 t) s1
                                  else B p m s0 (unionl s1 t)
                 else join p s q t
-  | m > n    = if matchPrefix p q n then
+  | shorter n m = if matchPrefix p q n then
                   if zeroBit p n then B q n (unionl s t0) t1
                                  else B q n t0 (unionl s t1)
                 else join p s q t
@@ -341,11 +344,11 @@ unionl E t = t
 
 unionr :: FM a -> FM a -> FM a
 unionr s@(B p m s0 s1) t@(B q n t0 t1)
-  | m < n    = if matchPrefix q p m then
+  | shorter m n = if matchPrefix q p m then
                   if zeroBit q m then B p m (unionr s0 t) s1
                                  else B p m s0 (unionr s1 t)
                 else join p s q t
-  | m > n    = if matchPrefix p q n then
+  | shorter n m = if matchPrefix p q n then
                   if zeroBit p n then B q n (unionr s t0) t1
                                  else B q n t0 (unionr s t1)
                 else join p s q t
@@ -362,11 +365,11 @@ unionr E t = t
 
 unionWith :: (a -> a -> a) -> FM a -> FM a -> FM a
 unionWith f s@(B p m s0 s1) t@(B q n t0 t1)
-  | m < n    = if matchPrefix q p m then
+  | shorter m n = if matchPrefix q p m then
                   if zeroBit q m then B p m (unionWith f s0 t) s1
                                  else B p m s0 (unionWith f s1 t)
                 else join p s q t
-  | m > n    = if matchPrefix p q n then
+  | shorter n m = if matchPrefix p q n then
                   if zeroBit p n then B q n (unionWith f s t0) t1
                                  else B q n t0 (unionWith f s t1)
                 else join p s q t
@@ -383,11 +386,11 @@ unionWith _ E t = t
 
 intersectionWith :: (a -> b -> c) -> FM a -> FM b -> FM c
 intersectionWith f s@(B p m s0 s1) t@(B q n t0 t1)
-  | m < n    = if matchPrefix q p m then
+  | shorter m n = if matchPrefix q p m then
                   if zeroBit q m then intersectionWith f s0 t
                                  else intersectionWith f s1 t
                 else E
-  | m > n    = if matchPrefix p q n then
+  | shorter n m = if matchPrefix p q n then
                   if zeroBit p n then intersectionWith f s t0
                                  else intersectionWith f s t1
                 else E
@@ -406,11 +409,11 @@ intersectionWith _ E _ = E
 
 difference :: FM a -> FM b -> FM a
 difference s@(B p m s0 s1) t@(B q n t0 t1)
-  | m < n    = if matchPrefix q p m then
+  | shorter m n = if matchPrefix q p m then
                   if zeroBit q m then lmakeB p m (difference s0 t) s1
                                  else rmakeB p m s0 (difference s1 t)
                 else s
-  | m > n    = if matchPrefix p q n then
+  | shorter n m = if matchPrefix p q n then
                   if zeroBit p n then difference s t0
                                  else difference s t1
                 else s
@@ -430,8 +433,8 @@ properSubset s t = case subset' s t of {LT -> True; _ -> False}
 
 subset' :: FM t -> FM t1 -> Ordering
 subset' s@(B p m s0 s1) (B q n t0 t1)
-  | m < n    = GT
-  | m > n    = if matchPrefix p q n then
+  | shorter m n = GT
+  | shorter n m = if matchPrefix p q n then
                   if zeroBit p n then subset' s t0 SG.<> LT
                                  else subset' s t1 SG.<> LT
                 else GT
@@ -449,8 +452,8 @@ subset' E _ = LT
 
 subset :: FM a -> FM b -> Bool
 subset s@(B p m s0 s1) (B q n t0 t1)
-  | m < n    = False
-  | m > n    = matchPrefix p q n && (if zeroBit p n then subset s t0
+  | shorter m n = False
+  | shorter n m = matchPrefix p q n && (if zeroBit p n then subset s t0
                                                      else subset s t1)
   | otherwise = (p == q) && subset s0 t0 && subset s1 t1
 subset (B _ _ _ _) _ = False
@@ -507,11 +510,11 @@ partitionWithKey g (B p m t0 t1) =
 
 unionWithKey :: (Int -> a -> a -> a) -> FM a -> FM a -> FM a
 unionWithKey f s@(B p m s0 s1) t@(B q n t0 t1)
-  | m < n    = if matchPrefix q p m then
+  | shorter m n = if matchPrefix q p m then
                   if zeroBit q m then B p m (unionWithKey f s0 t) s1
                                  else B p m s0 (unionWithKey f s1 t)
                 else join p s q t
-  | m > n    = if matchPrefix p q n then
+  | shorter n m = if matchPrefix p q n then
                   if zeroBit p n then B q n (unionWithKey f s t0) t1
                                  else B q n t0 (unionWithKey f s t1)
                 else join p s q t
@@ -528,11 +531,11 @@ unionWithKey _ E t = t
 
 intersectionWithKey :: (Int -> a -> b -> c) -> FM a -> FM b -> FM c
 intersectionWithKey f s@(B p m s0 s1) t@(B q n t0 t1)
-  | m < n    = if matchPrefix q p m then
+  | shorter m n = if matchPrefix q p m then
                   if zeroBit q m then intersectionWithKey f s0 t
                                  else intersectionWithKey f s1 t
                 else E
-  | m > n    = if matchPrefix p q n then
+  | shorter n m = if matchPrefix p q n then
                   if zeroBit p n then intersectionWithKey f s t0
                                  else intersectionWithKey f s t1
                 else E

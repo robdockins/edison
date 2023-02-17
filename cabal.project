@@ -2,3 +2,4 @@ packages:
   edison-api
   edison-core
   test
+documentation: False -- Build quicker
