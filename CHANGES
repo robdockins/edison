@@ -1,3 +1,7 @@
+Changes in 1.3.3.1
+  * Remove mtl dependency (removed unnecessary imports which were incompatible with mtl 2.3)
+  * Fix implementation of little-endian PatriciaTrees
+
 Changes in 1.3.3
   * Updates to handle MonadFail changes in GHC 8.x
   * Updates to fix compile issues in GHC 9
