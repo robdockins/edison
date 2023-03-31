@@ -21,7 +21,7 @@ import qualified Data.Edison.Assoc.AssocList as AL
 import qualified Data.Edison.Assoc.PatriciaLoMap as PLM
 
 ----------------------------------------------------------------
--- A utility class to propigate class contexts down
+-- A utility class to propagate class contexts down
 -- to the quick check properties
 
 class (Ord k, Show k, Arbitrary k,

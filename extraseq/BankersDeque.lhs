@@ -151,7 +151,7 @@ end of the deque, fewer rotations will be executed. However, in these
 situations, it may be assumed that one of the queue implementations may be 
 more suitable anyway, so we use the lowest possible value for $c$.
 
-The amortised runtime analysis, with which Okasaki shows contant runtime for
+The amortised runtime analysis, with which Okasaki shows constant runtime for
 \lstinline!cons!, \lstinline!snoc!, \lstinline!ltail!, \lstinline!rtail! and
 \lstinline!reverse!, uses the bankers method where for both lists, $d(i)$
 denotes the number of debits on the $i$th element and 

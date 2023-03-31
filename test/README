@@ -13,7 +13,7 @@ found by the test suite may indicate bugs in a data structure
 implementation or in the test suite itself.
 
 If you are a developer, you should run the test suite before
-submitting patches to help ensure you have not accidently introduced
+submitting patches to help ensure you have not accidentally introduced
 bugs.  If you are implementing entirely new features, you should
 add test cases to test your new features.
 

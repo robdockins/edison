@@ -35,8 +35,8 @@ import qualified Data.Edison.Coll.StandardSet as SS
 import qualified Data.Edison.Coll.EnumSet as ES
 
 -------------------------------------------------------
--- A utility class to propigate class contexts down
--- to the quick check properites
+-- A utility class to propagate class contexts down
+-- to the quick check properties
 
 class (Eq (set a), Arbitrary (set a),
        Show (set a),

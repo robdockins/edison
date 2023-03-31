@@ -348,7 +348,7 @@ reverseOnto = reverseOntoUsingFoldl
 \end{code}
 
 As mentioned above, \lstinline!foldr1! cannot be easily implemented directly. 
-Therefor, it uses the list representation internally, as do the 
+Therefore, it uses the list representation internally, as do the 
 \lstinline!reduce! operations.
 \begin{code}
 foldr1 = foldr1UsingLists

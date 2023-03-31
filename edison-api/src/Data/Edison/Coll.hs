@@ -105,7 +105,7 @@ import Data.Edison.Seq(Sequence)
 import Data.Edison.Seq.ListSeq()
 
 
--- | The empty collection.  Equivalant to @mempty@ from
+-- | The empty collection.  Equivalent to @mempty@ from
 --   the @Monoid@ instance.
 --
 --   This function is always /unambiguous/.
@@ -113,7 +113,7 @@ empty :: CollX c a => c
 empty = mempty
 
 -- | Merge two collections.  For sets, it is unspecified which element is
---   kept in the case of duplicates.  Equivalant to @mappend@ from the
+--   kept in the case of duplicates.  Equivalent to @mappend@ from the
 --   @Monoid@ instance.
 --
 --   This function is /ambiguous/ at set types if the sets are not disjoint.
@@ -216,7 +216,7 @@ class (Eq a,Monoid c) => CollX c a | c -> a where
   --   datastructure is infinite in size or contains exceptions or non-termination
   --   in the structure itself, then @strict@ will result in bottom.  Operationally,
   --   this function walks the datastructure forcing any closures.  In many
-  --   collections, the collction \"shape\" depends on the value of the elemnts;
+  --   collections, the collction \"shape\" depends on the value of the elements;
   --   in such cases, the values of the elements will be forced to the extent
   --   necessary to force the structure of the collection, but no further.
   --

@@ -31,7 +31,7 @@ import qualified Data.Edison.Coll.MinHeap as Min
 
 
 ---------------------------------------------------------------
--- A utility classe to propigate class contexts down
+-- A utility class to propagate class contexts down
 -- to the quick check properties
 
 class (Eq (bag a), Arbitrary (bag a),

@@ -909,7 +909,7 @@ function argument to avoid producing too large sequences.
 \end{code}
 }
 
-For the remining checks we refer to appendix \ref{chapter:checkseqsource}, but
+For the remaining checks we refer to appendix \ref{chapter:checkseqsource}, but
 skip them here as they do not provide any new insights.
 
 \begin{code}

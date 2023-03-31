@@ -33,7 +33,7 @@
 -- > forall x y::A, x < y <==> toEnum x < toEnum y
 --
 -- Derived @Eq@, @Ord@ and @Enum@ instances will fulfill these conditions, if
--- the enumerated type has sufficently few constructors.
+-- the enumerated type has sufficiently few constructors.
 
 {-
 Copyright (c) 2006, 2008, David F. Place
@@ -151,7 +151,7 @@ module Data.Edison.Coll.EnumSet (
             , toBits
             , fromBits
 
-            -- * Documenation
+            -- * Documentation
             , moduleName
 )  where
 
@@ -479,7 +479,7 @@ unsafeMapMonotonic :: (Enum a) => (a -> a) -> Set a -> Set a
 unsafeMapMonotonic = map
 
 -- | /O(1)/ Changes the type of the elements in the set without changing
---   the representation.  Equivalant to @map (toEnum . fromEnum)@, and
+--   the representation.  Equivalent to @map (toEnum . fromEnum)@, and
 --   to @(fromBits . toBits)@.  This method is operationally a no-op.
 setCoerce :: (Enum a, Enum b) => Set a -> Set b
 setCoerce (Set w) = Set w
@@ -553,16 +553,16 @@ foldl' f z (Set w) = foldlBits' folder z w
 
 foldl1 :: (Ord a, Enum a) => (a -> a -> a) -> Set a -> a
 foldl1 _ (Set 0) = error (moduleName++".foldl1: empty set")
-foldl1 f (Set w) = foldlBits folder (toEnum mininum) (clearBit w mininum)
+foldl1 f (Set w) = foldlBits folder (toEnum minimum) (clearBit w minimum)
   where
-    mininum = lsb w
+    minimum = lsb w
     folder z i = f z (toEnum i)
 
 foldl1' :: (Ord a, Enum a) => (a -> a -> a) -> Set a -> a
 foldl1' _ (Set 0) = error (moduleName++".foldl1': empty set")
-foldl1' f (Set w) = foldlBits' folder (toEnum mininum) (clearBit w mininum)
+foldl1' f (Set w) = foldlBits' folder (toEnum minimum) (clearBit w minimum)
   where
-    mininum = lsb w
+    minimum = lsb w
     folder z i = f z (toEnum i)
 
 {--------------------------------------------------------------------
