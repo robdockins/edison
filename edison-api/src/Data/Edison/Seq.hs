@@ -1251,7 +1251,7 @@ class (Functor s, MonadPlus s) => Sequence s where
   --
   --   This function is always /unambiguous/.
   --
-  --   Default running time: unbounded (forcing element closures can take arbitrairly long)
+  --   Default running time: unbounded (forcing element closures can take arbitrarily long)
   strictWith :: (a -> b) -> s a -> s a
 
   -- | A method to facilitate unit testing.  Returns 'True' if the structural

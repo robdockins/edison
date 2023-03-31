@@ -637,7 +637,7 @@ foldl op z (FM n fmb)
       = foldFMB r . foldFMB m . foldMV v . foldFMB l
 
 
--- FIXME, undestand this code to strictify it
+-- FIXME, understand this code to strictify it
 foldr' = foldr
 foldl' :: (a -> b -> a) -> a -> FM t b -> a
 foldl' = foldl
@@ -700,7 +700,7 @@ foldl1 f (FM v fmb)
 
 
 
--- FIXME, undestand this code to strictify it
+-- FIXME, understand this code to strictify it
 foldr1' = foldr1
 foldl1' :: (b -> b -> b) -> FM k b -> b
 foldl1' = foldl1

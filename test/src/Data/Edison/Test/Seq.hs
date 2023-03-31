@@ -17,7 +17,7 @@ import Test.QuickCheck hiding( (===) )
 import Test.HUnit (Test(..))
 
 ------------------------------------------------------
--- The sequnce implementations to check
+-- The sequence implementations to check
 
 import qualified Data.Edison.Seq.BankersQueue as BQ
 import qualified Data.Edison.Seq.BinaryRandList as BRL
@@ -33,7 +33,7 @@ import qualified Data.Edison.Seq.RevSeq as Rev
 
 
 --------------------------------------------------------
--- Just a utility class to help propigate the class contexts
+-- Just a utility class to help propagate the class contexts
 -- we need down into the quick check properties
 
 class ( Eq (seq a), Arbitrary (seq a)

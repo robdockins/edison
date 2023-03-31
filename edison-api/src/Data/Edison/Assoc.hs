@@ -44,7 +44,7 @@ module Data.Edison.Assoc (
     FiniteMap(..),
     OrdFiniteMap,
 
-    -- * Specilizations of submap operations
+    -- * Specializations of submap operations
     submap,
     properSubmap,
     sameMap,
