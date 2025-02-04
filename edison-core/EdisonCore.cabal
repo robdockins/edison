@@ -8,7 +8,7 @@ Author:         Chris Okasaki
 Maintainer:     robdockins AT fastmail DOT fm
 Synopsis:       A library of efficient, purely-functional data structures (Core Implementations)
 Category:       Data Structures
-Homepage:	http://rwd.rdockins.name/edison/home/
+Homepage:       https://github.com/robdockins/edison
 Stability:      Stable
 Description:
      This package provides the core Edison data structure implementations,
@@ -16,7 +16,7 @@ Description:
      implementations with various performance characteristics. The
      implementations in this package have no dependencies other than those
      commonly bundled with Haskell compilers.
-Extra-Source-Files: CHANGES
+Extra-Source-Files: CHANGES.md
 
 
 Source-Repository head

@@ -8,7 +8,7 @@ Author:         Chris Okasaki
 Maintainer:     robdockins AT fastmail DOT fm
 Synopsis:       A library of efficient, purely-functional data structures (API)
 Category:       Data Structures
-Homepage:	http://rwd.rdockins.name/edison/home/
+Homepage:       https://github.com/robdockins/edison
 Stability:      Stable
 Description:
    Edison is a library of purely functional data structures written by
@@ -20,6 +20,7 @@ Description:
    Collections such as sets, bags and heaps; and
    Associative Collections such as finite maps and priority queues
     where the priority and element are distinct.
+Extra-Source-Files: CHANGES.md
 
 Source-Repository head
   Type: git
