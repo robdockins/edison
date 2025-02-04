@@ -41,7 +41,7 @@ Library
   Build-Depends:
      base >= 4.12 && < 4.22
   if impl(ghc < 8.0)
-    build-depends: fail
+    build-depends: fail < 5
   Default-Language: Haskell2010
   Default-Extensions:
      MultiParamTypeClasses
