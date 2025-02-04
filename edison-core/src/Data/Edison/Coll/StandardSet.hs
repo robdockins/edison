@@ -41,7 +41,7 @@ module Data.Edison.Coll.StandardSet (
     moduleName
 ) where
 
-import Prelude hiding (null,foldr,foldl,foldr1,foldl1,lookup,filter)
+import Prelude hiding (null,foldr,foldl,foldr1,foldl1,foldl',lookup,filter)
 import qualified Prelude
 import qualified Control.Monad.Fail as Fail
 import qualified Data.List

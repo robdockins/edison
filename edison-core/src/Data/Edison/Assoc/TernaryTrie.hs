@@ -52,7 +52,7 @@ module Data.Edison.Assoc.TernaryTrie (
     moduleName
 ) where
 
-import Prelude hiding (null,map,lookup,foldr,foldl,foldr1,foldl1,filter)
+import Prelude hiding (null,map,lookup,foldr,foldl,foldr1,foldl1,foldl',filter)
 import qualified Prelude
 import qualified Data.Edison.Assoc as A
 import Data.Edison.Prelude ( runFail_ )

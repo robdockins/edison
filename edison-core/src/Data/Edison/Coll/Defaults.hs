@@ -13,7 +13,7 @@
 
 module Data.Edison.Coll.Defaults where
 
-import Prelude hiding (null,foldr,foldl,foldr1,foldl1,lookup,filter)
+import Prelude hiding (null,foldr,foldl,foldr1,foldl1,foldl',lookup,filter)
 import qualified Control.Monad.Fail as Fail
 
 import Data.Edison.Prelude ( runFail_ )

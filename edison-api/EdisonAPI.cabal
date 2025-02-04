@@ -38,7 +38,7 @@ Library
      Data.Edison.Seq
      Data.Edison.Seq.ListSeq
   Build-Depends:
-     base == 4.*
+     base >= 4.12 && < 4.22
   if impl(ghc < 8.0)
     build-depends: fail
   Default-Language: Haskell2010

@@ -40,7 +40,7 @@ module Data.Edison.Coll.SkewHeap (
     moduleName
 ) where
 
-import Prelude hiding (null,foldr,foldl,foldr1,foldl1,lookup,filter)
+import Prelude hiding (null,foldr,foldl,foldr1,foldl1,foldl',lookup,filter)
 import qualified Data.Edison.Coll as C
 import qualified Data.Edison.Seq as S
 import Data.Edison.Coll.Defaults

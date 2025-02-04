@@ -54,7 +54,7 @@ module Data.Edison.Assoc.AssocList (
     moduleName
 ) where
 
-import Prelude hiding (null,map,lookup,foldr,foldl,foldr1,foldl1,filter)
+import Prelude hiding (null,map,lookup,foldr,foldl,foldr1,foldl1,foldl',filter)
 import qualified Prelude
 import Data.Monoid
 import Data.Semigroup as SG

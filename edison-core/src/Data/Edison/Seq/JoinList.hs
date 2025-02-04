@@ -48,7 +48,7 @@ module Data.Edison.Seq.JoinList (
     moduleName
 ) where
 
-import Prelude hiding (concat,reverse,map,concatMap,foldr,foldl,foldr1,foldl1,
+import Prelude hiding (concat,reverse,map,concatMap,foldr,foldl,foldr1,foldl1,foldl',
                        filter,takeWhile,dropWhile,lookup,take,drop,splitAt,
                        zip,zip3,zipWith,zipWith3,unzip,unzip3,null)
 

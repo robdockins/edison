@@ -40,7 +40,7 @@ module Data.Edison.Coll.LazyPairingHeap (
     moduleName
 ) where
 
-import Prelude hiding (null,foldr,foldl,foldr1,foldl1,lookup,filter)
+import Prelude hiding (null,foldr,foldl,foldr1,foldl1,foldl',lookup,filter)
 import qualified Data.Edison.Coll as C ( CollX(..), OrdCollX(..),
                                    Coll(..), OrdColl(..), toOrdList )
 import qualified Data.Edison.Seq as S

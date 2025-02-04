@@ -49,7 +49,7 @@ module Data.Edison.Assoc.StandardMap (
     moduleName
 ) where
 
-import Prelude hiding (null,map,lookup,foldr,foldl,foldr1,foldl1,filter)
+import Prelude hiding (null,map,lookup,foldr,foldl,foldr1,foldl1,foldl',filter)
 import qualified Prelude
 import qualified Control.Monad.Fail as Fail
 import qualified Data.Edison.Assoc as A

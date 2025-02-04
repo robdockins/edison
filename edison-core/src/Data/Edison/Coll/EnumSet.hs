@@ -156,7 +156,7 @@ module Data.Edison.Coll.EnumSet (
 )  where
 
 import qualified Prelude
-import Prelude hiding (filter,foldl,foldr,null,map,lookup,foldl1,foldr1)
+import Prelude hiding (filter,foldl,foldr,null,map,lookup,foldl1,foldr1,foldl')
 import qualified Control.Monad.Fail as Fail
 import qualified Data.Bits as Bits
 import Data.Bits hiding (complement)
