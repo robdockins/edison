@@ -15,7 +15,7 @@
 --    * Ralf Hinze and Ross Paterson,
 --      \"Finger trees: a simple general-purpose data structure\",
 --      /Journal of Functional Programming/ 16:2 (2006) pp 197-217.
---      <http://www.soi.city.ac.uk/~ross/papers/FingerTree.html>
+--      <https://www.cs.tufts.edu/~nr/cs257/archive/ralf-hinze/finger-trees.pdf>
 --
 -- This data structure forms the basis of the "Data.Edison.Seq.FingerSeq"
 -- sequence data structure.
