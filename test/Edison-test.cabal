@@ -7,6 +7,7 @@ Maintainer:     robdockins AT fastmail DOT fm
 Synopsis:       Testsuite for Edison
 Category:       Data structures
 Stability:      provisional
+tested-with: GHC == 8.10.7, GHC == 9.6.7, GHC == 9.12.1, GHC == 9.14.1
 
 Source-Repository head
   Type: git
