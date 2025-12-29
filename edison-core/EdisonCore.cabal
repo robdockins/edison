@@ -76,6 +76,6 @@ Library
      ScopedTypeVariables
      GeneralizedNewtypeDeriving
      FlexibleContexts
-  Ghc-Options: -funbox-strict-fields -fwarn-incomplete-patterns
+  Ghc-Options: -funbox-strict-fields -Wall -Wno-name-shadowing -Wno-noncanonical-monad-instances
   if impl(ghc >= 8.0)
-    Ghc-Options:  -Wcompat
+    Ghc-Options: -Wcompat
