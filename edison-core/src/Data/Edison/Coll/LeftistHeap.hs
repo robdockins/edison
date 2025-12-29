@@ -44,6 +44,7 @@ import qualified Data.Edison.Coll as C ( CollX(..), OrdCollX(..), Coll(..), OrdC
                                    unionList, toOrdList )
 import qualified Data.Edison.Seq as S
 import Data.Edison.Coll.Defaults
+import Data.Maybe (fromJust)
 import Data.Monoid
 import Data.Semigroup as SG
 import Control.Monad
@@ -312,12 +313,12 @@ maxView :: (Ord a, Fail.MonadFail m) => Heap a -> m (a, Heap a)
 maxView E = fail "LeftistHeap.maxView: empty collection"
 maxView (L _ x E _) = return (x, E)
 maxView (L _ x a E) = return (y, L 1 x a' E)
-  where Just (y,a') = maxView a
+  where (y,a') = fromJust (maxView a)
 maxView (L _ x a b)
     | y >= z    = return (y, node x a' b)
     | otherwise = return (z, node x a b')
-  where Just (y, a') = maxView a
-        Just (z, b') = maxView b
+  where (y, a') = fromJust (maxView a)
+        (z, b') = fromJust (maxView b)
 
 -- warning: maxView and maxElem may disagree if root is equal to max!
 
@@ -480,9 +481,9 @@ instance (Ord a, Arbitrary a) => Arbitrary (Heap a) where
           sift _ = error "LeftistHeap.arbitrary: bug!"
 
 instance (Ord a, CoArbitrary a) => CoArbitrary (Heap a) where
-  coarbitrary E = variant 0
+  coarbitrary E = variant (0 :: Int)
   coarbitrary (L _ x a b) =
-      variant 1 . coarbitrary x . coarbitrary a . coarbitrary b
+      variant (1 :: Int) . coarbitrary x . coarbitrary a . coarbitrary b
 
 instance (Ord a) => Semigroup (Heap a) where
     (<>) = union

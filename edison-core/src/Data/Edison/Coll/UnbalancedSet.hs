@@ -47,6 +47,7 @@ import qualified Control.Monad.Fail as Fail
 import qualified Data.Edison.Coll as C
 import qualified Data.Edison.Seq as S
 import Data.Edison.Coll.Defaults
+import Data.Maybe (fromJust)
 import Data.Monoid
 import Data.Semigroup as SG
 import Test.QuickCheck
@@ -214,7 +215,7 @@ unsafeFromOrdSeq xs = fst (ins xs (S.size xs))
   where ins ys 0 = (E,ys)
         ins ys n = let m = n `div` 2
                        (a,ys') = ins ys m
-                       Just (y,ys'') = S.lview ys'
+                       (y,ys'') = fromJust (S.lview ys')
                        (b,ys''') = ins ys'' (n - m - 1)
                    in (T a y b,ys''')
 
@@ -280,7 +281,7 @@ partitionLT_GT y (T a x b) =
 minView E = fail "UnbalancedSet.minView: empty collection"
 minView (T E x b) = return (x, b)
 minView (T a x b) = return (y, T a' x b)
-  where Just (y,a') = minView a
+  where (y,a') = fromJust (minView a)
 
 minElem E = error "UnbalancedSet.minElem: empty collection"
 minElem (T E x _) = x
@@ -289,7 +290,7 @@ minElem (T a _ _) = minElem a
 maxView E = fail "UnbalancedSet.maxView: empty collection"
 maxView (T a x E) = return (x, a)
 maxView (T a x b) = return (y, T a x b')
-  where Just (y, b') = maxView b
+  where (y, b') = fromJust (maxView b)
 
 maxElem E = error "UnbalancedSet.maxElem: empty collection"
 maxElem (T _ x E) = x
@@ -427,9 +428,9 @@ instance (Ord a, Arbitrary a) => Arbitrary (Set a) where
                  return (Prelude.foldr insert empty xs)
 
 instance (Ord a, CoArbitrary a) => CoArbitrary (Set a) where
-  coarbitrary E = variant 0
+  coarbitrary E = variant (0 :: Int)
   coarbitrary (T a x b) =
-    variant 1 . coarbitrary a . coarbitrary x . coarbitrary b
+    variant (1 :: Int) . coarbitrary a . coarbitrary x . coarbitrary b
 
 instance (Ord a) => Semigroup (Set a) where
   (<>) = union

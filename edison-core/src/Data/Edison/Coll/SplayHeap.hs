@@ -483,9 +483,9 @@ instance (Ord a,Arbitrary a) => Arbitrary (Heap a) where
                  return (C.fromList xs)
 
 instance (Ord a,CoArbitrary a) => CoArbitrary (Heap a) where
-  coarbitrary E = variant 0
+  coarbitrary E = variant (0 :: Int)
   coarbitrary (T a x b) =
-    variant 1 . coarbitrary a . coarbitrary x . coarbitrary b
+    variant (1 :: Int) . coarbitrary a . coarbitrary x . coarbitrary b
 
 instance (Ord a) => Semigroup (Heap a) where
     (<>) = union

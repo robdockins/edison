@@ -326,9 +326,6 @@ toList t = tol [t]
                 root (B x _ _) = x
                 root _ = error "BraunSeq.toList: bug!"
 
-                (B _ a _) = a
---                (left _) = error "BraunSeq.toList: bug!"
-
 map _ E = E
 map f (B x a b) = B (f x) (map f a) (map f b)
 
