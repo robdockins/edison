@@ -534,7 +534,9 @@ instance (Ord a, Arbitrary a) => Arbitrary (Heap a) where
                                                  (arbTree (n `div` 2)))]
 
           sift x E a = sift1 x a
-          sift x a E = let H1 x' a' = sift1 x a in H2 x' a' E
+          sift x a E = case sift1 x a of
+            H1 x' a' -> H2 x' a' E
+            _ -> undefined
           sift x a b
               | x <= ma && x <= mb = H2 x a b
               | ma < x && ma <= mb = H2 ma (siftInto x a) b
@@ -553,10 +555,10 @@ instance (Ord a, Arbitrary a) => Arbitrary (Heap a) where
           siftInto _ E = error "LazyPairingHeap.arbitrary: bug!"
 
 instance (Ord a, CoArbitrary a) => CoArbitrary (Heap a) where
-  coarbitrary E = variant 0
-  coarbitrary (H1 x a) = variant 1 . coarbitrary x . coarbitrary a
+  coarbitrary E = variant (0 :: Int)
+  coarbitrary (H1 x a) = variant (1 :: Int) . coarbitrary x . coarbitrary a
   coarbitrary (H2 x a b) =
-      variant 2 . coarbitrary x . coarbitrary a . coarbitrary b
+      variant (2 :: Int) . coarbitrary x . coarbitrary a . coarbitrary b
 
 instance (Ord a) => Semigroup (Heap a) where
     (<>) = union

@@ -456,9 +456,9 @@ instance Arbitrary a => Arbitrary (Seq a) where
                  return (fromList xs)
 
 instance CoArbitrary a => CoArbitrary (Seq a) where
-  coarbitrary E = variant 0
-  coarbitrary (Even ps) = variant 1 . coarbitrary ps
-  coarbitrary (Odd x ps) = variant 2 . coarbitrary x . coarbitrary ps
+  coarbitrary E = variant (0 :: Int)
+  coarbitrary (Even ps) = variant (1 :: Int) . coarbitrary ps
+  coarbitrary (Odd x ps) = variant (2 :: Int) . coarbitrary x . coarbitrary ps
 
 
 instance Semigroup (Seq a) where

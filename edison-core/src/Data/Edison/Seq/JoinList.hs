@@ -432,9 +432,9 @@ instance Arbitrary a => Arbitrary (Seq a) where
                                     (arbTree (n `div` 2)))]
 
 instance CoArbitrary a => CoArbitrary (Seq a) where
-  coarbitrary E = variant 0
-  coarbitrary (L x) = variant 1 . coarbitrary x
-  coarbitrary (A xs ys) = variant 2 . coarbitrary xs . coarbitrary ys
+  coarbitrary E = variant (0 :: Int)
+  coarbitrary (L x) = variant (1 :: Int) . coarbitrary x
+  coarbitrary (A xs ys) = variant (2 :: Int) . coarbitrary xs . coarbitrary ys
 
 instance Semigroup (Seq a) where
   (<>) = append

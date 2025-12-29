@@ -1152,13 +1152,13 @@ instance (Ord k,CoArbitrary k,CoArbitrary a) => CoArbitrary (FM k a) where
 
 coarbitrary_maybe :: (CoArbitrary t) => Maybe t  -> Test.QuickCheck.Gen b
                                                  -> Test.QuickCheck.Gen b
-coarbitrary_maybe Nothing = variant 0
-coarbitrary_maybe (Just x) = variant 1 . coarbitrary x
+coarbitrary_maybe Nothing = variant (0 :: Int)
+coarbitrary_maybe (Just x) = variant (1 :: Int) . coarbitrary x
 
 coarbitrary_fmb :: (CoArbitrary t1, CoArbitrary t) => FMB t t1 -> Gen a -> Gen a
-coarbitrary_fmb E = variant 0
+coarbitrary_fmb E = variant (0 :: Int)
 coarbitrary_fmb (I _ k x l (FMB' m) r) =
-        variant 1 . coarbitrary k . coarbitrary_maybe x .
+        variant (1 :: Int) . coarbitrary k . coarbitrary_maybe x .
         coarbitrary_fmb l . coarbitrary_fmb m . coarbitrary_fmb r
 
 instance Ord k => Semigroup (FM k a) where

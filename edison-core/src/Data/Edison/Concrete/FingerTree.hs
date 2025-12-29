@@ -750,11 +750,11 @@ instance (Arbitrary a) => Arbitrary (Digit a) where
 
 instance (CoArbitrary a) => CoArbitrary (Digit a) where
   coarbitrary p = case p of
-      One x        -> variant 0 . coarbitrary x
-      Two x y      -> variant 1 . coarbitrary x . coarbitrary y
-      Three x y z  -> variant 2 . coarbitrary x . coarbitrary y
+      One x        -> variant (0 :: Int) . coarbitrary x
+      Two x y      -> variant (1 :: Int) . coarbitrary x . coarbitrary y
+      Three x y z  -> variant (2 :: Int) . coarbitrary x . coarbitrary y
                       . coarbitrary z
-      Four x y z w -> variant 3 . coarbitrary x . coarbitrary y
+      Four x y z w -> variant (3 :: Int) . coarbitrary x . coarbitrary y
                       . coarbitrary z . coarbitrary w
 
 
@@ -766,8 +766,8 @@ instance (Measured v a, Arbitrary a) => Arbitrary (Node v a) where
 
 instance (Measured v a, CoArbitrary a) => CoArbitrary (Node v a) where
   coarbitrary p = case p of
-       Node2 _ x y   -> variant 0 . coarbitrary x . coarbitrary y
-       Node3 _ x y z -> variant 1 . coarbitrary x . coarbitrary y . coarbitrary z
+       Node2 _ x y   -> variant (0 :: Int) . coarbitrary x . coarbitrary y
+       Node3 _ x y z -> variant (1 :: Int) . coarbitrary x . coarbitrary y . coarbitrary z
 
 
 instance (Measured v a, Arbitrary a) => Arbitrary (FingerTree v a) where
@@ -783,6 +783,6 @@ instance (Measured v a, Arbitrary a) => Arbitrary (FingerTree v a) where
 
 instance (Measured v a, CoArbitrary a) => CoArbitrary (FingerTree v a) where
   coarbitrary p = case p of
-         Empty          -> variant 0
-         Single x       -> variant 1 . coarbitrary x
-         Deep _ sf m pf -> variant 2 . coarbitrary sf . coarbitrary m . coarbitrary pf
+         Empty          -> variant (0 :: Int)
+         Single x       -> variant (1 :: Int) . coarbitrary x
+         Deep _ sf m pf -> variant (2 :: Int) . coarbitrary sf . coarbitrary m . coarbitrary pf

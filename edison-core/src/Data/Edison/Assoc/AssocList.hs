@@ -615,8 +615,8 @@ instance (Eq k,Arbitrary k,Arbitrary a) => Arbitrary (FM k a) where
                   return (Prelude.foldr (uncurry insert) empty xs)
 
 instance (Eq k,CoArbitrary k,CoArbitrary a) => CoArbitrary (FM k a) where
-   coarbitrary E = variant 0
-   coarbitrary (I k a m) = variant 1 . coarbitrary k
+   coarbitrary E = variant (0 :: Int)
+   coarbitrary (I k a m) = variant (1 :: Int) . coarbitrary k
                          . coarbitrary a . coarbitrary m
 
 

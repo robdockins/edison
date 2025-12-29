@@ -396,8 +396,8 @@ instance (C.OrdColl h a,Arbitrary h,Arbitrary a) => Arbitrary (Min h a) where
                                        else fromPrim xs)
 
 instance (C.OrdColl h a,CoArbitrary h,CoArbitrary a) => CoArbitrary (Min h a) where
-  coarbitrary E = variant 0
-  coarbitrary (M x xs) = variant 1 . coarbitrary x . coarbitrary xs
+  coarbitrary E = variant (0 :: Int)
+  coarbitrary (M x xs) = variant (1 :: Int) . coarbitrary x . coarbitrary xs
 
 instance (C.OrdColl h a) => SG.Semigroup (Min h a) where
     (<>) = union

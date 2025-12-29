@@ -277,7 +277,9 @@ readsPrecUsingFromList _ xs =
 
        -- play games with the typechecker so we don't have to use
        -- extensions for scoped type variables
-       ~[(x,_)] = result
+       x = case result of
+        [(x',_)] -> x'
+        _ -> undefined
 
    in result
 
@@ -295,7 +297,9 @@ readsPrecUsingUnsafeFromOrdSeq i xs =
 
        -- play games with the typechecker so we don't have to use
        -- extensions for scoped type variables
-       ~[(x,_)] = result
+       x = case result of
+        [(x',_)] -> x'
+        _ -> undefined
 
    in result
 
