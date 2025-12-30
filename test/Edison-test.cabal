@@ -14,7 +14,8 @@ Source-Repository head
   Location: https://github.com/robdockins/edison/
   Subdir: test
 
-Executable testSuite
+test-suite testSuite
+  type: exitcode-stdio-1.0
   Main-Is: Main.hs
   Other-modules:
     Data.Edison.Test.Bag

@@ -6,6 +6,5 @@ module Main where
 import Test.HUnit
 import Data.Edison.Test.Driver
 
-main = do 
-  runTestTT edisonTests
-  return ()
+main :: IO ()
+main = runTestTTAndExit edisonTests
