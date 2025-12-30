@@ -221,21 +221,27 @@ lookupFMB nk@(x:xs) (I _ k v l (FMB' fmbm) r)
         GT -> lookupFMB nk r
         EQ -> if L.null xs then v else lookupFMB xs fmbm
 
-listToFMB :: [k] -> (Maybe v -> Maybe v) -> FMB k v
-listToFMB [x]    fv = mkFMB x (fv Nothing) E (FMB' E)                 E
-listToFMB (x:xs) fv = mkFMB x Nothing      E (FMB' $ listToFMB xs fv) E
+listToFMB :: [k] -> v -> FMB k v
+listToFMB [x]    v = mkFMB x (Just v) E (FMB' E)                E
+listToFMB (x:xs) v = mkFMB x Nothing  E (FMB' $ listToFMB xs v) E
 listToFMB _ _ = error "TernaryTrie.listToFMB: bug!"
 
 addToFMB :: (Ord k) => [k] -> (Maybe v -> Maybe v) -> FMB k v -> FMB k v
 addToFMB xs combiner E
-  = listToFMB xs combiner
+  = case combiner Nothing of
+      Just v -> listToFMB xs v
+      Nothing -> E
 addToFMB nk@(x:xs) combiner (I size k v l m@(FMB' fmbm) r)
   = case compare x k of
         LT -> mkBalancedFMB k v (addToFMB nk combiner l) m r
         GT -> mkBalancedFMB k v l m (addToFMB nk combiner r)
         EQ -> case xs of
-                [] -> I size k (combiner v) l m r
-                _  -> I size k v l (FMB' $ addToFMB xs combiner fmbm) r
+                [] -> case combiner v of
+                  Nothing | FMB' E <- m -> appendFMB l r
+                  v' -> I size k v' l m r
+                _  -> case addToFMB xs combiner fmbm of
+                  E | Nothing <- v -> appendFMB l r
+                  m' -> I size k v l (FMB' m') r
 addToFMB _ _ _ = error "TernaryTrie.addToFMB: bug!"
 
 addToFM :: (Ord k) => [k] -> (Maybe v -> Maybe v) -> FM k v -> FM k v
@@ -256,7 +262,9 @@ lookupAndDelFromFMB onFail cont nk@(x:xs) (I size k v l m@(FMB' fmbm) r)
                         Just w  -> case fmbm of
                                       E -> cont w (appendFMB l r)
                                       _ -> cont w (I size k Nothing l m r)
-                _  -> lookupAndDelFromFMB onFail (\w m' -> cont w (I size k v l (FMB' m') r)) xs fmbm
+                _  -> lookupAndDelFromFMB onFail (\w m' -> case m' of
+                  E | Nothing <- v -> cont w (appendFMB l r)
+                  _ -> cont w (I size k v l (FMB' m') r)) xs fmbm
 lookupAndDelFromFMB _ _ _ _ = error "TernaryTrie.lookupAndDelFromFMB: bug!"
 
 lookupAndDelFromFM :: (Ord k) => z -> (v -> FM k v -> z) -> [k] -> FM k v -> z
@@ -277,7 +285,9 @@ delFromFMB nk@(x:xs) (I size k v l m@(FMB' fmbm) r)
                 [] -> case fmbm of
                         E -> appendFMB l r
                         _ -> I size k Nothing l m r
-                _  -> I size k v l (FMB' $ delFromFMB xs fmbm) r
+                _  -> case delFromFMB xs fmbm of
+                  E | Nothing <- v -> appendFMB l r
+                  m' -> I size k v l (FMB' m') r
 delFromFMB _ _ = error "TernaryTrie.delFromFMB: bug!"
 
 
@@ -334,6 +344,8 @@ mkBalancedFMB k v l m r
 
 
 mkVBalancedFMB :: k -> Maybe v -> FMB k v -> FMB' k v -> FMB k v -> FMB k v
+mkVBalancedFMB k Nothing l (FMB' E) r
+  = appendFMB l r
 mkVBalancedFMB k v E m E
   = mkFMB k v E m E
 mkVBalancedFMB k v l@E m (I _ kr vr rl rm rr)
@@ -527,7 +539,7 @@ mergeKVFM f (FM vx fmbx) (FM vy fmby)
 empty = FM Nothing E
 
 singleton [] v = FM (Just v) E
-singleton xs v = FM Nothing (listToFMB xs (\_ -> Just v))
+singleton xs v = FM Nothing (listToFMB xs v)
 
 fromSeq = fromSeqUsingInsertSeq
 
@@ -888,7 +900,11 @@ intersectionWithKey f
 
 minViewFMB :: Fail.MonadFail m => FMB k a -> (FMB k a -> FM k a) -> m (a, FM k a)
 minViewFMB E _ = fail $ moduleName++".minView: empty map"
-minViewFMB (I i k (Just v) E m r)        f = return (v, f (I i k Nothing E m r))
+minViewFMB (I i k (Just v) E m r)        f = return (v, f t)
+  where
+    t = case m of
+      FMB' E -> r
+      _ -> I i k Nothing E m r
 minViewFMB (I _ _ Nothing  E (FMB' E) _) _ = error $ moduleName++".minView: bug!"
 minViewFMB (I _ k Nothing  E (FMB' m) r) f = minViewFMB m (\m' -> f (mkVBalancedFMB k Nothing E (FMB' m') r))
 minViewFMB (I _ k mv l m r)              f = minViewFMB l (\l' -> f (mkVBalancedFMB k mv l' m r))
@@ -899,7 +915,11 @@ minView (FM Nothing fmb)  = minViewFMB fmb (FM Nothing)
 
 minViewWithKeyFMB :: Fail.MonadFail m => FMB k a -> ([k] -> [k]) -> (FMB k a -> FM k a) -> m (([k],a),FM k a)
 minViewWithKeyFMB E _ _ = fail $ moduleName++".minView: empty map"
-minViewWithKeyFMB (I i k (Just v) E m r)        kf f = return ((kf [k],v),f (I i k Nothing E m r))
+minViewWithKeyFMB (I i k (Just v) E m r)        kf f = return ((kf [k],v),f t)
+  where
+    t = case m of
+      FMB' E -> r
+      _ -> I i k Nothing E m r
 minViewWithKeyFMB (I _ _ Nothing  E (FMB' E) _) _ _ = error $ moduleName++".minViewWithKey: bug!"
 minViewWithKeyFMB (I _ k Nothing  E (FMB' m) r) kf f = minViewWithKeyFMB m (kf . (k:))
                                                         (\m' -> f (mkVBalancedFMB k Nothing E (FMB' m') r))
@@ -942,7 +962,11 @@ maxViewFMB :: Fail.MonadFail m => FMB k a -> (FMB k a -> FM k a) -> m (a, FM k a
 maxViewFMB (I _ _ (Just v) l (FMB' E) E) f = return (v, f l)
 --maxViewFMB (I i k (Just v) l (FMB' E) E) f = return (v, f (I i k Nothing l (FMB' E) E))
 maxViewFMB (I _ _ Nothing  _ (FMB' E) E) _ = error $ moduleName++".maxView: bug!"
-maxViewFMB (I i k mv l (FMB' m) E)       f = maxViewFMB m (\m' -> f (I i k mv l (FMB' m') E))
+maxViewFMB (I i k mv l (FMB' m) E)       f = maxViewFMB m (\m' -> f (t m'))
+  where
+    t m' = case m' of
+      E | Nothing <- mv -> l
+      _ -> I i k mv l (FMB' m') E
 maxViewFMB (I _ k mv l m r)              f = maxViewFMB r (\r' -> f (mkVBalancedFMB k mv l m r'))
 maxViewFMB E                             _ = error $ moduleName++".maxView: bug!"
 
@@ -956,7 +980,11 @@ maxViewWithKeyFMB :: Monad m => FMB k a -> ([k] -> [k]) -> (FMB k a -> FM k a) -
 maxViewWithKeyFMB (I _ k (Just v) l (FMB' E) E) kf f = return ((kf [k],v),f l)
 maxViewWithKeyFMB (I _ _ Nothing  _ (FMB' E) E) _ _ = error $ moduleName++".maxViewWithKey: bug!"
 maxViewWithKeyFMB (I i k mv l (FMB' m) E)       kf f = maxViewWithKeyFMB m (kf . (k:))
-                                                        (\m' -> f (I i k mv l (FMB' m') E))
+                                                        (\m' -> f (t m'))
+  where
+    t m' = case m' of
+      E | Nothing <- mv -> l
+      _ -> I i k mv l (FMB' m') E
 maxViewWithKeyFMB (I _ k mv l m r)              kf f = maxViewWithKeyFMB r kf
                                                         (\r' -> f (mkVBalancedFMB k mv l m r'))
 maxViewWithKeyFMB E                             _ _ = error $ moduleName++".maxViewWithKey: bug!"
