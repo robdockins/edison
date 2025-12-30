@@ -4,6 +4,11 @@ Changelog of EdisonAPI and EdisonCore.
 
 [Latest CHANGES.md](https://github.com/robdockins/edison/blob/master/CHANGES.md)
 
+## 1.3.3.3
+* Compatibility with GHC 9.14
+* Fix balance of TernaryTrie (fixes performance in pathological cases)
+* Resolve warnings and remove spurious array dependency
+
 ## 1.3.3.2
 * Compatibility with GHC 9.10 and 9.12
 
