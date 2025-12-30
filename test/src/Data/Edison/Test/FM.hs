@@ -392,8 +392,10 @@ prop_lookupAndDelete fm k xs =
 
       Just (z,zs)  ->
           (lookup k xs == z)
-       && (lookupAndDelete k xs == (z,zs))
-       && (lookupAndDeleteAll k xs == ([z],zs))
+       && (lookupAndDelete k xs -== (z,zs))
+       && (lookupAndDeleteAll k xs -== ([z],zs))
+  where
+    (t, ts) -== (u, us) = t == u && ts === us
 
 prop_adjust :: FMTest k Int fm =>
         fm Int -> k -> fm Int -> Bool
