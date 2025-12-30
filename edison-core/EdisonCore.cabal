@@ -1,7 +1,7 @@
 Name:           EdisonCore
 Cabal-Version:  >= 1.10
 Build-Type:     Simple
-Version:        1.3.3.2
+Version:        1.3.3.3
 License:        MIT
 License-File:   COPYRIGHT
 Author:         Chris Okasaki

@@ -1,6 +1,6 @@
 Build-type:     Simple
 Name:           Edison-test
-Version:        1.3.3.2
+Version:        1.3.3.3
 Cabal-version:  >= 1.10
 License:        MIT
 Maintainer:     lysxia@gmail.com
