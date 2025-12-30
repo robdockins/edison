@@ -489,12 +489,14 @@ prop_partition fm xs =
 prop_min :: OrdFMTest k Int fm =>
          fm Int -> [(k,Int)] -> Bool
 prop_min fm xs =
-      case minView xs' of
+      case minViewWithKey xs' of
          Nothing     -> null xs'
-         Just (z,zs) ->
-            snd min == z
+         Just ((k, z), zs) ->
+            min == (k, z)
             &&
             minElem xs' == z
+            &&
+            minView xs' -== Just (z, zs)
             &&
             delete (fst min) xs' === zs
             &&
@@ -504,16 +506,20 @@ prop_min fm xs =
 
   where xs' = (fromSeq (removeDups xs)) `asTypeOf` fm
         min = L.minimumBy (\x y -> compare (fst x) (fst y)) (removeDups xs)
+        Just (z, zs) -== Just (y, ys) = z == y && zs === ys
+        z -== y = z == y
 
 prop_max :: OrdFMTest k Int fm =>
          fm Int -> [(k,Int)] -> Bool
 prop_max fm xs =
-      case maxView xs' of
+      case maxViewWithKey xs' of
          Nothing     -> null xs'
-         Just (z,zs) ->
-            snd max == z
+         Just ((k, z), zs) ->
+            max == (k, z)
             &&
             maxElem xs' == z
+            &&
+            maxView xs' -== Just (z, zs)
             &&
             delete (fst max) xs' === zs
             &&
@@ -523,7 +529,8 @@ prop_max fm xs =
 
   where xs' = (fromSeq (removeDups xs)) `asTypeOf` fm
         max = L.maximumBy (\x y -> compare (fst x) (fst y)) (removeDups xs)
-
+        Just (z, zs) -== Just (y, ys) = z == y && zs === ys
+        z -== y = z == y
 
 prop_foldr :: OrdFMTest k Int fm =>
           fm Int -> [(k,Int)] -> Bool
