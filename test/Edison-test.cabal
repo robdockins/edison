@@ -3,7 +3,7 @@ Name:           Edison-test
 Version:        1.3.3.2
 Cabal-version:  >= 1.10
 License:        MIT
-Maintainer:     robdockins AT fastmail DOT fm
+Maintainer:     lysxia@gmail.com
 Synopsis:       Testsuite for Edison
 Category:       Data structures
 Stability:      provisional
