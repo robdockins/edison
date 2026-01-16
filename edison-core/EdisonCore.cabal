@@ -63,7 +63,7 @@ Library
     Build-Depends:
       fail < 5,
       -- Provide/emulate Data.Semigroups` API for pre-GHC-8
-      semigroups == 0.18.*
+      semigroups < 0.20.1
 
   Default-Language: Haskell2010
   Default-Extensions:
